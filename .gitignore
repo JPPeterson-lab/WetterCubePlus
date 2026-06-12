@@ -1,4 +1,4 @@
-docs/firmware/*.bin
+build/
 sls_export/
 build/
 .DS_Store
