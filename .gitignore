@@ -1,0 +1,4 @@
+docs/firmware/*.bin
+sls_export/
+build/
+.DS_Store
