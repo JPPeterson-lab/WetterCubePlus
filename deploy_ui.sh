@@ -25,6 +25,11 @@ if [ -d "$SRC/images" ]; then
   cp "$SRC/images"/* "$DST/ui/images/" 2>/dev/null && echo "images/* kopiert"
 fi
 
+# PicoPixel generiert "lvgl/lvgl.h" – Arduino kennt nur <lvgl.h>
+find "$DST/ui" -name "*.c" -o -name "*.h" | xargs grep -l '"lvgl/lvgl.h"' 2>/dev/null | while read f; do
+  sed -i '' 's|#include "lvgl/lvgl.h"|#include <lvgl.h>|g' "$f"
+  echo "  lvgl-Include gepatcht: $(basename $f)"
+done
+
 echo ""
 echo "Fertig. PicoPixel UI in ui/ bereit."
-echo "Hinweis: Kein LV_COLOR_16_SWAP-Patch nötig (PicoPixel generiert keinen solchen Block)."

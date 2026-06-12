@@ -16,15 +16,18 @@
 | LED / BL | GPIO 17 | Backlight (PWM) |
 | MISO / SDO | GPIO 12 | (optional, nur für Lesebefehle) |
 
-### Touch (XPT2046) – teilt SPI2 mit Display
+### Touch (XPT2046) – EIGENER SPI-Bus (SPI3)
+
+Das Modul "3.5'' TFT SPI 480x320 V1.0" hat separate Touch-Pins –
+T_CLK/T_DIN/T_DO sind NICHT mit SCK/SDI/SDO verbunden!
 
 | Touch-Pin | ESP32-S3 GPIO | Hinweis |
 |---|---|---|
-| T_CLK | GPIO 14 | gleicher SPI-Bus wie Display |
-| T_CS | GPIO 21 | eigener Chip Select |
-| T_DIN | GPIO 13 | gemeinsamer MOSI |
-| T_DO | GPIO 12 | gemeinsamer MISO |
-| T_IRQ | GPIO 18 | Touch-Interrupt (optional) |
+| T_CLK | **GPIO 6** | eigener SPI3-Bus |
+| T_DIN | **GPIO 7** | Touch MOSI |
+| T_DO  | **GPIO 8** | Touch MISO |
+| T_CS  | GPIO 21 | Chip Select |
+| T_IRQ | GPIO 18 | nicht genutzt (Polling-Modus) |
 
 ### Spannungsversorgung
 

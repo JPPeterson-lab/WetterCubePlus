@@ -2,11 +2,13 @@
 //  WetterCubePlus.ino
 //  ESP32-S3 N16R8 | ILI9488 3.5" 480x320 | XPT2046 Touch
 //  LVGL 8.x | LovyanGFX | HTTP-OTA | WebUI | DWD-Warnungen
-//  Version: 0.1.0-beta
+//  Version: 0.1.1-beta
 // ============================================================
 
+#include "webui_html.h"
+
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.1.0-beta"
+#define FIRMWARE_VERSION "0.1.1-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_BASE_URL "https://github.com/JPPeterson-lab/WetterCubePlus/releases/download/"
 #define MDNS_NAME        "wettercubeplus"
@@ -23,9 +25,12 @@
 #define TFT_RST   16
 #define TFT_BL    17
 
-// -- Touch XPT2046 (teilt SPI2 mit Display) --
+// -- Touch XPT2046 (EIGENER SPI-Bus – separate Pins auf dem Modul!) --
 #define TOUCH_CS   21
 #define TOUCH_IRQ  18
+#define TOUCH_CLK   6
+#define TOUCH_MOSI  7
+#define TOUCH_MISO  8
 
 // -- Display-Auflösung --
 #define TFT_WIDTH  480
@@ -71,22 +76,29 @@ public:
       _panel.setBus(&_bus); }
 
     { auto cfg = _panel.config();
-      cfg.pin_cs  = TFT_CS;
-      cfg.pin_rst = TFT_RST;
+      cfg.pin_cs    = TFT_CS;
+      cfg.pin_rst   = TFT_RST;
       cfg.panel_width   = 320;
       cfg.panel_height  = 480;
       cfg.memory_width  = 320;
       cfg.memory_height = 480;
+      cfg.rgb_order = false;  // ILI9488 = BGR; wenn Farben invertiert → true
+      cfg.invert    = false;
       _panel.config(cfg); }
 
     { auto cfg = _touch.config();
-      cfg.spi_host = SPI2_HOST;
-      cfg.pin_cs   = TOUCH_CS;
-      cfg.pin_int  = TOUCH_IRQ;
-      cfg.freq     = 2500000;
-      cfg.x_min    = 0;   cfg.x_max = 4095;
-      cfg.y_min    = 0;   cfg.y_max = 4095;
-      cfg.bus_shared = true;
+      cfg.spi_host   = SPI3_HOST;   // eigener SPI-Host für Touch
+      cfg.pin_sclk   = TOUCH_CLK;
+      cfg.pin_mosi   = TOUCH_MOSI;
+      cfg.pin_miso   = TOUCH_MISO;
+      cfg.pin_cs     = TOUCH_CS;
+      cfg.pin_int    = -1;          // Polling
+      cfg.freq       = 1000000;
+      cfg.x_min      = 300;
+      cfg.x_max      = 3800;
+      cfg.y_min      = 300;
+      cfg.y_max      = 3800;
+      cfg.bus_shared = false;
       _touch.config(cfg);
       _panel.setTouch(&_touch); }
 
@@ -273,18 +285,74 @@ void setBrightness(int prozent) {
 // ============================================================
 //  Touch-Kalibrierung (Dauerdruck beim Start = Neukalibrierung)
 // ============================================================
+// Prüft ob Touch überhaupt antwortet (10 Versuche)
+bool touchErreichbar() {
+  for (int i = 0; i < 10; i++) {
+    uint16_t tx, ty;
+    if (tft.getTouch(&tx, &ty)) {
+      Serial.printf("[Touch] Erreichbar: x=%d y=%d\n", tx, ty);
+      return true;
+    }
+    delay(20);
+  }
+  return false;
+}
+
 void touchKalibrierung() {
   // Hint anzeigen
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE);
   tft.setTextSize(2);
+  tft.setCursor(20, TFT_HEIGHT / 2 - 30);
+  tft.println("Touch-Test...");
+
+  // Erst prüfen ob Touch-Chip überhaupt reagiert
+  // XPT2046 Raw-SPI-Test: Finger auflegen, dann messen
+  tft.setTextSize(1);
+  tft.setCursor(20, TFT_HEIGHT / 2 + 10);
+  tft.println("Finger auflegen zum Testen (3 Sek.)");
+
+  bool touchOk = false;
+  uint32_t t0 = millis();
+  while (millis() - t0 < 3000) {
+    uint16_t tx, ty;
+    if (tft.getTouch(&tx, &ty)) {
+      Serial.printf("[Touch] OK: x=%d y=%d\n", tx, ty);
+      touchOk = true;
+      break;
+    }
+    delay(30);
+  }
+
+  if (!touchOk) {
+    Serial.println("[Touch] KEIN Signal – Touch-SPI pruefen!");
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_RED);
+    tft.setTextSize(2);
+    tft.setCursor(10, 20);  tft.println("Touch: kein Signal");
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE);
+    tft.setCursor(10, 60);  tft.println("Pins pruefen:");
+    tft.setCursor(10, 80);  tft.printf("T_CLK=%d T_DIN=%d T_DO=%d", TFT_SCLK, TFT_MOSI, TFT_MISO);
+    tft.setCursor(10, 100); tft.printf("T_CS=%d  T_IRQ=%d", TOUCH_CS, TOUCH_IRQ);
+    tft.setCursor(10, 130); tft.println("Weiter ohne Touch-Kalibrierung...");
+    delay(3000);
+    // Ohne Kalibrierung weitermachen – Touch wird im Betrieb nicht funktionieren
+    // aber zumindest startet das Gerät
+    return;
+  }
+
+  // Touch antwortet – jetzt auf Dauerdruck für Neukalibrierung prüfen
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE);
+  tft.setTextSize(2);
   tft.setCursor(20, TFT_HEIGHT / 2 - 20);
-  tft.println("Finger halten = Neu-");
+  tft.println("Finger halten =");
   tft.setCursor(20, TFT_HEIGHT / 2 + 5);
-  tft.println("kalibrierung starten");
+  tft.println("Neukalibrierung");
 
   bool forceRecal = false;
-  uint32_t t0 = millis();
+  t0 = millis();
   while (millis() - t0 < 2500) {
     uint16_t tx, ty;
     if (tft.getTouch(&tx, &ty)) {
@@ -293,6 +361,7 @@ void touchKalibrierung() {
     }
     delay(30);
   }
+  Serial.printf("[Touch] forceRecal=%d\n", forceRecal);
 
   prefs.begin("touch_cal", false);
   bool calSaved = (prefs.getBytesLength("data") == 8 * sizeof(uint16_t));
@@ -302,8 +371,7 @@ void touchKalibrierung() {
     tft.setTextColor(TFT_YELLOW);
     tft.setTextSize(2);
     tft.setCursor(20, TFT_HEIGHT / 2 - 10);
-    tft.println("Kalibrierung...");
-    tft.println("Ecken antippen");
+    tft.println("Ecken antippen...");
     delay(500);
     uint16_t calData[8];
     tft.calibrateTouch(calData, TFT_WHITE, TFT_BLACK, 15);
@@ -317,6 +385,7 @@ void touchKalibrierung() {
     uint16_t calData[8];
     prefs.getBytes("data", calData, sizeof(calData));
     tft.setTouchCalibrate(calData);
+    Serial.println("[Touch] Kalibrierung aus Preferences geladen");
   }
   prefs.end();
 }
@@ -385,50 +454,7 @@ bool geocodeLocation(const String& city) {
 // ============================================================
 //  Captive Portal – WLAN-Ersteinrichtung (deutsch)
 // ============================================================
-const char PORTAL_HTML[] PROGMEM = R"rawhtml(
-<!DOCTYPE html><html lang="de"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WetterCubePlus – Einrichtung</title>
-<style>
-  body{font-family:Arial,sans-serif;background:#0d1117;color:#e6edf3;margin:0;padding:20px}
-  h1{color:#58a6ff;font-size:1.4em}
-  .card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:20px;max-width:420px;margin:auto}
-  label{display:block;margin-top:12px;color:#8b949e;font-size:.9em}
-  input,select{width:100%;padding:8px;border-radius:4px;border:1px solid #30363d;
-    background:#21262d;color:#e6edf3;box-sizing:border-box;margin-top:4px}
-  button{margin-top:20px;width:100%;padding:10px;background:#238636;color:#fff;
-    border:none;border-radius:4px;font-size:1em;cursor:pointer}
-  button:hover{background:#2ea043}
-  .hint{font-size:.8em;color:#8b949e;margin-top:4px}
-  .nets{max-height:180px;overflow-y:auto}
-</style></head><body>
-<div class="card">
-  <h1>WetterCubePlus Einrichtung</h1>
-  <form action="/speichern" method="post">
-    <label>WLAN-Netzwerk</label>
-    <select name="ssid" id="ssid">%NETZWERKE%</select>
-    <label>WLAN-Passwort</label>
-    <input type="password" name="pass" placeholder="Passwort eingeben">
-    <label>Standort (Stadt)</label>
-    <input type="text" name="location" placeholder="z.B. Berlin" value="%LOCATION%">
-    <p class="hint">⚠ Keine Umlaute: München → Munchen, Köln → Koeln</p>
-    <label>DWD-Pollenregion</label>
-    <select name="dwd_region">%DWD_REGIONEN%</select>
-    <button type="submit">Speichern &amp; Neustart</button>
-  </form>
-</div></body></html>
-)rawhtml";
-
-const char PORTAL_OK_HTML[] PROGMEM = R"rawhtml(
-<!DOCTYPE html><html lang="de"><head>
-<meta charset="UTF-8"><title>Gespeichert</title>
-<meta http-equiv="refresh" content="5;url=/">
-<style>body{font-family:Arial;background:#0d1117;color:#e6edf3;text-align:center;padding-top:60px}
-.ok{color:#2ea043;font-size:2em}</style></head><body>
-<div class="ok">✓ Gespeichert</div>
-<p>Gerät wird neu gestartet…</p></body></html>
-)rawhtml";
+// HTML-Strings sind in webui_html.h definiert (Raw-String-Fix für Arduino-Präprozessor)
 
 String baueDwdRegionenOptions(int ausgewaehlt) {
   String html = "";
@@ -501,149 +527,6 @@ void handleWebOtaCheck();
 void handleWebOtaDoUpdate();
 void handleWebWlanAendern();
 void handleWebWlanSave();
-
-const char WEBUI_HTML[] PROGMEM = R"rawhtml(
-<!DOCTYPE html><html lang="de"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WetterCubePlus</title>
-<style>
-  *{box-sizing:border-box}
-  body{font-family:Arial,sans-serif;background:#0d1117;color:#e6edf3;margin:0;padding:16px}
-  h1{color:#58a6ff;margin-bottom:4px}
-  .ver{color:#8b949e;font-size:.85em;margin-bottom:20px}
-  .card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:16px}
-  h2{color:#e6edf3;font-size:1em;margin:0 0 12px}
-  label{display:block;color:#8b949e;font-size:.85em;margin-top:10px}
-  input[type=text],input[type=number],select{width:100%;padding:7px;border-radius:4px;
-    border:1px solid #30363d;background:#21262d;color:#e6edf3;margin-top:3px}
-  input[type=range]{width:100%;margin-top:6px}
-  .row{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
-  .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
-  .toggle input{opacity:0;width:0;height:0}
-  .slider{position:absolute;inset:0;background:#30363d;border-radius:12px;cursor:pointer;transition:.3s}
-  .slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;bottom:3px;
-    background:#fff;border-radius:50%;transition:.3s}
-  input:checked+.slider{background:#238636}
-  input:checked+.slider:before{transform:translateX(20px)}
-  .btn{display:inline-block;padding:9px 16px;border:none;border-radius:4px;cursor:pointer;font-size:.9em;margin-top:6px}
-  .btn-gruen{background:#238636;color:#fff}.btn-gruen:hover{background:#2ea043}
-  .btn-blau{background:#1f6feb;color:#fff}.btn-blau:hover{background:#388bfd}
-  .btn-rot{background:#b91c1c;color:#fff}.btn-rot:hover{background:#dc2626}
-  .status{font-size:.85em;color:#8b949e;margin-top:6px}
-  .hint{font-size:.78em;color:#8b949e;margin-top:3px}
-</style></head><body>
-<h1>WetterCubePlus</h1>
-<div class="ver">Firmware: %VERSION% &nbsp;|&nbsp; IP: %IP% &nbsp;|&nbsp; <a href="http://wettercubeplus.local" style="color:#58a6ff">wettercubeplus.local</a></div>
-
-<form action="/speichern" method="post">
-
-<div class="card">
-  <h2>Standort &amp; Region</h2>
-  <label>Stadt (ohne Umlaute: Munchen, Koeln…)</label>
-  <input type="text" name="location" value="%LOCATION%">
-  <label>DWD Pollenregion</label>
-  <select name="dwd_region">%DWD_REGIONEN%</select>
-</div>
-
-<div class="card">
-  <h2>Warnungen</h2>
-  <div class="row"><span>Regenwarnung</span>
-    <label class="toggle"><input type="checkbox" name="regen_warn" %RW%><span class="slider"></span></label></div>
-  <div class="row"><span>Pollenwarnung</span>
-    <label class="toggle"><input type="checkbox" name="pollen_warn" %PW%><span class="slider"></span></label></div>
-  <div class="row"><span>DWD-Wetterwarnungen</span>
-    <label class="toggle"><input type="checkbox" name="warn_region" %WR%><span class="slider"></span></label></div>
-  <label>Pollen-Warnschwelle</label>
-  <select name="pol_schw">
-    <option value="0" %PS0%>Gering</option>
-    <option value="1" %PS1%>Mittel</option>
-    <option value="2" %PS2%>Hoch (Standard)</option>
-    <option value="3" %PS3%>Stark</option>
-  </select>
-</div>
-
-<div class="card">
-  <h2>Display</h2>
-  <label>Helligkeit: <span id="bv">%BRIGHT%</span>%%</label>
-  <input type="range" name="brightness" min="10" max="100" value="%BRIGHT%"
-    oninput="document.getElementById('bv').textContent=this.value">
-  <label>Dimm-Timeout</label>
-  <select name="dim_time">
-    <option value="0" %DT0%>Aus</option>
-    <option value="1" %DT1%>1 Minute</option>
-    <option value="3" %DT3%>3 Minuten (Standard)</option>
-    <option value="5" %DT5%>5 Minuten</option>
-    <option value="10" %DT10%>10 Minuten</option>
-  </select>
-</div>
-
-<button type="submit" class="btn btn-gruen">Einstellungen speichern</button>
-</form>
-
-<div class="card">
-  <h2>WLAN-Zugangsdaten ändern</h2>
-  <p class="hint">Ändere SSID/Passwort ohne neu zu flashen. Gerät startet danach neu.</p>
-  <a href="/wlan" class="btn btn-blau">WLAN ändern</a>
-</div>
-
-<div class="card">
-  <h2>Firmware-Update</h2>
-  <div class="status">Aktuelle Version: %VERSION%</div>
-  <button type="button" class="btn btn-blau" onclick="checkOta()">Auf Updates prüfen</button>
-  <div id="ota_status" class="status"></div>
-</div>
-
-<script>
-function checkOta(){
-  document.getElementById('ota_status').textContent='Prüfe…';
-  fetch('/ota_check').then(r=>r.json()).then(d=>{
-    if(d.update_available){
-      document.getElementById('ota_status').innerHTML=
-        'Neue Version: <b>'+d.latest+'</b> &nbsp;'+
-        '<button class="btn btn-rot" onclick="doUpdate()">Jetzt installieren</button>';
-    } else {
-      document.getElementById('ota_status').textContent='Bereits aktuell ('+d.latest+')';
-    }
-  }).catch(()=>document.getElementById('ota_status').textContent='Fehler beim Prüfen');
-}
-function doUpdate(){
-  document.getElementById('ota_status').textContent='Update läuft… bitte warten (ca. 30 Sek.)';
-  fetch('/ota_update',{method:'POST'}).then(r=>r.text()).then(t=>{
-    document.getElementById('ota_status').textContent=t;
-  });
-}
-</script>
-</body></html>
-)rawhtml";
-
-const char WLAN_HTML[] PROGMEM = R"rawhtml(
-<!DOCTYPE html><html lang="de"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WLAN ändern</title>
-<style>
-  body{font-family:Arial;background:#0d1117;color:#e6edf3;padding:20px}
-  .card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:20px;max-width:420px;margin:auto}
-  h1{color:#58a6ff;font-size:1.3em}
-  label{display:block;color:#8b949e;font-size:.85em;margin-top:10px}
-  input,select{width:100%;padding:8px;border-radius:4px;border:1px solid #30363d;
-    background:#21262d;color:#e6edf3;box-sizing:border-box;margin-top:3px}
-  .btn{width:100%;padding:10px;background:#238636;color:#fff;border:none;border-radius:4px;font-size:1em;cursor:pointer;margin-top:16px}
-  .btn:hover{background:#2ea043}
-  a{color:#58a6ff}
-</style></head><body>
-<div class="card">
-  <h1>WLAN-Zugangsdaten ändern</h1>
-  <form action="/wlan_speichern" method="post">
-    <label>Netzwerk</label>
-    <select name="ssid">%NETZWERKE%</select>
-    <label>Passwort</label>
-    <input type="password" name="pass">
-    <button type="submit" class="btn">Speichern &amp; Neustart</button>
-  </form>
-  <br><a href="/">← Zurück</a>
-</div></body></html>
-)rawhtml";
 
 void handleWebRoot() {
   String html = FPSTR(WEBUI_HTML);
