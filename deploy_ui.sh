@@ -1,20 +1,30 @@
 #!/bin/bash
-# Kopiert SquareLine Studio Export ins Projektverzeichnis
-# SLS Exportziel: sls_export/
-SRC="$(dirname "$0")/sls_export"
+# Kopiert PicoPixel-Export (src/ui/) ins Projektverzeichnis
+# PicoPixel Exportziel: src/ui/
+SRC="$(dirname "$0")/src/ui"
 DST="$(dirname "$0")"
+
 if [ ! -d "$SRC" ]; then
-  echo "FEHLER: sls_export/ nicht gefunden."
-  echo "SLS Export-Pfad auf: $(realpath "$SRC") setzen."
+  echo "FEHLER: src/ui/ nicht gefunden."
+  echo "PicoPixel Export-Pfad auf: $(realpath "$SRC") setzen."
   exit 1
 fi
-cp "$SRC"/ui*.c "$DST/" 2>/dev/null && echo "ui*.c kopiert"
-cp "$SRC"/ui*.h "$DST/" 2>/dev/null && echo "ui*.h kopiert"
-# Nach dem Kopieren: LV_COLOR_16_SWAP-Block in ui.c auskommentieren
-for f in "$DST"/ui.c "$DST"/ui_Screen*.c; do
-  [ -f "$f" ] || continue
-  sed -i '' 's|#if LV_COLOR_16_SWAP != 0|//#if LV_COLOR_16_SWAP != 0|g' "$f"
-  sed -i '' 's|#error "LV_COLOR_16_SWAP|//#error "LV_COLOR_16_SWAP|g' "$f"
-  sed -i '' 's|#endif // LV_COLOR_16_SWAP != 0|//#endif // LV_COLOR_16_SWAP != 0|g' "$f"
-done
-echo "Fertig. LV_COLOR_16_SWAP-Fehler deaktiviert."
+
+# Zielordner anlegen
+mkdir -p "$DST/ui/fonts"
+
+# Alle UI-Dateien kopieren
+cp "$SRC"/*.c  "$DST/ui/" 2>/dev/null && echo "*.c kopiert"
+cp "$SRC"/*.h  "$DST/ui/" 2>/dev/null && echo "*.h kopiert"
+cp "$SRC"/fonts/*.c "$DST/ui/fonts/" 2>/dev/null && echo "fonts/*.c kopiert"
+cp "$SRC"/fonts/*.h "$DST/ui/fonts/" 2>/dev/null && echo "fonts/*.h kopiert"
+
+# Images-Unterordner wenn vorhanden
+if [ -d "$SRC/images" ]; then
+  mkdir -p "$DST/ui/images"
+  cp "$SRC/images"/* "$DST/ui/images/" 2>/dev/null && echo "images/* kopiert"
+fi
+
+echo ""
+echo "Fertig. PicoPixel UI in ui/ bereit."
+echo "Hinweis: Kein LV_COLOR_16_SWAP-Patch nötig (PicoPixel generiert keinen solchen Block)."

@@ -37,6 +37,7 @@
 #define LGFX_USE_V1
 #include <LovyanGFX.hpp>
 #include <lvgl.h>
+#include "ui/ui.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
@@ -964,55 +965,35 @@ void fetchOpenMeteoPollen() {
 }
 
 // ============================================================
-//  LVGL-Placeholder-UI (wird durch echte UI ersetzt)
+//  UI-Update (PicoPixel-Widgets befüllen)
 // ============================================================
-// Einfacher Status-Screen bis SquareLine-Studio UI eingebunden wird
-static lv_obj_t* scr_main   = nullptr;
-static lv_obj_t* lbl_temp   = nullptr;
-static lv_obj_t* lbl_info   = nullptr;
-static lv_obj_t* lbl_status = nullptr;
-
-void erstellePlaceholderUI() {
-  scr_main = lv_scr_act();
-  lv_obj_set_style_bg_color(scr_main, lv_color_hex(0x0d1117), 0);
-
-  lbl_temp = lv_label_create(scr_main);
-  lv_label_set_text(lbl_temp, "--°C");
-  lv_obj_set_style_text_font(lbl_temp, &lv_font_montserrat_48, 0);
-  lv_obj_set_style_text_color(lbl_temp, lv_color_hex(0xFFCC00), 0);
-  lv_obj_align(lbl_temp, LV_ALIGN_CENTER, 0, -30);
-
-  lbl_info = lv_label_create(scr_main);
-  lv_label_set_text(lbl_info, "Lade Wetterdaten…");
-  lv_obj_set_style_text_font(lbl_info, &lv_font_montserrat_16, 0);
-  lv_obj_set_style_text_color(lbl_info, lv_color_hex(0x8b949e), 0);
-  lv_obj_align(lbl_info, LV_ALIGN_CENTER, 0, 30);
-
-  lbl_status = lv_label_create(scr_main);
-  lv_label_set_text(lbl_status, "WetterCubePlus v" FIRMWARE_VERSION);
-  lv_obj_set_style_text_font(lbl_status, &lv_font_montserrat_14, 0);
-  lv_obj_set_style_text_color(lbl_status, lv_color_hex(0x30363d), 0);
-  lv_obj_align(lbl_status, LV_ALIGN_BOTTOM_MID, 0, -10);
-}
-
 void aktualisiereUI() {
-  if (lbl_temp == nullptr) return;
-  char buf[32];
-  snprintf(buf, sizeof(buf), "%.1f°C", wetter.temp);
-  lv_label_set_text(lbl_temp, buf);
-  lv_obj_set_style_text_color(lbl_temp, tempColor(wetter.temp), 0);
-
-  String info = cfg.location + "  |  Feuchte: " + String((int)wetter.humidity) + "%";
-  info += "  |  Wind: " + String((int)wetter.wind_speed) + " km/h";
-  lv_label_set_text(lbl_info, info.c_str());
+  // Hauptscreen – Uhrzeit
+  if (objects.labeltime != nullptr) {
+    struct tm ti;
+    if (getLocalTime(&ti)) {
+      char buf[6];
+      strftime(buf, sizeof(buf), "%H:%M", &ti);
+      lv_label_set_text(objects.labeltime, buf);
+    }
+  }
+  // TODO: weitere Widgets sobald in PicoPixel hinzugefügt
+  // (Temperatur, Pollen, Warnungen – Widget-Namen aus screens.h)
 }
 
 // ============================================================
-//  Boot-Screen
+//  Boot-Screen (PicoPixel screenboot)
 // ============================================================
 void zeigeBootScreen(const String& msg) {
-  if (lbl_status != nullptr) lv_label_set_text(lbl_status, msg.c_str());
+  if (objects.labelstatus != nullptr)
+    lv_label_set_text(objects.labelstatus, msg.c_str());
   lv_timer_handler(); delay(10);
+}
+
+void setzeBootFortschritt(int prozent) {
+  if (objects.barwifi != nullptr)
+    lv_bar_set_value(objects.barwifi, prozent, LV_ANIM_ON);
+  lv_timer_handler();
 }
 
 // ============================================================
@@ -1062,17 +1043,19 @@ void setup() {
   indev_drv.read_cb = touch_read;
   lv_indev_drv_register(&indev_drv);
 
-  erstellePlaceholderUI();
+  // PicoPixel UI initialisieren – startet auf screenboot
+  ui_init();
   lv_timer_handler();
 
   // WiFi verbinden oder Portal starten
   if (cfg.ssid.isEmpty()) {
-    zeigeBootScreen("Kein WLAN konfiguriert – Portal startet…");
+    zeigeBootScreen("Kein WLAN – Portal startet…");
     startePortal();
     return;
   }
 
   zeigeBootScreen("Verbinde mit " + cfg.ssid + "…");
+  setzeBootFortschritt(10);
   WiFi.mode(WIFI_STA);
   WiFi.begin(cfg.ssid.c_str(), cfg.pass.c_str());
   uint32_t t0 = millis();
@@ -1082,51 +1065,53 @@ void setup() {
   }
 
   if (WiFi.status() != WL_CONNECTED) {
-    zeigeBootScreen("WLAN fehlgeschlagen – Portal startet…");
+    zeigeBootScreen("WLAN fehlgeschlagen – Portal…");
     delay(500);
     startePortal();
     return;
   }
 
   wifi_verbunden = true;
-  String ip = WiFi.localIP().toString();
-  zeigeBootScreen("Verbunden! IP: " + ip);
-  Serial.println("[WiFi] Verbunden: " + ip);
+  setzeBootFortschritt(30);
+  zeigeBootScreen("Verbunden: " + WiFi.localIP().toString());
+  Serial.println("[WiFi] Verbunden: " + WiFi.localIP().toString());
 
-  // mDNS
   if (MDNS.begin(MDNS_NAME)) {
     MDNS.addService("http", "tcp", 80);
     Serial.println("[mDNS] wettercubeplus.local aktiv");
   }
 
-  // Zeitzone
   configTzTime("CET-1CEST,M3.5.0,M10.5.0/3", "europe.pool.ntp.org");
   zeigeBootScreen("Synchronisiere Zeit…");
-  {
-    struct tm ti; int retries = 0;
-    while (!getLocalTime(&ti) && retries++ < 20) { delay(500); lv_timer_handler(); }
-  }
+  setzeBootFortschritt(45);
+  { struct tm ti; int r = 0; while (!getLocalTime(&ti) && r++ < 20) { delay(500); lv_timer_handler(); } }
 
-  // WebUI starten
   starteWebUI();
+  setzeBootFortschritt(55);
 
-  // Geocoding falls kein Koordinaten
   if (cfg.lat == 0.0f && !cfg.location.isEmpty()) {
-    zeigeBootScreen("Bestimme Koordinaten für " + cfg.location + "…");
-    if (geocodeLocation(cfg.location)) {
-      speichereCfg();
-      Serial.printf("[Geocoding] %.4f, %.4f\n", cfg.lat, cfg.lon);
-    }
+    zeigeBootScreen("Koordinaten für " + cfg.location + "…");
+    if (geocodeLocation(cfg.location)) speichereCfg();
+    setzeBootFortschritt(65);
   }
 
-  // Erste Datenabrufe
   zeigeBootScreen("Lade Wetterdaten…");
+  setzeBootFortschritt(70);
   fetchWetter();
+  setzeBootFortschritt(80);
   zeigeBootScreen("Lade Pollenflug…");
   fetchDwdPollen();
   fetchOpenMeteoPollen();
-  zeigeBootScreen("Lade DWD-Warnungen…");
+  setzeBootFortschritt(90);
+  zeigeBootScreen("Lade Warnungen…");
   fetchDwdWarnungen();
+  setzeBootFortschritt(100);
+
+  // Kurz warten damit 100% sichtbar ist, dann Hauptscreen laden
+  delay(400);
+  // LVGL-Animation-Timing: 600ms lv_timer_handler() vor weiteren Calls (Lessons Learned!)
+  { unsigned long e = millis() + 600; while (millis() < e) { lv_timer_handler(); delay(5); } }
+  loadScreen(SCREEN_ID_SCREEN_1);
   aktualisiereUI();
 
   letztesTouchZeit    = millis();
@@ -1143,6 +1128,7 @@ void setup() {
 // ============================================================
 void loop() {
   lv_timer_handler();
+  ui_tick();
 
   // Portal-Modus: DNS + WebServer bedienen
   if (portal_modus) {
