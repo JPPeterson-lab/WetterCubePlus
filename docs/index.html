@@ -79,32 +79,48 @@
 </head>
 <body>
 <div class="container">
-  <h1>WetterCubePlus <span class="badge">Beta</span></h1>
-  <p class="subtitle">ESP32-S3 Wetterdisplay mit Touch, DWD-Warnungen &amp; Pollenflug</p>
+  <h1>WetterCubePlus <span class="badge">v0.2.0-beta</span></h1>
+  <p class="subtitle">ESP32-S3 Wetterdisplay mit Touch, DWD-Warnungen, Pollenflug &amp; Warnkarte</p>
 
   <div class="card">
     <h2>Firmware installieren</h2>
-    <p>Verbinde den ESP32-S3 per USB mit dem Computer. Chrome oder Edge Browser erforderlich.</p>
+    <p>Verbinde den ESP32-S3 per USB-C mit dem Computer. Chrome oder Edge Browser erforderlich.</p>
     <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
   </div>
 
   <div class="card">
-    <h2>Nach der Installation</h2>
+    <h2>Erstkonfiguration</h2>
     <ol class="steps">
-      <li>ESP32-S3 startet im Einrichtungsmodus</li>
-      <li>WLAN-Netzwerk <strong>„WetterCubePlus-Setup"</strong> verbinden</li>
-      <li>Browser öffnet automatisch das Einrichtungsportal (oder <strong>192.168.4.1</strong> aufrufen)</li>
-      <li>WLAN-Daten, Standort und DWD-Region eingeben &amp; speichern</li>
-      <li>Gerät verbindet sich und ist unter <a href="http://wettercubeplus.local">wettercubeplus.local</a> erreichbar</li>
+      <li>Gerät startet – Touch-Kalibrierung: nacheinander die <strong>4 Kreuzmarkierungen</strong> antippen</li>
+      <li>WLAN-Hotspot <strong>„WetterCubePlus-Setup"</strong> mit Smartphone oder PC verbinden</li>
+      <li>Einrichtungsportal öffnet sich automatisch (alternativ: <strong>192.168.4.1</strong> im Browser)</li>
+      <li>WLAN-Zugangsdaten eingeben</li>
+      <li>Standort eingeben – <strong>ohne Umlaute</strong>: z.B. <code>Munchen</code>, <code>Koeln</code>, <code>Dusseldorf</code></li>
+      <li>DWD-Pollenregion für dein Bundesland wählen</li>
+      <li>„Speichern &amp; Neustart" – Gerät verbindet sich mit dem WLAN</li>
+      <li>Alle weiteren Einstellungen (Helligkeit, Dimm-Timeout, Warnungen) unter <a href="http://wettercubeplus.local">wettercubeplus.local</a></li>
     </ol>
+  </div>
+
+  <div class="card">
+    <h2>Touch neu kalibrieren</h2>
+    <p>Finger beim Booten auf das Display halten bis „Neukalibrierung" erscheint, dann loslassen.</p>
+  </div>
+
+  <div class="card">
+    <h2>Features</h2>
+    <p>
+      Wetter · 4-Stunden-Vorhersage · Pollenflug (8 Allergene) · Regenwarnung · Pollenwarnung ·
+      DWD Wetterwarnungen · DWD Warnkarte · WebUI · OTA-Update · Captive Portal
+    </p>
   </div>
 
   <div class="card">
     <h2>Informationen</h2>
     <p>
-      <strong>Hardware:</strong> ESP32-S3 N16R8 · ILI9488 3.5" 480×320 Touch-Display<br>
+      <strong>Hardware:</strong> ESP32-S3 N16R8 · ILI9488 3,5&quot; 480×320 Touch-Display<br>
       <strong>Datenquellen:</strong> Open-Meteo · DWD Pollenflug · DWD Wetterwarnungen<br>
-      <strong>GitHub:</strong> <a href="https://github.com/JPPeterson-lab/WetterCubePlus" target="_blank">JPPeterson-lab/WetterCubePlus</a>
+      <strong>Quellcode:</strong> <a href="https://github.com/JPPeterson-lab/WetterCubePlus" target="_blank">JPPeterson-lab/WetterCubePlus</a>
     </p>
   </div>
 

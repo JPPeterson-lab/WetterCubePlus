@@ -14,6 +14,7 @@ extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea4;
 extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea5;
 extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea6;
 extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea7;
+extern const lv_font_t font_dbb05fdd34e280e180082b1d61d53d7d;
 
 /* Get a custom font by name, returns NULL if not found */
 const lv_font_t* ui_get_font_by_name(const char* name);

@@ -118,6 +118,7 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
   <label>Dimm-Timeout</label>
   <select name="dim_time">
     <option value="0" %DT0%>Aus</option>
+    <option value="-1" %DTT%>30 Sekunden (Test)</option>
     <option value="1" %DT1%>1 Minute</option>
     <option value="3" %DT3%>3 Minuten (Standard)</option>
     <option value="5" %DT5%>5 Minuten</option>
