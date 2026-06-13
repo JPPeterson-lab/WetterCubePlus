@@ -1,9 +1,34 @@
 # Entwicklungs-Log
 
-## 2026-06-13 – v0.2.2-beta
+## 2026-06-13 – v0.2.4-beta
 
-### OTA CDN-Redirect-Fix (zweite Iteration)
-`HTTPC_FORCE_FOLLOW_REDIRECTS` folgt Cross-Host-Redirects prinzipiell, aber `httpUpdate` hat intern einen eigenen HTTPClient der die Redirect-Policy nicht übernimmt — daher „connection refused" auf dem CDN. Lösung: Redirect manuell auflösen mit einem separaten HTTPClient (Follow Redirects deaktiviert, `GET` → prüfe 301/302/307/308, lese `Location`-Header). Den aufgelösten CDN-URL dann direkt an `httpUpdate.update()` übergeben. `httpUpdate` selbst sieht nur den direkten CDN-Link und braucht keine Redirects mehr zu folgen.
+### OTA – Endlösung (dritte Iteration)
+
+**Problem**: ESP32-S3 kann sich nicht mit `github.com:443` verbinden — rc=-1 in unter 100 ms, also kein Timeout sondern sofortige Ablehnung. `raw.githubusercontent.com` (für version.json) funktioniert dagegen problemlos.
+
+**Ursache**: `github.com` nutzt eine TLS-Konfiguration (Cipher Suites / Zertifikatskette) die mbedTLS auf dem ESP32 nicht verarbeiten kann. `githubusercontent.com` und `github.io` sind davon nicht betroffen.
+
+**Zweites Problem**: In der v0.2.2/0.2.3-Implementierung wurde `server.send()` VOR dem OTA-Download aufgerufen. Das hält die WebServer-TCP-Verbindung offen und konkurriert mit dem anschließenden `WiFiClientSecure`-Socket — führte ebenfalls zu rc=-1.
+
+**Lösung**:
+1. Firmware-Download-URL auf **GitHub Pages** umgestellt: `https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin` — feste URL, kein Redirect, ESP32-kompatibles TLS
+2. `httpUpdate`-Library komplett entfernt, ersetzt durch `HTTPClient` + `Update.writeStream()` direkt (identisch mit WetterCube-Implementierung die funktioniert)
+3. `server.send()` erst NACH erfolgreichem Download — keine offene WebServer-Verbindung während des Downloads
+4. Version in version.json bleibt bei `0.2.4-beta`, Firmware in `docs/firmware/firmware.bin` wird bei jedem Release überschrieben
+
+**Workflow für künftige Releases**:
+- FIRMWARE_VERSION bumpen
+- version.json bumpen  
+- Arduino IDE: Sketch → Exportiere kompiliertes Binary
+- `docs/firmware/firmware.bin` (+ bootloader/partitions/boot_app0) ersetzen
+- Pushen — GitHub Pages deployed automatisch, OTA funktioniert nach ~1 Minute
+
+---
+
+## 2026-06-13 – v0.2.2-beta / v0.2.3-beta
+
+### OTA CDN-Redirect-Fix (zweite Iteration, nicht erfolgreich)
+Versuch: Redirect manuell auflösen mit separatem HTTPClient, dann direkten CDN-URL an `httpUpdate` übergeben. Scheiterte weil bereits der erste GET auf github.com (rc=-1) fehlschlug — nicht der Redirect war das Problem sondern github.com selbst.
 
 ---
 

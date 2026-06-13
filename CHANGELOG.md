@@ -1,9 +1,25 @@
 # Changelog
 
+## v0.2.4-beta (2026-06-13)
+
+### Fixes
+- OTA: Firmware-Download jetzt über GitHub Pages (`jppeterson-lab.github.io`) statt GitHub Releases – keine Redirects, zuverlässige HTTPS-Verbindung vom ESP32
+- OTA: `server.send()` erst nach erfolgreichem Download (wie WetterCube) – verhindert Netzwerkkonflikt durch offene WebServer-Verbindung
+- OTA: `httpUpdate`-Library komplett entfernt, ersetzt durch direktes `HTTPClient` + `Update.writeStream()`
+
+---
+
+## v0.2.3-beta (2026-06-13)
+
+### Intern
+- Zwischenversion für OTA-Tests (selbe Firmware wie v0.2.2-beta)
+
+---
+
 ## v0.2.2-beta (2026-06-13)
 
 ### Fixes
-- OTA: GitHub CDN-Redirect wird jetzt manuell aufgelöst (HTTPClient → Location-Header → direkter CDN-URL an httpUpdate) – `HTTPC_DISABLE_FOLLOW_REDIRECTS` verhindert Cross-Host-Redirects durch httpUpdate
+- OTA: Erster Versuch manueller CDN-Redirect-Auflösung (nicht erfolgreich – github.com selbst war vom ESP32 nicht erreichbar)
 
 ---
 
