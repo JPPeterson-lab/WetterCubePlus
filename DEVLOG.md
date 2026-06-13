@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-06-13 – v0.2.7-beta
+
+### Boot-Screen Fix
+
+**Problem 1**: Boot-Screen war nie sichtbar. `ui_init()` (PicoPixel-generiert) erstellt alle Screens in dieser Reihenfolge: `screen_1`, `screenforecastpollen`, `screenwarnkarte1`, `screenboot`, `screenwarnung`, `screenwarnungpollen`, `screenforecastwetter` — der zuletzt erstellte Screen ist aber NICHT automatisch der aktive. LVGL setzt den ersten erstellten Screen als aktiven Display: `screen_1`. Fix: `lv_scr_load(objects.screenboot)` explizit nach `ui_init()` aufrufen.
+
+**Problem 2**: `lv_timer_handler()` einmalig aufgerufen reicht nicht um ein 480×320-Display vollständig zu rendern. Fix: `lvgl_flush(ms)` — ruft `lv_timer_handler()` in einer Schleife für mindestens 80ms auf.
+
+**Problem 3**: `aktualisiereUI()` wurde nach `loadScreen(SCREEN_ID_SCREEN_1)` aufgerufen → Hauptscreen erschien kurz leer. Fix: `aktualisiereUI()` vorher aufrufen, dann erst Screen laden.
+
+**Problem 4**: Kästchen-Zeichen `□` nach Boot-Meldungen. Ursache: `…` (U+2026, Ellipsis) ist nicht in der PicoPixel-eingebetteten Bitmap-Font enthalten. Fix: durch drei normale Punkte `...` ersetzt.
+
+---
+
 ## 2026-06-13 – v0.2.4-beta
 
 ### OTA – Endlösung (dritte Iteration)

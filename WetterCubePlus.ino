@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.6-beta"
+#define FIRMWARE_VERSION "0.2.7-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1339,9 +1339,10 @@ void setup() {
   // PNG-Decoder registrieren (muss vor ui_init sein, sonst lv_img_set_src macht nichts)
   lv_png_init();
 
-  // PicoPixel UI initialisieren – startet auf screenboot
+  // PicoPixel UI initialisieren, dann explizit screenboot laden
   ui_init();
-  lv_timer_handler();
+  lv_scr_load(objects.screenboot);
+  lvgl_flush();
 
   // Helles Theme: weißer Hintergrund + dunkle Schrift auf allen normalen Screens
   // (Warn-Screens behalten ihre Farben; screenboot bleibt schwarz)
@@ -1387,7 +1388,7 @@ void setup() {
     return;
   }
 
-  zeigeBootScreen("Verbinde mit " + cfg.ssid + "…");
+  zeigeBootScreen("Verbinde mit " + cfg.ssid + "...");
   setzeBootFortschritt(10);
   WiFi.mode(WIFI_STA);
   WiFi.begin(cfg.ssid.c_str(), cfg.pass.c_str());
@@ -1414,7 +1415,7 @@ void setup() {
   }
 
   configTzTime("CET-1CEST,M3.5.0,M10.5.0/3", "europe.pool.ntp.org");
-  zeigeBootScreen("Synchronisiere Zeit…");
+  zeigeBootScreen("Synchronisiere Zeit...");
   setzeBootFortschritt(45);
   { struct tm ti; int r = 0; while (!getLocalTime(&ti) && r++ < 20) { delay(500); lv_timer_handler(); } }
 
@@ -1422,23 +1423,23 @@ void setup() {
   setzeBootFortschritt(55);
 
   if (cfg.lat == 0.0f && !cfg.location.isEmpty()) {
-    zeigeBootScreen("Koordinaten für " + cfg.location + "…");
+    zeigeBootScreen("Koordinaten für " + cfg.location + "...");
     if (geocodeLocation(cfg.location)) speichereCfg();
     setzeBootFortschritt(65);
   }
 
-  zeigeBootScreen("Lade Wetterdaten…");
+  zeigeBootScreen("Lade Wetterdaten...");
   setzeBootFortschritt(70);
   fetchWetter();
   setzeBootFortschritt(80);
-  zeigeBootScreen("Lade Pollenflug…");
+  zeigeBootScreen("Lade Pollenflug...");
   fetchDwdPollen();
   fetchOpenMeteoPollen();
   setzeBootFortschritt(90);
-  zeigeBootScreen("Lade Warnungen…");
+  zeigeBootScreen("Lade Warnungen...");
   fetchDwdWarnungen();
   setzeBootFortschritt(95);
-  zeigeBootScreen("Lade Warnkarte…");
+  zeigeBootScreen("Lade Warnkarte...");
   fetchDwdWarnkarte();
   letztesWarnkarteUpdate = millis();
   setzeBootFortschritt(100);

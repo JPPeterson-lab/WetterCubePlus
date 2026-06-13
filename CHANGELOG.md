@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.2.7-beta (2026-06-13)
+
+### Fixes
+- Boot-Screen jetzt sichtbar: `lv_scr_load(objects.screenboot)` explizit nach `ui_init()` – PicoPixel lädt `screen_1` als Standard, nicht `screenboot`
+- Boot-Screen bleibt bis alle Daten geladen sind: `aktualisiereUI()` vor `loadScreen()`
+- Boot-Screen Rendering: `lvgl_flush()` (80ms Loop) statt einmaligem `lv_timer_handler()` – Display wird vollständig gezeichnet
+- Ellipsis-Zeichen `…` in Boot-Meldungen durch `...` ersetzt – war als Kästchen dargestellt (Zeichen nicht in PicoPixel-Font enthalten)
+- Web-Installer Versionsnummer aktualisiert
+
+---
+
 ## v0.2.4-beta (2026-06-13)
 
 ### Fixes
