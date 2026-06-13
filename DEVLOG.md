@@ -1,5 +1,12 @@
 # Entwicklungs-Log
 
+## 2026-06-13 – v0.2.2-beta
+
+### OTA CDN-Redirect-Fix (zweite Iteration)
+`HTTPC_FORCE_FOLLOW_REDIRECTS` folgt Cross-Host-Redirects prinzipiell, aber `httpUpdate` hat intern einen eigenen HTTPClient der die Redirect-Policy nicht übernimmt — daher „connection refused" auf dem CDN. Lösung: Redirect manuell auflösen mit einem separaten HTTPClient (Follow Redirects deaktiviert, `GET` → prüfe 301/302/307/308, lese `Location`-Header). Den aufgelösten CDN-URL dann direkt an `httpUpdate.update()` übergeben. `httpUpdate` selbst sieht nur den direkten CDN-Link und braucht keine Redirects mehr zu folgen.
+
+---
+
 ## 2026-06-13 – v0.2.1-beta
 
 ### Home-Button

@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.1-beta"
+#define FIRMWARE_VERSION "0.2.2-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_BASE_URL "https://github.com/JPPeterson-lab/WetterCubePlus/releases/download/"
 #define MDNS_NAME        "wettercubeplus"
@@ -603,9 +603,27 @@ void handleWebOtaDoUpdate() {
 
   if (binUrl.isEmpty()) { Serial.println("[OTA] Keine URL"); return; }
 
+  // GitHub Releases leiten auf CDN (objects.githubusercontent.com) um.
+  // httpUpdate kann Cross-Host-Redirects nicht folgen → Redirect manuell auflösen.
   Serial.printf("[OTA] Lade: %s\n", binUrl.c_str());
+  {
+    WiFiClientSecure scR; scR.setInsecure();
+    HTTPClient httpR;
+    httpR.begin(scR, binUrl);
+    httpR.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
+    int rc = httpR.GET();
+    if (rc == 301 || rc == 302 || rc == 307 || rc == 308) {
+      String loc = httpR.getLocation();
+      if (loc.length() > 0) {
+        binUrl = loc;
+        Serial.printf("[OTA] Redirect → %s\n", binUrl.c_str());
+      }
+    }
+    httpR.end();
+  }
+
   WiFiClientSecure sc2; sc2.setInsecure();
-  httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
+  httpUpdate.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
   t_httpUpdate_return ret = httpUpdate.update(sc2, binUrl);
   if (ret != HTTP_UPDATE_OK) {
     Serial.printf("[OTA] Fehler: %s\n", httpUpdate.getLastErrorString().c_str());

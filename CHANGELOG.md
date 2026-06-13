@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.2-beta (2026-06-13)
+
+### Fixes
+- OTA: GitHub CDN-Redirect wird jetzt manuell aufgelöst (HTTPClient → Location-Header → direkter CDN-URL an httpUpdate) – `HTTPC_DISABLE_FOLLOW_REDIRECTS` verhindert Cross-Host-Redirects durch httpUpdate
+
+---
+
 ## v0.2.1-beta (2026-06-13)
 
 ### Neu
