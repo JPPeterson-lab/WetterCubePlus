@@ -2,6 +2,8 @@
 
 ESP32-S3 Wetterdisplay mit Touch, DWD-Warnungen, Pollenflug und Web-Interface.
 
+> **⚠️ Beta-Version:** Dieses Projekt befindet sich noch in aktiver Entwicklung. Fehler und Breaking Changes sind möglich. / This project is still in active development. Bugs and breaking changes may occur.
+
 **[→ Web-Installer](https://jppeterson-lab.github.io/WetterCubePlus/)**
 
 ## Hardware
