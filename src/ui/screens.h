@@ -10,6 +10,7 @@ extern "C" {
 
 typedef struct _objects_t {
     lv_obj_t *screen_1;
+    lv_obj_t *lagerscreen;
     lv_obj_t *screenforecastpollen;
     lv_obj_t *screenwarnkarte1;
     lv_obj_t *screenboot;
@@ -46,6 +47,7 @@ typedef struct _objects_t {
     lv_obj_t *labelerleday2;
     lv_obj_t *labelbuttonforward;
     lv_obj_t *labelbuttonforward_1;
+    lv_obj_t *image_1;
     lv_obj_t *labelescheday2;
     lv_obj_t *labelnameroggen;
     lv_obj_t *labelroggenday1;
@@ -127,17 +129,21 @@ extern objects_t objects;
 
 enum ScreensEnum {
     SCREEN_ID_SCREEN_1 = 1,
-    SCREEN_ID_SCREENFORECASTPOLLEN = 2,
-    SCREEN_ID_SCREENWARNKARTE1 = 3,
-    SCREEN_ID_SCREENBOOT = 4,
-    SCREEN_ID_SCREENWARNUNG = 5,
-    SCREEN_ID_SCREENWARNUNGPOLLEN = 6,
-    SCREEN_ID_SCREENFORECASTWETTER = 7,
+    SCREEN_ID_LAGERSCREEN = 2,
+    SCREEN_ID_SCREENFORECASTPOLLEN = 3,
+    SCREEN_ID_SCREENWARNKARTE1 = 4,
+    SCREEN_ID_SCREENBOOT = 5,
+    SCREEN_ID_SCREENWARNUNG = 6,
+    SCREEN_ID_SCREENWARNUNGPOLLEN = 7,
+    SCREEN_ID_SCREENFORECASTWETTER = 8,
 };
 
 void create_screen_screen_1();
 void tick_screen_screen_1();
 void delete_screen_screen_1();
+void create_screen_lagerscreen();
+void tick_screen_lagerscreen();
+void delete_screen_lagerscreen();
 void create_screen_screenforecastpollen();
 void tick_screen_screenforecastpollen();
 void delete_screen_screenforecastpollen();

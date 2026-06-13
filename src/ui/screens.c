@@ -240,6 +240,33 @@ void tick_screen_screen_1() {
 }
 
 
+void create_screen_lagerscreen() {
+    lv_obj_t *obj = lv_obj_create(0);
+    objects.lagerscreen = obj;
+    lv_obj_set_pos(obj, 0, 0);
+    lv_obj_set_size(obj, 480, 320);
+    {
+        lv_obj_t *parent_obj = obj;
+        {
+            // image_1
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.image_1 = obj;
+            lv_obj_set_pos(obj, 112, 17);
+            lv_obj_set_size(obj, 83, 83);
+            lv_img_set_src(obj, &overcast);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_zoom(obj, 83);
+            lv_img_set_antialias(obj, true);
+        }
+    }
+
+    tick_screen_lagerscreen();
+}
+
+void tick_screen_lagerscreen() {
+}
+
+
 void create_screen_screenforecastpollen() {
     lv_obj_t *obj = lv_obj_create(0);
     objects.screenforecastpollen = obj;
@@ -1197,7 +1224,7 @@ void create_screen_screenforecastwetter() {
             objects.imageh2 = obj;
             lv_obj_set_pos(obj, 140, 56);
             lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &snow);
+            lv_img_set_src(obj, &thunder);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
             lv_img_set_zoom(obj, 83);
             lv_img_set_antialias(obj, true);
@@ -1285,7 +1312,7 @@ void create_screen_screenforecastwetter() {
             objects.imageh1 = obj;
             lv_obj_set_pos(obj, 17, 55);
             lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &snow);
+            lv_img_set_src(obj, &rain);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
             lv_img_set_zoom(obj, 83);
             lv_img_set_antialias(obj, true);
@@ -1329,7 +1356,7 @@ void create_screen_screenforecastwetter() {
             objects.imageh4 = obj;
             lv_obj_set_pos(obj, 386, 55);
             lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &snow);
+            lv_img_set_src(obj, &overcast);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
             lv_img_set_zoom(obj, 83);
             lv_img_set_antialias(obj, true);
@@ -1358,6 +1385,7 @@ void tick_screen_screenforecastwetter() {
 typedef void (*tick_screen_func_t)();
 tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_screen_1,
+    tick_screen_lagerscreen,
     tick_screen_screenforecastpollen,
     tick_screen_screenwarnkarte1,
     tick_screen_screenboot,
@@ -1396,6 +1424,15 @@ void delete_screen_screen_1() {
     objects.labelhumidity = 0;
     objects.labelpollenforecast3main = 0;
     objects.imagewetter = 0;
+}
+
+void delete_screen_lagerscreen() {
+    if (objects.lagerscreen != NULL) {
+        pp_anim_stop_timelines_for_deleted_tree(objects.lagerscreen);
+        lv_obj_del(objects.lagerscreen);
+    }
+    objects.lagerscreen = 0;
+    objects.image_1 = 0;
 }
 
 void delete_screen_screenforecastpollen() {
@@ -1537,6 +1574,7 @@ void delete_screen_screenforecastwetter() {
 typedef void (*delete_screen_func_t)();
 delete_screen_func_t delete_screen_funcs[] = {
     delete_screen_screen_1,
+    delete_screen_lagerscreen,
     delete_screen_screenforecastpollen,
     delete_screen_screenwarnkarte1,
     delete_screen_screenboot,
@@ -1555,6 +1593,7 @@ void create_screens() {
     lv_disp_set_theme(dispp, theme);
 
     create_screen_screen_1();
+    create_screen_lagerscreen();
     create_screen_screenforecastpollen();
     create_screen_screenwarnkarte1();
     create_screen_screenboot();

@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.8-beta (2026-06-13)
+
+### Neu
+- Wetter-Icons: overcast und thunder hinzugefügt (via PicoPixel als 256×256 RGB565A8)
+- `wmoZuImage`: WMO-Codes jetzt mit korrekten Icons (Bewölkung → overcast, Gewitter → thunder)
+- Lagerscreen in PicoPixel als unsichtbarer Asset-Container für Icons
+
+---
+
 ## v0.2.7-beta (2026-06-13)
 
 ### Fixes

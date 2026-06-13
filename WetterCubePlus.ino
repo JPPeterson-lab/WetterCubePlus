@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.7-beta"
+#define FIRMWARE_VERSION "0.2.8-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -702,13 +702,14 @@ lv_color_t tempColor(float t) {
 }
 
 const lv_img_dsc_t* wmoZuImage(int wmo) {
-  if (wmo <= 3)   return &day_clear;
-  if (wmo <= 48)  return &day_clear;   // Bewölkung / Nebel – kein eigenes Icon
+  if (wmo <= 1)   return &day_clear;   // Klar
+  if (wmo <= 3)   return &overcast;    // Teilweise / Stark bewölkt
+  if (wmo <= 48)  return &overcast;    // Bewölkung, Nebel, gefrierender Nebel
   if (wmo <= 67)  return &rain;        // Nieselregen / Regen
   if (wmo <= 77)  return &snow;        // Schnee
   if (wmo <= 82)  return &rain;        // Regenschauer
   if (wmo <= 86)  return &snow;        // Schneeschauer
-  return &rain;                        // Gewitter
+  return &thunder;                     // Gewitter
 }
 
 const char* windRichtung(int deg) {

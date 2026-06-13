@@ -17,11 +17,13 @@ typedef struct _ext_img_desc_t {
 } ext_img_desc_t;
 #endif
 
+extern const lv_img_dsc_t overcast;
+extern const lv_img_dsc_t thunder;
 extern const lv_img_dsc_t snow;
 extern const lv_img_dsc_t alert;
 extern const lv_img_dsc_t rain;
 extern const lv_img_dsc_t day_clear;
-extern const ext_img_desc_t images[4];
+extern const ext_img_desc_t images[6];
 
 
 #ifdef __cplusplus
