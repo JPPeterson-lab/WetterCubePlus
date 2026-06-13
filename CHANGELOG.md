@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.9-beta (2026-06-13)
+
+### Fixes
+- Temperatur-Farbcodierung auf WetterCube-Schwellen angeglichen: blau < 8°C · grün 8–15°C · gelb 15–24°C · rot ≥ 24°C
+
+---
+
 ## v0.2.8-beta (2026-06-13)
 
 ### Neu

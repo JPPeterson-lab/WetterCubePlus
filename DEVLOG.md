@@ -1,5 +1,12 @@
 # Entwicklungs-Log
 
+## 2026-06-13 – v0.2.9-beta
+
+### Temperatur-Farbcodierung
+WetterCubePlus hatte andere Schwellen als WetterCube: blau erst unter 0°C statt unter 8°C, rot erst ab 25°C statt ab 24°C. Angeglichen auf WetterCube-Werte: `< 8` blau · `< 15` grün · `< 24` gelb · `≥ 24` rot.
+
+---
+
 ## 2026-06-13 – v0.2.8-beta
 
 ### Wetter-Icons vollständig
