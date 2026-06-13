@@ -695,10 +695,10 @@ lv_color_t pollenColor(float v) {
 }
 
 lv_color_t tempColor(float t) {
-  if (t < 0)   return lv_color_hex(0x00AAFF);
-  if (t < 10)  return lv_color_hex(0x00CC44);
-  if (t < 25)  return lv_color_hex(0xFFCC00);
-  return              lv_color_hex(0xFF3300);
+  if (t < 8)   return lv_color_hex(0x00AAFF);  // blau
+  if (t < 15)  return lv_color_hex(0x00CC44);  // grün
+  if (t < 24)  return lv_color_hex(0xFFCC00);  // gelb
+  return              lv_color_hex(0xFF3300);   // rot
 }
 
 const lv_img_dsc_t* wmoZuImage(int wmo) {
