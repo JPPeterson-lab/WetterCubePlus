@@ -1,5 +1,26 @@
 # Entwicklungs-Log
 
+## 2026-06-13 – v0.2.10-beta
+
+### Pollen-Architektur: Open-Meteo stündlich für Screen 1 und Warnung
+
+Screen 1 zeigte bisher die DWD-Tageswerte für Pollen (einmal täglich aktualisiert, 8 Allergene). Das Problem: die Werte repräsentieren den Tagesdurchschnitt, sind nicht live, und stimmen oft nicht mit der aktuellen Belastung überein.
+
+**Neue Architektur:**
+- **Screen 1 Top-3** und **Pollenwarnung** nutzen jetzt Open-Meteo Stundenwerte für die *nächste* Stunde (`h+1`). `fetchOpenMeteoPollen()` liest nun `min(tm_hour + 1, 23)` statt `tm_hour`.
+- **3-Tage-Pollenforecast** (`screenforecastpollen`) bleibt auf DWD-Tageswerten — die sind für mehrtägige Vorhersage geeigneter.
+
+**Umrechnung Open-Meteo → DWD 0–3 Skala:** Open-Meteo liefert Körner/m³, `pollenText()` und `pollenColor()` erwarten die DWD 0–3 Skala. Neue Funktion `openMeteoToDwd(grains)`:
+- 0 Körner → 0.0 (keine)
+- 1–24 → 1.0 (gering)
+- 25–74 → 2.0 (mittel)
+- 75–149 → 2.5 (hoch)
+- ≥ 150 → 3.0 (stark)
+
+Schwellen basieren auf europäischen Pollenbelastungs-Standards. Open-Meteo hat 5 Allergene (Birke, Erle, Gräser, Beifuß, Ambrosia); Hasel, Esche, Roggen sind nur in den DWD-Werten vorhanden und bleiben dort.
+
+---
+
 ## 2026-06-13 – v0.2.9.1-beta
 
 ### DWD Pollen JSON-Buffer zu klein

@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.10-beta (2026-06-13)
+
+### Änderungen
+- Screen 1 Top-3 Pollen: verwendet jetzt Open-Meteo Stundenwerte (nächste Stunde) statt DWD Tageswerte
+- Pollenwarnung: löst jetzt basierend auf Open-Meteo Stundenwerten (nächste Stunde) aus statt DWD Tageswerten
+- DWD Pollenwerte bleiben unverändert auf dem 3-Tage-Pollenscreen
+- Neue Hilfsfunktion `openMeteoToDwd()`: rechnet Körner/m³ auf DWD 0–3 Skala um (<25→gering, <75→mittel, <150→hoch, ≥150→stark)
+
+---
+
 ## v0.2.9.1-beta (2026-06-13)
 
 ### Fixes

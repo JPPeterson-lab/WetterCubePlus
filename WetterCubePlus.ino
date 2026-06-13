@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.9.1-beta"
+#define FIRMWARE_VERSION "0.2.10-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -677,6 +677,16 @@ static float parseDwdWert(const char* s) {
   return str.toFloat();
 }
 
+// Konvertiert Open-Meteo Pollenwerte (Körner/m³) auf DWD 0–3 Skala
+float openMeteoToDwd(float grains) {
+  if (grains < 0)    return -1.0f;
+  if (grains == 0)   return  0.0f;
+  if (grains < 25)   return  1.0f;
+  if (grains < 75)   return  2.0f;
+  if (grains < 150)  return  2.5f;
+  return                     3.0f;
+}
+
 const char* pollenText(float v) {
   if (v < 0)    return "--";
   if (v == 0)   return "keine";
@@ -1010,7 +1020,7 @@ void fetchOpenMeteoPollen() {
     DynamicJsonDocument doc(4096);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
       struct tm ti; getLocalTime(&ti);
-      int h = ti.tm_hour;
+      int h = min(ti.tm_hour + 1, 23);
       pollen.birke    = doc["hourly"]["birch_pollen"][h].as<float>();
       pollen.graeser  = doc["hourly"]["grass_pollen"][h].as<float>();
       pollen.erle     = doc["hourly"]["alder_pollen"][h].as<float>();
@@ -1042,19 +1052,16 @@ static void setPollenLabel(lv_obj_t* obj, float v) {
   lv_obj_set_style_text_color(obj, pollenColor(v), 0);
 }
 
-// Schlimmsten Pollenverursacher (heute) als String
+// Schlimmsten Pollenverursacher (naechste Stunde, Open-Meteo) als String
 static String schleimsterPollen() {
   float max_v = -1.0f;
   const char* name = "Pollen";
   struct { float v; const char* n; } list[] = {
-    {pollen.dwd_birke,   "Birke"},
-    {pollen.dwd_hasel,   "Hasel"},
-    {pollen.dwd_erle,    "Erle"},
-    {pollen.dwd_esche,   "Esche"},
-    {pollen.dwd_graeser, "Gräser"},
-    {pollen.dwd_roggen,  "Roggen"},
-    {pollen.dwd_beifuss, "Beifuß"},
-    {pollen.dwd_ambrosia,"Ambrosia"},
+    {openMeteoToDwd(pollen.birke),    "Birke"},
+    {openMeteoToDwd(pollen.erle),     "Erle"},
+    {openMeteoToDwd(pollen.graeser),  "Gräser"},
+    {openMeteoToDwd(pollen.beifuss),  "Beifuß"},
+    {openMeteoToDwd(pollen.ambrosia), "Ambrosia"},
   };
   for (auto& e : list) { if (e.v > max_v) { max_v = e.v; name = e.n; } }
   return String(name);
@@ -1099,21 +1106,18 @@ void aktualisiereUI() {
     lv_label_set_text(objects.labelairpressur, buf);
   }
 
-  // screen_1: Top-3 Pollen (DWD heute, absteigend sortiert)
+  // screen_1: Top-3 Pollen (Open-Meteo, naechste Stunde, auf DWD-Skala umgerechnet)
   {
     struct PE { float v; const char* n; };
     PE pe[] = {
-      {pollen.dwd_birke,    "Birke"},
-      {pollen.dwd_hasel,    "Hasel"},
-      {pollen.dwd_erle,     "Erle"},
-      {pollen.dwd_esche,    "Esche"},
-      {pollen.dwd_graeser,  "Gräser"},
-      {pollen.dwd_roggen,   "Roggen"},
-      {pollen.dwd_beifuss,  "Beifuß"},
-      {pollen.dwd_ambrosia, "Ambrosia"},
+      {openMeteoToDwd(pollen.birke),    "Birke"},
+      {openMeteoToDwd(pollen.erle),     "Erle"},
+      {openMeteoToDwd(pollen.graeser),  "Gräser"},
+      {openMeteoToDwd(pollen.beifuss),  "Beifuß"},
+      {openMeteoToDwd(pollen.ambrosia), "Ambrosia"},
     };
-    for (int i = 0; i < 7; i++)
-      for (int j = i+1; j < 8; j++)
+    for (int i = 0; i < 4; i++)
+      for (int j = i+1; j < 5; j++)
         if (pe[j].v > pe[i].v) { PE tmp = pe[i]; pe[i] = pe[j]; pe[j] = tmp; }
     lv_obj_t* pn[] = {objects.labelpollenforecast1main,      objects.labelpollenforecast2main,      objects.labelpollenforecast3main};
     lv_obj_t* pv[] = {objects.labelpollenforecast1mainvalue, objects.labelpollenforecast2mainvalue, objects.labelpollenforecast3mainvalue};
@@ -1193,10 +1197,12 @@ void aktualisiereUI() {
   }
 
   // ── Pollenwarnung (screenwarnungpollen) ─────────────────────
-  float pollenWerte[] = {pollen.dwd_birke, pollen.dwd_hasel, pollen.dwd_erle, pollen.dwd_esche,
-                         pollen.dwd_graeser, pollen.dwd_roggen, pollen.dwd_beifuss, pollen.dwd_ambrosia};
+  // Basiert auf Open-Meteo naechste Stunde (umgerechnet auf DWD-Skala)
+  float pollenWerte[] = {openMeteoToDwd(pollen.birke), openMeteoToDwd(pollen.erle),
+                         openMeteoToDwd(pollen.graeser), openMeteoToDwd(pollen.beifuss),
+                         openMeteoToDwd(pollen.ambrosia)};
   float maxPollen = -1.0f;
-  for (int pi = 0; pi < 8; pi++) maxPollen = max(maxPollen, pollenWerte[pi]);
+  for (int pi = 0; pi < 5; pi++) maxPollen = max(maxPollen, pollenWerte[pi]);
   pollenWarnAktiv = cfg.pollen_warn && (maxPollen > (float)cfg.pollen_schwelle);
   if (pollenWarnAktiv) {
     setLabel(objects.labelpollenwarntitel, "Pollenwarnung !");
