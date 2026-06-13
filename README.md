@@ -5,6 +5,8 @@ Dieses Projekt ist die Weiterentwicklung des [WetterCube](https://github.com/JPP
 
 Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [Deutschen Wetterdienst (DWD)](https://www.dwd.de) – kein API-Key nötig.
 
+> **⚠️ Beta-Version:** Dieses Projekt befindet sich noch in aktiver Entwicklung. Fehler und Breaking Changes sind möglich. / This project is still in active development. Bugs and breaking changes may occur.
+
 ---
 
 ## ✨ Funktionen
