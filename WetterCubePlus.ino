@@ -10,7 +10,7 @@
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
 #define FIRMWARE_VERSION "0.2.2-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
-#define OTA_BIN_BASE_URL "https://github.com/JPPeterson-lab/WetterCubePlus/releases/download/"
+#define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
 
 // ============================================================
@@ -48,6 +48,7 @@
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
+#include <Update.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
 #include <DNSServer.h>
@@ -591,42 +592,51 @@ void handleWebOtaDoUpdate() {
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
   http.begin(sc, OTA_VERSION_URL);
-  String binUrl = "";
+  bool update_noetig = false;
   if (http.GET() == 200) {
     DynamicJsonDocument doc(256);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
       String ver = doc["version"].as<String>();
-      binUrl = String(OTA_BIN_BASE_URL) + "v" + ver + "/firmware.bin";
+      update_noetig = (ver != FIRMWARE_VERSION);
     }
   }
   http.end();
 
-  if (binUrl.isEmpty()) { Serial.println("[OTA] Keine URL"); return; }
+  if (!update_noetig) { Serial.println("[OTA] Bereits aktuell"); return; }
+  String binUrl = OTA_BIN_URL;
 
-  // GitHub Releases leiten auf CDN (objects.githubusercontent.com) um.
-  // httpUpdate kann Cross-Host-Redirects nicht folgen → Redirect manuell auflösen.
   Serial.printf("[OTA] Lade: %s\n", binUrl.c_str());
-  {
-    WiFiClientSecure scR; scR.setInsecure();
-    HTTPClient httpR;
-    httpR.begin(scR, binUrl);
-    httpR.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
-    int rc = httpR.GET();
-    if (rc == 301 || rc == 302 || rc == 307 || rc == 308) {
-      String loc = httpR.getLocation();
-      if (loc.length() > 0) {
-        binUrl = loc;
-        Serial.printf("[OTA] Redirect → %s\n", binUrl.c_str());
-      }
-    }
-    httpR.end();
-  }
 
   WiFiClientSecure sc2; sc2.setInsecure();
-  httpUpdate.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
-  t_httpUpdate_return ret = httpUpdate.update(sc2, binUrl);
-  if (ret != HTTP_UPDATE_OK) {
-    Serial.printf("[OTA] Fehler: %s\n", httpUpdate.getLastErrorString().c_str());
+  HTTPClient httpBin;
+  httpBin.begin(sc2, binUrl);
+  httpBin.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
+  httpBin.setTimeout(30000);
+  int rc = httpBin.GET();
+  Serial.printf("[OTA] HTTP rc=%d\n", rc);
+  if (rc != 200) {
+    Serial.printf("[OTA] Fehler: HTTP %d\n", rc);
+    httpBin.end();
+    return;
+  }
+
+  int contentLen = httpBin.getSize();
+  WiFiClient* stream = httpBin.getStreamPtr();
+  if (!Update.begin(contentLen > 0 ? contentLen : UPDATE_SIZE_UNKNOWN)) {
+    Update.printError(Serial);
+    httpBin.end();
+    return;
+  }
+  size_t written = Update.writeStream(*stream);
+  Serial.printf("[OTA] Geschrieben: %u Bytes\n", written);
+  if (Update.end() && Update.isFinished()) {
+    Serial.println("[OTA] Erfolg – Neustart");
+    httpBin.end();
+    delay(500);
+    ESP.restart();
+  } else {
+    Update.printError(Serial);
+    httpBin.end();
   }
 }
 
