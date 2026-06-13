@@ -11,14 +11,16 @@ sind nachfolgend aufgeführt.
 
 **Lizenz:** [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/)
 
-Verwendete Icons:
-- `day_clear.inc` – Klarer Himmel
-- `rain.inc` – Regen / Regenwarnung
-- `snow.inc` – Schnee
-- `alert.inc` – Warnung / Gewitter
+Verwendete Icons (256×256, RGB565A8):
+- `day_clear.inc` – Klarer Himmel (WMO 0–3); auch Fallback für Bewölkung und Nebel (WMO 4–48)
+- `rain.inc` – Regen, Nieselregen, Schauer (WMO 51–82); auch Fallback für Gewitter (WMO 95–99)
+- `snow.inc` – Schnee und Schneeschauer (WMO 71–86)
+- `alert.inc` – Warnscreen-Icon
+
+> **Hinweis:** Icons für Bewölkung (overcast), Nebel (fog) und Gewitter (thunder) sind noch nicht eingebunden – WMO-Codes ohne dediziertes Icon fallen auf `day_clear` bzw. `rain` zurück.
 
 Gemäß CC BY-SA 4.0 gilt:
-- Die Icons wurden im Rahmen dieses Projekts unverändert übernommen und als RGB565A8-Arrays eingebettet
+- Die Icons wurden als RGB565A8-Arrays für LVGL 8.x konvertiert und eingebettet
 - Der Urheber (Dovora) wird hiermit ausdrücklich genannt
 - Weitergabe dieser Icons muss ebenfalls unter CC BY-SA 4.0 erfolgen
 
