@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.5-beta"
+#define FIRMWARE_VERSION "0.2.6-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1228,16 +1228,21 @@ void zeigeHinweisScreen(const char* text) {
 // ============================================================
 //  Boot-Screen (PicoPixel screenboot)
 // ============================================================
+void lvgl_flush(uint32_t ms = 80) {
+  uint32_t t = millis();
+  while (millis() - t < ms) { lv_timer_handler(); delay(5); }
+}
+
 void zeigeBootScreen(const String& msg) {
   if (objects.labelstatus != nullptr)
     lv_label_set_text(objects.labelstatus, msg.c_str());
-  lv_timer_handler(); delay(10);
+  lvgl_flush();
 }
 
 void setzeBootFortschritt(int prozent) {
   if (objects.barwifi != nullptr)
     lv_bar_set_value(objects.barwifi, prozent, LV_ANIM_ON);
-  lv_timer_handler();
+  lvgl_flush();
 }
 
 // ============================================================
@@ -1388,8 +1393,7 @@ void setup() {
   WiFi.begin(cfg.ssid.c_str(), cfg.pass.c_str());
   uint32_t t0 = millis();
   while (WiFi.status() != WL_CONNECTED && millis() - t0 < 15000) {
-    delay(300);
-    lv_timer_handler();
+    lvgl_flush(100);
   }
 
   if (WiFi.status() != WL_CONNECTED) {
