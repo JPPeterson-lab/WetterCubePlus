@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.0-beta"
+#define FIRMWARE_VERSION "0.2.1-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_BASE_URL "https://github.com/JPPeterson-lab/WetterCubePlus/releases/download/"
 #define MDNS_NAME        "wettercubeplus"
@@ -596,15 +596,16 @@ void handleWebOtaDoUpdate() {
     DynamicJsonDocument doc(256);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
       String ver = doc["version"].as<String>();
-      binUrl = String(OTA_BIN_BASE_URL) + "v" + ver + "/WetterCubePlus-" + ver + ".bin";
+      binUrl = String(OTA_BIN_BASE_URL) + "v" + ver + "/firmware.bin";
     }
   }
   http.end();
 
   if (binUrl.isEmpty()) { Serial.println("[OTA] Keine URL"); return; }
 
+  Serial.printf("[OTA] Lade: %s\n", binUrl.c_str());
   WiFiClientSecure sc2; sc2.setInsecure();
-  httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
   t_httpUpdate_return ret = httpUpdate.update(sc2, binUrl);
   if (ret != HTTP_UPDATE_OK) {
     Serial.printf("[OTA] Fehler: %s\n", httpUpdate.getLastErrorString().c_str());
@@ -1231,6 +1232,7 @@ void setzeBootFortschritt(int prozent) {
 // ============================================================
 
 // screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screen_1
+static void cbHome(lv_event_t*)   { loadScreen(SCREEN_ID_SCREEN_1); }
 static void cbFwd1(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }   // screen_1 >
 static void cbBack1(lv_event_t*) { loadScreen(SCREEN_ID_SCREEN_1); }               // forecastwetter <
 static void cbFwd2(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }   // forecastwetter >
@@ -1353,6 +1355,9 @@ void setup() {
   REG_CB(objects.labelbuttonforward_2,  cbFwd3,    LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonbackward_1, cbBack3,   LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonforward_3,  cbFwd4,    LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnung,         cbWarnTap, LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnungpollen,   cbWarnTap, LV_EVENT_CLICKED);
   #undef REG_CB

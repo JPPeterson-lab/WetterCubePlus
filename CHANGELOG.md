@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.1-beta (2026-06-13)
+
+### Neu
+- Home-Button auf allen Screens: kehrt direkt zu Screen 1 zurück
+- Weißes UI-Theme in PicoPixel umgesetzt (reduziert Spiegelungen bei Glasscheibe)
+
+### Fixes
+- OTA-Update: falscher Dateiname im Download-Pfad korrigiert (`firmware.bin` statt `WetterCubePlus-X.X.X.bin`)
+- OTA-Update: `HTTPC_FORCE_FOLLOW_REDIRECTS` für GitHub CDN-Redirects
+
+---
+
 ## v0.2.0-beta (2026-06-13)
 
 ### Neu

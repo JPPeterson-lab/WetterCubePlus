@@ -68,6 +68,18 @@ void create_screen_screen_1() {
             lv_label_set_text(obj, "12 °C");
         }
         {
+            // label_1
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.label_1 = obj;
+            lv_obj_set_pos(obj, 180, 203);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0xd63939), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text(obj, "Stunde durch");
+        }
+        {
             // labelbuttonforward
             lv_obj_t *obj = lv_btn_create(parent_obj);
             objects.labelbuttonforward = obj;
@@ -154,7 +166,7 @@ void create_screen_screen_1() {
             // labeltime
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.labeltime = obj;
-            lv_obj_set_pos(obj, 190, 107);
+            lv_obj_set_pos(obj, 188, 108);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea7, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -165,12 +177,15 @@ void create_screen_screen_1() {
             // labelpollenforecasttext
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.labelpollenforecasttext = obj;
-            lv_obj_set_pos(obj, 18, 207);
+            lv_obj_set_pos(obj, 34, 175);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea4, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_label_set_text(obj, "Stärkste Pollenbelastung in der nächsten Stunde durch");
+            lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0xd63939), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text(obj, "Stärkste Pollenbelastung in der nächsten");
         }
         {
             // labelwindspeed
@@ -209,7 +224,7 @@ void create_screen_screen_1() {
             // imagewetter
             lv_obj_t *obj = lv_img_create(parent_obj);
             objects.imagewetter = obj;
-            lv_obj_set_pos(obj, 205, 13);
+            lv_obj_set_pos(obj, 203, 11);
             lv_obj_set_size(obj, 83, 83);
             lv_img_set_src(obj, &day_clear);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
@@ -232,7 +247,7 @@ void create_screen_screenforecastpollen() {
     lv_obj_set_size(obj, 480, 320);
         lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_set_style_bg_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
     {
         lv_obj_t *parent_obj = obj;
         {
@@ -241,7 +256,9 @@ void create_screen_screenforecastpollen() {
             objects.labelgraeserday2 = obj;
             lv_obj_set_pos(obj, 245, 64);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -250,8 +267,38 @@ void create_screen_screenforecastpollen() {
             objects.labelbeifussday3 = obj;
             lv_obj_set_pos(obj, 377, 123);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "stark");
+        }
+        {
+            // labelbuttonhome_1
+            lv_obj_t *obj = lv_btn_create(parent_obj);
+            objects.labelbuttonhome_1 = obj;
+            lv_obj_set_pos(obj, 190, 273);
+            lv_obj_set_size(obj, 100, 40);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    // labelbuttonhome_1_label
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelbuttonhome_1_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text(obj, "O");
+                    lv_obj_center(obj);
+                }
+            }
         }
         {
             // labelday1
@@ -259,7 +306,9 @@ void create_screen_screenforecastpollen() {
             objects.labelday1 = obj;
             lv_obj_set_pos(obj, 116, 3);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "13.06.");
         }
         {
@@ -268,7 +317,9 @@ void create_screen_screenforecastpollen() {
             objects.labelhaselday1 = obj;
             lv_obj_set_pos(obj, 116, 181);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -277,7 +328,9 @@ void create_screen_screenforecastpollen() {
             objects.labelnamebirke = obj;
             lv_obj_set_pos(obj, 7, 35);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Birke");
         }
         {
@@ -286,7 +339,9 @@ void create_screen_screenforecastpollen() {
             objects.labelhaselday2 = obj;
             lv_obj_set_pos(obj, 245, 181);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -295,7 +350,9 @@ void create_screen_screenforecastpollen() {
             objects.labelgraeserday3 = obj;
             lv_obj_set_pos(obj, 377, 64);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -304,7 +361,9 @@ void create_screen_screenforecastpollen() {
             objects.labelday2 = obj;
             lv_obj_set_pos(obj, 245, 3);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "14.06.");
         }
         {
@@ -313,7 +372,9 @@ void create_screen_screenforecastpollen() {
             objects.labelbirkeday1 = obj;
             lv_obj_set_pos(obj, 116, 35);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -322,7 +383,9 @@ void create_screen_screenforecastpollen() {
             objects.labelerleday2 = obj;
             lv_obj_set_pos(obj, 245, 93);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -331,7 +394,9 @@ void create_screen_screenforecastpollen() {
             objects.labelescheday2 = obj;
             lv_obj_set_pos(obj, 245, 211);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -340,7 +405,9 @@ void create_screen_screenforecastpollen() {
             objects.labelnameroggen = obj;
             lv_obj_set_pos(obj, 7, 241);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Roggen");
         }
         {
@@ -349,7 +416,9 @@ void create_screen_screenforecastpollen() {
             objects.labelroggenday1 = obj;
             lv_obj_set_pos(obj, 114, 241);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -358,7 +427,9 @@ void create_screen_screenforecastpollen() {
             objects.labelnameerle = obj;
             lv_obj_set_pos(obj, 7, 93);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Erle");
         }
         {
@@ -367,7 +438,9 @@ void create_screen_screenforecastpollen() {
             objects.labelday3 = obj;
             lv_obj_set_pos(obj, 377, 3);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "15.06.");
         }
         {
@@ -376,7 +449,9 @@ void create_screen_screenforecastpollen() {
             objects.labelambrosiaday3 = obj;
             lv_obj_set_pos(obj, 377, 151);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -385,7 +460,9 @@ void create_screen_screenforecastpollen() {
             objects.labelambrosiaday1 = obj;
             lv_obj_set_pos(obj, 116, 151);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -394,15 +471,23 @@ void create_screen_screenforecastpollen() {
             objects.labelbuttonforward_2 = obj;
             lv_obj_set_pos(obj, 372, 273);
             lv_obj_set_size(obj, 100, 40);
-            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             {
                 lv_obj_t *parent_obj = obj;
                 {
                     // labelbuttonforward_2_label
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelbuttonforward_2_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, ">");
                     lv_obj_center(obj);
                 }
@@ -414,7 +499,9 @@ void create_screen_screenforecastpollen() {
             objects.labelroggenday3 = obj;
             lv_obj_set_pos(obj, 377, 241);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -423,7 +510,9 @@ void create_screen_screenforecastpollen() {
             objects.labelescheday3 = obj;
             lv_obj_set_pos(obj, 377, 211);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -432,8 +521,10 @@ void create_screen_screenforecastpollen() {
             objects.labelnamebeifuss = obj;
             lv_obj_set_pos(obj, 7, 123);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_transform_pivot_x(obj, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_transform_pivot_y(obj, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_transform_angle(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Beifuß");
@@ -444,7 +535,9 @@ void create_screen_screenforecastpollen() {
             objects.labelbirkeday3 = obj;
             lv_obj_set_pos(obj, 377, 35);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "stark");
         }
         {
@@ -453,7 +546,9 @@ void create_screen_screenforecastpollen() {
             objects.labelbeifussday2 = obj;
             lv_obj_set_pos(obj, 245, 123);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "stark");
         }
         {
@@ -462,7 +557,9 @@ void create_screen_screenforecastpollen() {
             objects.labelambrosiaday2 = obj;
             lv_obj_set_pos(obj, 245, 151);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -471,7 +568,9 @@ void create_screen_screenforecastpollen() {
             objects.labelerleday1 = obj;
             lv_obj_set_pos(obj, 116, 93);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -480,7 +579,9 @@ void create_screen_screenforecastpollen() {
             objects.labelbirkeday2 = obj;
             lv_obj_set_pos(obj, 245, 35);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -489,7 +590,9 @@ void create_screen_screenforecastpollen() {
             objects.labelroggenday2 = obj;
             lv_obj_set_pos(obj, 245, 241);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -498,7 +601,9 @@ void create_screen_screenforecastpollen() {
             objects.labelhaselday3 = obj;
             lv_obj_set_pos(obj, 377, 181);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -507,7 +612,9 @@ void create_screen_screenforecastpollen() {
             objects.labelnamegraeser = obj;
             lv_obj_set_pos(obj, 7, 64);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Gräser");
         }
         {
@@ -516,7 +623,9 @@ void create_screen_screenforecastpollen() {
             objects.labelbeifussday1 = obj;
             lv_obj_set_pos(obj, 116, 123);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -525,7 +634,9 @@ void create_screen_screenforecastpollen() {
             objects.labelescheday1 = obj;
             lv_obj_set_pos(obj, 116, 211);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "stark");
         }
         {
@@ -534,7 +645,9 @@ void create_screen_screenforecastpollen() {
             objects.labelnamehasel = obj;
             lv_obj_set_pos(obj, 7, 181);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Hasel");
         }
         {
@@ -543,7 +656,9 @@ void create_screen_screenforecastpollen() {
             objects.labelnameesche = obj;
             lv_obj_set_pos(obj, 7, 211);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Esche");
         }
         {
@@ -552,7 +667,9 @@ void create_screen_screenforecastpollen() {
             objects.labelgraeserday1 = obj;
             lv_obj_set_pos(obj, 116, 64);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "mittel");
         }
         {
@@ -561,7 +678,9 @@ void create_screen_screenforecastpollen() {
             objects.labelnameambrosia = obj;
             lv_obj_set_pos(obj, 7, 151);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Ambrosia");
         }
         {
@@ -570,7 +689,9 @@ void create_screen_screenforecastpollen() {
             objects.labelerleday3 = obj;
             lv_obj_set_pos(obj, 377, 93);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "gering");
         }
         {
@@ -579,15 +700,23 @@ void create_screen_screenforecastpollen() {
             objects.labelbuttonbackward_2 = obj;
             lv_obj_set_pos(obj, 7, 273);
             lv_obj_set_size(obj, 100, 40);
-            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             {
                 lv_obj_t *parent_obj = obj;
                 {
                     // labelbuttonbackward_2_label
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelbuttonbackward_2_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, "<");
                     lv_obj_center(obj);
                 }
@@ -613,20 +742,56 @@ void create_screen_screenwarnkarte1() {
     {
         lv_obj_t *parent_obj = obj;
         {
+            // labelbuttonhome_2
+            lv_obj_t *obj = lv_btn_create(parent_obj);
+            objects.labelbuttonhome_2 = obj;
+            lv_obj_set_pos(obj, 190, 273);
+            lv_obj_set_size(obj, 100, 40);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    // labelbuttonhome_2_label
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelbuttonhome_2_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text(obj, "O");
+                    lv_obj_center(obj);
+                }
+            }
+        }
+        {
             // labelbuttonbackward_1
             lv_obj_t *obj = lv_btn_create(parent_obj);
             objects.labelbuttonbackward_1 = obj;
             lv_obj_set_pos(obj, 7, 273);
             lv_obj_set_size(obj, 100, 40);
-            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             {
                 lv_obj_t *parent_obj = obj;
                 {
                     // labelbuttonbackward_1_label
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelbuttonbackward_1_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, "<");
                     lv_obj_center(obj);
                 }
@@ -638,15 +803,23 @@ void create_screen_screenwarnkarte1() {
             objects.labelbuttonforward_3 = obj;
             lv_obj_set_pos(obj, 372, 273);
             lv_obj_set_size(obj, 100, 40);
-            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             {
                 lv_obj_t *parent_obj = obj;
                 {
                     // labelbuttonforward_3_label
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelbuttonforward_3_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, ">");
                     lv_obj_center(obj);
                 }
@@ -686,7 +859,7 @@ void create_screen_screenboot() {
             // labelcube
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.labelcube = obj;
-            lv_obj_set_pos(obj, 214, 44);
+            lv_obj_set_pos(obj, 212, 44);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea7, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -719,7 +892,7 @@ void create_screen_screenboot() {
             // labelwetter
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.labelwetter = obj;
-            lv_obj_set_pos(obj, 46, 44);
+            lv_obj_set_pos(obj, 38, 44);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea7, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -865,16 +1038,46 @@ void create_screen_screenforecastwetter() {
     lv_obj_set_size(obj, 480, 320);
         lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_set_style_bg_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
     {
         lv_obj_t *parent_obj = obj;
+        {
+            // labelbuttonhome
+            lv_obj_t *obj = lv_btn_create(parent_obj);
+            objects.labelbuttonhome = obj;
+            lv_obj_set_pos(obj, 190, 273);
+            lv_obj_set_size(obj, 100, 40);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    // labelbuttonhome_label
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelbuttonhome_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text(obj, "O");
+                    lv_obj_center(obj);
+                }
+            }
+        }
         {
             // labelh3winddirection
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.labelh3winddirection = obj;
             lv_obj_set_pos(obj, 289, 201);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "SW");
         }
         {
@@ -883,7 +1086,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh1winddirection = obj;
             lv_obj_set_pos(obj, 43, 201);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "SW");
         }
         {
@@ -892,15 +1097,23 @@ void create_screen_screenforecastwetter() {
             objects.labelbuttonbackward = obj;
             lv_obj_set_pos(obj, 7, 273);
             lv_obj_set_size(obj, 100, 40);
-            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             {
                 lv_obj_t *parent_obj = obj;
                 {
                     // labelbuttonbackward_label
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelbuttonbackward_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, "<");
                     lv_obj_center(obj);
                 }
@@ -912,7 +1125,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh4zeit = obj;
             lv_obj_set_pos(obj, 400, 16);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "15:00");
         }
         {
@@ -921,7 +1136,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh4winddirection = obj;
             lv_obj_set_pos(obj, 412, 201);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "SW");
         }
         {
@@ -930,7 +1147,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh2zeit = obj;
             lv_obj_set_pos(obj, 154, 16);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "13:00");
         }
         {
@@ -939,15 +1158,23 @@ void create_screen_screenforecastwetter() {
             objects.labelbuttonforward_1 = obj;
             lv_obj_set_pos(obj, 372, 273);
             lv_obj_set_size(obj, 100, 40);
-            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0x87ceeb), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_letter_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_decor(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             {
                 lv_obj_t *parent_obj = obj;
                 {
                     // labelbuttonforward_1_label
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelbuttonforward_1_label = obj;
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, ">");
                     lv_obj_center(obj);
                 }
@@ -959,7 +1186,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh2windspeed = obj;
             lv_obj_set_pos(obj, 148, 244);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "23 kmh");
         }
         {
@@ -979,7 +1208,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh4windspeed = obj;
             lv_obj_set_pos(obj, 394, 244);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "23 kmh");
         }
         {
@@ -988,7 +1219,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh1windspeed = obj;
             lv_obj_set_pos(obj, 25, 244);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "23 kmh");
         }
         {
@@ -997,7 +1230,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh2winddirection = obj;
             lv_obj_set_pos(obj, 166, 201);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "SW");
         }
         {
@@ -1006,7 +1241,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh1temp = obj;
             lv_obj_set_pos(obj, 31, 160);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "17 °C");
         }
         {
@@ -1015,7 +1252,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh3windspeed = obj;
             lv_obj_set_pos(obj, 271, 244);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_dbb05fdd34e280e180082b1d61d53d7d, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "23 kmh");
         }
         {
@@ -1035,7 +1274,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh1zeit = obj;
             lv_obj_set_pos(obj, 31, 16);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "12:00");
         }
         {
@@ -1055,7 +1296,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh3zeit = obj;
             lv_obj_set_pos(obj, 277, 16);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "14:00");
         }
         {
@@ -1064,7 +1307,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh2temp = obj;
             lv_obj_set_pos(obj, 156, 160);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "17 °C");
         }
         {
@@ -1073,7 +1318,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh4temp = obj;
             lv_obj_set_pos(obj, 406, 160);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "17 °C");
         }
         {
@@ -1093,7 +1340,9 @@ void create_screen_screenforecastwetter() {
             objects.labelh3temp = obj;
             lv_obj_set_pos(obj, 281, 160);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(obj, &font_17e6ca586d88805280082a7bfe21eea5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "17 °C");
         }
     }
@@ -1133,6 +1382,7 @@ void delete_screen_screen_1() {
     objects.labeldatum = 0;
     objects.labelpollenforecast1mainvalue = 0;
     objects.labeltemp = 0;
+    objects.label_1 = 0;
     objects.labelbuttonforward = 0;
     objects.labelbuttonforward_label = 0;
     objects.labelairpressur = 0;
@@ -1156,6 +1406,8 @@ void delete_screen_screenforecastpollen() {
     objects.screenforecastpollen = 0;
     objects.labelgraeserday2 = 0;
     objects.labelbeifussday3 = 0;
+    objects.labelbuttonhome_1 = 0;
+    objects.labelbuttonhome_1_label = 0;
     objects.labelday1 = 0;
     objects.labelhaselday1 = 0;
     objects.labelnamebirke = 0;
@@ -1201,6 +1453,8 @@ void delete_screen_screenwarnkarte1() {
         lv_obj_del(objects.screenwarnkarte1);
     }
     objects.screenwarnkarte1 = 0;
+    objects.labelbuttonhome_2 = 0;
+    objects.labelbuttonhome_2_label = 0;
     objects.labelbuttonbackward_1 = 0;
     objects.labelbuttonbackward_1_label = 0;
     objects.labelbuttonforward_3 = 0;
@@ -1251,6 +1505,8 @@ void delete_screen_screenforecastwetter() {
         lv_obj_del(objects.screenforecastwetter);
     }
     objects.screenforecastwetter = 0;
+    objects.labelbuttonhome = 0;
+    objects.labelbuttonhome_label = 0;
     objects.labelh3winddirection = 0;
     objects.labelh1winddirection = 0;
     objects.labelbuttonbackward = 0;

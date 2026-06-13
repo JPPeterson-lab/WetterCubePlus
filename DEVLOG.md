@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-06-13 – v0.2.1-beta
+
+### Home-Button
+PicoPixel platziert den Home-Button auf allen Screens als `labelbuttonhome`, `labelbuttonhome_1`, `labelbuttonhome_2`. Der Button wird in screens.c erstellt, aber PicoPixel generiert keine Event-Callbacks. Lösung: `cbHome` Callback im .ino registriert, der `loadScreen(SCREEN_ID_SCREEN_1)` aufruft – für alle drei Instanzen per `REG_CB`.
+
+### OTA-Fix
+GitHub Release-Assets werden unter dem Dateinamen hochgeladen wie sie heißen (`firmware.bin`). Der OTA-Code hatte einen hardcodierten Pfad `WetterCubePlus-{version}.bin` – nicht gefunden. Zusätzlich: GitHub Releases leiten auf ein CDN (objects.githubusercontent.com) um. `HTTPC_STRICT_FOLLOW_REDIRECTS` blockiert Cross-Host-Redirects; `HTTPC_FORCE_FOLLOW_REDIRECTS` folgt auch domain-übergreifend.
+
+---
+
 ## 2026-06-13 – v0.2.0-beta
 
 ### DWD Warnkarte

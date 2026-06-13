@@ -17,12 +17,14 @@ typedef struct _objects_t {
     lv_obj_t *screenwarnungpollen;
     lv_obj_t *screenforecastwetter;
     lv_obj_t *labelgraeserday2;
+    lv_obj_t *labelbuttonhome;
     lv_obj_t *labelpollenwarntitel;
     lv_obj_t *labelbeifussday3;
     lv_obj_t *labelh3winddirection;
     lv_obj_t *labelh1winddirection;
     lv_obj_t *labelbuttonbackward;
     lv_obj_t *labelh4zeit;
+    lv_obj_t *labelbuttonhome_1;
     lv_obj_t *labelday1;
     lv_obj_t *labelstatus;
     lv_obj_t *labelpollenwarnart;
@@ -38,7 +40,9 @@ typedef struct _objects_t {
     lv_obj_t *labelday2;
     lv_obj_t *labeltemp;
     lv_obj_t *labelbirkeday1;
+    lv_obj_t *label_1;
     lv_obj_t *labelcube;
+    lv_obj_t *labelbuttonhome_2;
     lv_obj_t *labelerleday2;
     lv_obj_t *labelbuttonforward;
     lv_obj_t *labelbuttonforward_1;
@@ -107,7 +111,10 @@ typedef struct _objects_t {
     lv_obj_t *labelh3temp;
     lv_obj_t *labelwarndetail2;
     lv_obj_t *imagewetter;
+    lv_obj_t *labelbuttonhome_label;
     lv_obj_t *labelbuttonbackward_label;
+    lv_obj_t *labelbuttonhome_1_label;
+    lv_obj_t *labelbuttonhome_2_label;
     lv_obj_t *labelbuttonforward_label;
     lv_obj_t *labelbuttonforward_1_label;
     lv_obj_t *labelbuttonforward_2_label;
