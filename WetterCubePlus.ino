@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.2-beta"
+#define FIRMWARE_VERSION "0.2.3-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -586,57 +586,42 @@ void handleWebOtaCheck() {
 }
 
 void handleWebOtaDoUpdate() {
-  server.send(200, "text/plain", "Update gestartet, Gerät startet neu…");
-  delay(500);
+  Serial.printf("[OTA] Lade: %s\n", OTA_BIN_URL);
 
-  WiFiClientSecure sc; sc.setInsecure();
+  WiFiClientSecure client; client.setInsecure();
   HTTPClient http;
-  http.begin(sc, OTA_VERSION_URL);
-  bool update_noetig = false;
-  if (http.GET() == 200) {
-    DynamicJsonDocument doc(256);
-    if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
-      String ver = doc["version"].as<String>();
-      update_noetig = (ver != FIRMWARE_VERSION);
-    }
-  }
-  http.end();
-
-  if (!update_noetig) { Serial.println("[OTA] Bereits aktuell"); return; }
-  String binUrl = OTA_BIN_URL;
-
-  Serial.printf("[OTA] Lade: %s\n", binUrl.c_str());
-
-  WiFiClientSecure sc2; sc2.setInsecure();
-  HTTPClient httpBin;
-  httpBin.begin(sc2, binUrl);
-  httpBin.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
-  httpBin.setTimeout(30000);
-  int rc = httpBin.GET();
-  Serial.printf("[OTA] HTTP rc=%d\n", rc);
-  if (rc != 200) {
-    Serial.printf("[OTA] Fehler: HTTP %d\n", rc);
-    httpBin.end();
+  http.begin(client, OTA_BIN_URL);
+  http.setTimeout(30000);
+  int code = http.GET();
+  Serial.printf("[OTA] HTTP rc=%d\n", code);
+  if (code != 200) {
+    http.end();
+    Serial.printf("[OTA] Fehler: HTTP %d\n", code);
+    server.send(502, "text/plain", "download error " + String(code));
     return;
   }
 
-  int contentLen = httpBin.getSize();
-  WiFiClient* stream = httpBin.getStreamPtr();
+  int contentLen = http.getSize();
+  WiFiClient* stream = http.getStreamPtr();
+  Serial.printf("[OTA] %d Bytes\n", contentLen);
+
   if (!Update.begin(contentLen > 0 ? contentLen : UPDATE_SIZE_UNKNOWN)) {
-    Update.printError(Serial);
-    httpBin.end();
+    http.end();
+    server.send(500, "text/plain", "begin failed");
     return;
   }
   size_t written = Update.writeStream(*stream);
-  Serial.printf("[OTA] Geschrieben: %u Bytes\n", written);
-  if (Update.end() && Update.isFinished()) {
-    Serial.println("[OTA] Erfolg – Neustart");
-    httpBin.end();
-    delay(500);
+  bool success = Update.end(true) && !Update.hasError();
+  http.end();
+
+  if (success) {
+    Serial.printf("[OTA] %u Bytes – Neustart\n", written);
+    server.send(200, "text/plain", "ok");
+    delay(1500);
     ESP.restart();
   } else {
-    Update.printError(Serial);
-    httpBin.end();
+    Serial.printf("[OTA] Fehler: %s\n", Update.errorString());
+    server.send(500, "text/plain", Update.errorString());
   }
 }
 
