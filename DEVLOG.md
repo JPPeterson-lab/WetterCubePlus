@@ -1,5 +1,12 @@
 # Entwicklungs-Log
 
+## 2026-06-13 – v0.2.9.1-beta
+
+### DWD Pollen JSON-Buffer zu klein
+`DynamicJsonDocument(8192)` reichte nicht für die gefilterte DWD-Antwort — `deserializeJson` gab `NoMemory` zurück, alle Pollenwerte blieben auf -1.0f ("--"). Buffer auf 16384 Bytes erhöht. ArduinoJson-Filter reduziert die Datenmenge (nur `region_id` + `Pollen` pro Region), aber bei ~18 Regionen × 8 Allergene × 3 Tage kommt trotzdem mehr als 8 KB zusammen.
+
+---
+
 ## 2026-06-13 – v0.2.9-beta
 
 ### Temperatur-Farbcodierung

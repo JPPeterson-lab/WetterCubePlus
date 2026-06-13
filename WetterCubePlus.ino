@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.9-beta"
+#define FIRMWARE_VERSION "0.2.9.1-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -779,17 +779,26 @@ void fetchDwdPollen() {
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
   http.begin(sc, "https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json");
-  if (http.GET() == 200) {
+  int httpCode = http.GET();
+  Serial.printf("[Pollen] HTTP %d, region=%d\n", httpCode, cfg.dwd_region);
+  if (httpCode == 200) {
     StaticJsonDocument<128> filter;
     JsonArray fc = filter.createNestedArray("content");
     JsonObject fe = fc.createNestedObject();
     fe["region_id"] = true; fe["Pollen"] = true;
-    DynamicJsonDocument doc(8192);
+    DynamicJsonDocument doc(16384);
     String body = http.getString();
-    if (deserializeJson(doc, body, DeserializationOption::Filter(filter)) == DeserializationError::Ok) {
+    Serial.printf("[Pollen] Body %u Bytes\n", body.length());
+    DeserializationError err = deserializeJson(doc, body, DeserializationOption::Filter(filter));
+    Serial.printf("[Pollen] JSON: %s\n", err.c_str());
+    if (err == DeserializationError::Ok) {
+      bool found = false;
       for (JsonObject region : doc["content"].as<JsonArray>()) {
         if (region["region_id"].as<int>() != cfg.dwd_region) continue;
+        found = true;
         JsonObject p = region["Pollen"];
+        Serial.printf("[Pollen] Graeser=%.1f Birke=%.1f\n",
+          parseDwdWert(p["Graeser"]["today"]|""), parseDwdWert(p["Birke"]["today"]|""));
         pollen.dwd_birke        = parseDwdWert(p["Birke"]["today"]         | "");
         pollen.dwd_birke_tmr    = parseDwdWert(p["Birke"]["tomorrow"]      | "");
         pollen.dwd_birke_da     = parseDwdWert(p["Birke"]["dayafter_to"]   | "");
@@ -816,6 +825,7 @@ void fetchDwdPollen() {
         pollen.dwd_ambrosia_da  = parseDwdWert(p["Ambrosia"]["dayafter_to"]| "");
         break;
       }
+      if (!found) Serial.printf("[Pollen] Region %d nicht gefunden!\n", cfg.dwd_region);
     }
   }
   http.end();

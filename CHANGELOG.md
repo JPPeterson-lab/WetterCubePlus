@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.9.1-beta (2026-06-13)
+
+### Fixes
+- DWD Pollenflug: JSON-Buffer von 8192 auf 16384 Bytes erhöht – verhindert Parsing-Fehler bei großer API-Antwort
+- DWD Pollenflug: Debug-Logging im Serial Monitor (`[Pollen]`)
+
+---
+
 ## v0.2.9-beta (2026-06-13)
 
 ### Fixes
