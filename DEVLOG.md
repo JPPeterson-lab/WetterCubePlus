@@ -1,5 +1,20 @@
 # Entwicklungs-Log
 
+## 2026-06-13 – v0.2.8-beta
+
+### Wetter-Icons vollständig
+
+PicoPixel unterstützt keinen direkten Asset-Import ohne zugehörigen Screen. Lösung: einen „Lagerscreen" anlegen der nie in die Navigation eingebunden wird — er dient nur als Container damit PicoPixel die Icons als `.inc`-Dateien exportiert. Im `.ino` wird `objects.lagerscreen` nie über `loadScreen()` oder `lv_scr_load()` aufgerufen → bleibt unsichtbar.
+
+`wmoZuImage()` nutzt jetzt alle 5 Icons korrekt:
+- WMO 0–1: `day_clear`
+- WMO 2–48: `overcast` (Bewölkung, Nebel)
+- WMO 51–82: `rain`
+- WMO 71–86: `snow`
+- WMO 95–99: `thunder`
+
+---
+
 ## 2026-06-13 – v0.2.7-beta
 
 ### Boot-Screen Fix
