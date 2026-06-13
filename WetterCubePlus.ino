@@ -1439,12 +1439,13 @@ void setup() {
   letztesWarnkarteUpdate = millis();
   setzeBootFortschritt(100);
 
+  // UI vollständig befüllen bevor der Hauptscreen erscheint
+  aktualisiereUI();
   // Kurz warten damit 100% sichtbar ist, dann Hauptscreen laden
   delay(400);
   // LVGL-Animation-Timing: 600ms lv_timer_handler() vor weiteren Calls (Lessons Learned!)
   { unsigned long e = millis() + 600; while (millis() < e) { lv_timer_handler(); delay(5); } }
   loadScreen(SCREEN_ID_SCREEN_1);
-  aktualisiereUI();
 
 
   letztesTouchZeit    = millis();
