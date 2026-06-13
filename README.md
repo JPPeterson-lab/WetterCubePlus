@@ -138,9 +138,22 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 
 ---
 
+## 🙏 Credits
+
+| Ressource | Urheber | Lizenz |
+|---|---|---|
+| Wetter-Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| Wetterdaten | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (kostenlos) |
+| DWD-Daten | [Deutscher Wetterdienst](https://opendata.dwd.de) | DWD Opendata |
+| GUI-Framework | [LVGL](https://lvgl.io) | MIT |
+
+Weitere Details in [CREDITS.md](CREDITS.md).
+
 ## 📄 Lizenz
 
 MIT License – siehe [LICENSE](LICENSE)
+
+Die enthaltenen Wetter-Icons unterliegen der **CC BY-SA 4.0**-Lizenz (siehe [CREDITS.md](CREDITS.md)).
 
 ---
 ---
@@ -283,6 +296,19 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 
 ---
 
+## 🙏 Credits
+
+| Resource | Author | License |
+|---|---|---|
+| Weather Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| Weather Data | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (free) |
+| DWD Data | [Deutscher Wetterdienst](https://opendata.dwd.de) | DWD Opendata |
+| GUI Framework | [LVGL](https://lvgl.io) | MIT |
+
+See [CREDITS.md](CREDITS.md) for details.
+
 ## 📄 License
 
 MIT License – see [LICENSE](LICENSE)
+
+The included weather icons are licensed under **CC BY-SA 4.0** (see [CREDITS.md](CREDITS.md)).
