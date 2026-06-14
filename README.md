@@ -11,17 +11,19 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 ## ✨ Funktionen
 
-- 🌡️ **Wetterdaten** – Temperatur (Ist & gefühlt), Luftfeuchtigkeit, Luftdruck, UV-Index, Sonnenauf-/-untergang
-- 💨 **Wind** – Geschwindigkeit & Richtung
-- 🕐 **4-Stunden-Vorhersage** – Icons, Temperatur, Wind pro Slot
-- 🌿 **Pollenflug** – 8 Allergene (DWD + Open-Meteo), Stufen heute/morgen/übermorgen
-- 🌧️ **Regenwarnung** – Blinkendes Warn-Screen 60 Min. vor erwartetem Regen
-- ⚠️ **DWD Wetterwarnungen** – bis zu 5 aktive Warnungen (Level ≥ 2)
-- 🗺️ **DWD Warnkarte** – Deutschland-Warnkarte als eigener Screen
-- 🖥️ **WebUI** – Alle Einstellungen unter `wettercubeplus.local` (kein Flashen nötig)
-- 📡 **Captive Portal** – WLAN-Ersteinrichtung ohne App
-- 🔄 **OTA-Update** – Firmware-Update per WebUI über WLAN
-- 👆 **Touch-Kalibrierung** – automatisch beim Erststart, jederzeit neu auslösbar
+| | Funktion | Details |
+|---|---|---|
+| 🌡️ | **Wetterdaten** | Temperatur (Ist & gefühlt), Luftfeuchtigkeit, Luftdruck, UV-Index, Sonnenauf-/-untergang |
+| 💨 | **Wind** | Geschwindigkeit & Richtung |
+| 🕐 | **4-Stunden-Vorhersage** | Icons, Temperatur, Wind pro Slot |
+| 🌿 | **Pollenflug** | Top-3 Allergene stündlich (Open-Meteo), 3-Tage-Forecast für 8 Allergene (DWD) |
+| 🌧️ | **Regenwarnung** | Blinkendes Warn-Screen 60 Min. vor erwartetem Regen |
+| ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen (Level ≥ 2) |
+| 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert |
+| 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
+| 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
+| 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
+| 👆 | **Touch-Kalibrierung** | Automatisch beim Erststart, jederzeit neu auslösbar |
 
 ---
 
@@ -29,10 +31,10 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 | # | Screen | Inhalt |
 |---|---|---|
-| 1 | **Hauptscreen** | Wetter aktuell, Uhrzeit, Pollen-Schnellinfo |
+| 1 | **Hauptscreen** | Wetter aktuell, Uhrzeit, Datum, Top-3 Pollen (nächste Stunde) |
 | 2 | **Wettervorhersage** | 4×3-Stunden-Slots mit Icon, Temperatur, Wind |
-| 3 | **Pollenvorhersage** | Alle 8 Allergene, DWD-Stufen (heute/morgen/übermorgen) |
-| 4 | **DWD Warnkarte** | Deutschland-Karte mit aktuellen Warngebieten |
+| 3 | **Pollenvorhersage** | 8 Allergene (DWD), Stufen heute/morgen/übermorgen |
+| 4 | **Niederschlagsradar** | Bundesland-Ausschnitt, DWD WMS, 10-Min.-Aktualisierung |
 | 5 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung |
 
 ---
@@ -41,7 +43,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 **👉 [WetterCubePlus Web-Installer öffnen](https://jppeterson-lab.github.io/WetterCubePlus/)**
 
-> Funktioniert nur in **Google Chrome** oder **Microsoft Edge** (WebSerial API).  
+> Funktioniert nur in **Google Chrome** oder **Microsoft Edge** (WebSerial API).
 > ESP32-S3 per **USB-C** verbinden, dann den Anweisungen folgen.
 
 ---
@@ -53,7 +55,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 3. Browser öffnet Portal automatisch – alternativ `192.168.4.1`
 4. WLAN-Zugangsdaten eingeben
 5. Standort eingeben – **ohne Umlaute**: `Munchen`, `Koeln`, `Dusseldorf`
-6. DWD-Pollenregion für dein Bundesland wählen
+6. DWD-Pollenregion / Bundesland wählen (gilt auch für die Radarkarte)
 7. Speichern & Neustart
 
 Nach dem Neustart erreichbar unter **`http://wettercubeplus.local`** oder der auf dem Display angezeigten IP.
@@ -73,8 +75,28 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 | **Warnungen** | Regenwarnung ein/aus |
 | | Pollenwarnung ein/aus |
 | | Pollen-Schwellwert: Gering / Mittel / Hoch / Sehr hoch |
-| **DWD-Region** | Bundesland-Auswahl für Wetterwarnungen |
+| **DWD-Region** | Bundesland-Auswahl für Wetterwarnungen & Radarkarte |
 | **Firmware** | OTA-Update: neue Version per WLAN – kein USB nötig |
+
+---
+
+## 🌿 Pollen-Architektur
+
+| Screen | Quelle | Aktualisierung |
+|---|---|---|
+| Hauptscreen Top-3 | Open-Meteo Stundenwerte (nächste Stunde) | stündlich |
+| Pollenwarnung | Open-Meteo Stundenwerte (nächste Stunde) | stündlich |
+| 3-Tage-Pollenforecast | DWD Pollenflug-Gefahrenindex (8 Allergene) | stündlich |
+
+---
+
+## 📡 Datenquellen
+
+| Quelle | Daten | Intervall |
+|---|---|---|
+| [Open-Meteo](https://open-meteo.com) | Wetter, Pollen stündlich | 60 Min. |
+| [DWD Opendata](https://opendata.dwd.de) | Pollenflug-Tagesvorhersage, Wetterwarnungen | 60 Min. |
+| [DWD WMS](https://maps.dwd.de) | Niederschlagsradar (bundeslandbezogen) | 10 Min. |
 
 ---
 
@@ -128,16 +150,6 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 
 ---
 
-## 📡 Datenquellen
-
-| Quelle | Daten |
-|---|---|
-| [Open-Meteo](https://open-meteo.com) | Wetter, Luftqualität/Pollen – kein API-Key |
-| [DWD Opendata](https://opendata.dwd.de) | Pollenflug-Vorhersage, Wetterwarnungen |
-| [DWD Warnkarte](https://www.dwd.de) | Deutschland-Warnkarte PNG |
-
----
-
 ## 🙏 Credits
 
 | Ressource | Urheber | Lizenz |
@@ -145,6 +157,7 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 | Wetter-Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
 | Wetterdaten | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (kostenlos) |
 | DWD-Daten | [Deutscher Wetterdienst](https://opendata.dwd.de) | DWD Opendata |
+| DWD WMS | [DWD GeoServer](https://maps.dwd.de) | DWD Opendata |
 | GUI-Framework | [LVGL](https://lvgl.io) | MIT |
 
 Weitere Details in [CREDITS.md](CREDITS.md).
@@ -169,17 +182,19 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 
 ## ✨ Features
 
-- 🌡️ **Weather data** – Temperature (actual & feels-like), humidity, air pressure, UV index, sunrise/sunset
-- 💨 **Wind** – Speed & direction
-- 🕐 **4-hour forecast** – Icons, temperature, and wind per time slot
-- 🌿 **Pollen** – 8 allergens (DWD + Open-Meteo), levels for today/tomorrow/day after
-- 🌧️ **Rain warning** – Flashing warning screen 60 min before expected rainfall
-- ⚠️ **DWD weather warnings** – Up to 5 active warnings (level ≥ 2)
-- 🗺️ **DWD warning map** – Germany-wide warning map as a dedicated screen
-- 🖥️ **WebUI** – All settings at `wettercubeplus.local` (no reflashing needed)
-- 📡 **Captive Portal** – Wi-Fi setup without an app
-- 🔄 **OTA update** – Firmware update via WebUI over Wi-Fi
-- 👆 **Touch calibration** – Automatic on first boot, re-triggerable anytime
+| | Feature | Details |
+|---|---|---|
+| 🌡️ | **Weather data** | Temperature (actual & feels-like), humidity, air pressure, UV index, sunrise/sunset |
+| 💨 | **Wind** | Speed & direction |
+| 🕐 | **4-hour forecast** | Icons, temperature, and wind per time slot |
+| 🌿 | **Pollen** | Top-3 allergens hourly (Open-Meteo), 3-day forecast for 8 allergens (DWD) |
+| 🌧️ | **Rain warning** | Flashing warning screen 60 min before expected rainfall |
+| ⚠️ | **DWD weather warnings** | Up to 5 active warnings (level ≥ 2) |
+| 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min |
+| 🖥️ | **WebUI** | All settings at `wettercubeplus.local` – no reflashing needed |
+| 📡 | **Captive Portal** | Wi-Fi setup without an app |
+| 🔄 | **OTA update** | Firmware update via WebUI over Wi-Fi |
+| 👆 | **Touch calibration** | Automatic on first boot, re-triggerable anytime |
 
 ---
 
@@ -187,10 +202,10 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 
 | # | Screen | Content |
 |---|---|---|
-| 1 | **Main screen** | Current weather, time, quick pollen info |
+| 1 | **Main screen** | Current weather, time, date, top-3 pollen (next hour) |
 | 2 | **Forecast** | 4×3-hour slots with icon, temperature, wind |
-| 3 | **Pollen forecast** | All 8 allergens, DWD levels (today/tomorrow/day after) |
-| 4 | **DWD warning map** | Germany map with current warning zones |
+| 3 | **Pollen forecast** | 8 allergens (DWD), levels today/tomorrow/day after |
+| 4 | **Precipitation radar** | Federal-state map view, DWD WMS, updated every 10 min |
 | 5 | **Warning screen** | Flashing alert for rain or pollen warnings |
 
 ---
@@ -199,7 +214,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 
 **👉 [Open WetterCubePlus Web Installer](https://jppeterson-lab.github.io/WetterCubePlus/)**
 
-> Works only in **Google Chrome** or **Microsoft Edge** (WebSerial API).  
+> Works only in **Google Chrome** or **Microsoft Edge** (WebSerial API).
 > Connect the ESP32-S3 via **USB-C** and follow the on-screen instructions.
 
 ---
@@ -211,7 +226,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 3. The setup portal opens automatically – or open `192.168.4.1` in your browser
 4. Enter your Wi-Fi credentials
 5. Enter your location – **no umlauts**: `Munchen`, `Koeln`, `Dusseldorf`
-6. Select your DWD pollen region
+6. Select your DWD region / federal state (also used for the radar map)
 7. Save & restart
 
 After restarting, access the device at **`http://wettercubeplus.local`** or the IP address shown on the display.
@@ -231,8 +246,28 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 | **Warnings** | Rain warning on/off |
 | | Pollen warning on/off |
 | | Pollen threshold: Low / Moderate / High / Very High |
-| **DWD region** | Select federal state for weather warnings |
+| **DWD region** | Select federal state for weather warnings & radar map |
 | **Firmware** | OTA update: install new firmware over Wi-Fi – no USB needed |
+
+---
+
+## 🌿 Pollen Architecture
+
+| Screen | Source | Update interval |
+|---|---|---|
+| Main screen top-3 | Open-Meteo hourly (next hour) | Every 60 min |
+| Pollen warning | Open-Meteo hourly (next hour) | Every 60 min |
+| 3-day pollen forecast | DWD pollen index (8 allergens) | Every 60 min |
+
+---
+
+## 📡 Data Sources
+
+| Source | Data | Interval |
+|---|---|---|
+| [Open-Meteo](https://open-meteo.com) | Weather, hourly pollen | 60 min |
+| [DWD Opendata](https://opendata.dwd.de) | Daily pollen forecast, weather warnings | 60 min |
+| [DWD WMS](https://maps.dwd.de) | Precipitation radar (federal state) | 10 min |
 
 ---
 
@@ -286,16 +321,6 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 
 ---
 
-## 📡 Data Sources
-
-| Source | Data |
-|---|---|
-| [Open-Meteo](https://open-meteo.com) | Weather, air quality/pollen – no API key |
-| [DWD Opendata](https://opendata.dwd.de) | Pollen forecast, weather warnings |
-| [DWD Warning Map](https://www.dwd.de) | Germany warning map PNG |
-
----
-
 ## 🙏 Credits
 
 | Resource | Author | License |
@@ -303,6 +328,7 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 | Weather Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
 | Weather Data | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (free) |
 | DWD Data | [Deutscher Wetterdienst](https://opendata.dwd.de) | DWD Opendata |
+| DWD WMS | [DWD GeoServer](https://maps.dwd.de) | DWD Opendata |
 | GUI Framework | [LVGL](https://lvgl.io) | MIT |
 
 See [CREDITS.md](CREDITS.md) for details.

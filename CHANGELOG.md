@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.2.12-beta (2026-06-14)
+
+### Fixes
+- Radarkarte: Download-Methode auf `http.getString()` umgestellt – verhindert truncated PNG bei Chunked-Transfer ohne Content-Length-Header
+- Radarkarte: Aktualisierungsintervall von 30 auf 10 Minuten reduziert (DWD Radar aktualisiert alle 5 Min.)
+- Radarkarte: Bild-Alignment auf `LV_ALIGN_TOP_MID`, Höhe auf 270px reduziert – Navigationsbuttons (Y=273) werden nicht mehr überdeckt
+- Radarkarte: Layer-Kombination `dwd:KV_VG250_BUNDESLAENDER_2020` + `dwd:Niederschlagsradar` für Bundesland-Konturen + Niederschlag
+
+---
+
+## v0.2.11-beta (2026-06-14)
+
+### Neu
+- Warnkarte ersetzt durch DWD WMS Niederschlagsradar (`niederschlagsradar`-Layer)
+- Radarkarte ist bundeslandbezogen: zeigt nur den Ausschnitt des im Setup gewählten Bundeslandes
+- Keine eigene Bundesland-Auswahl nötig — nutzt vorhandene `dwd_region`-Einstellung
+- Neue `DwdBbox`-Tabelle mit EPSG:4326-Koordinaten für alle 15 DWD-Regionen
+- WMS-Anfrage: 480×280 px, passt exakt ins Display (40px für Navigation)
+- Aktualisierung alle 30 Minuten wie bisher
+
+---
+
 ## v0.2.10-beta (2026-06-13)
 
 ### Änderungen

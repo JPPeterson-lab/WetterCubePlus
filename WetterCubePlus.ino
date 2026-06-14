@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.10-beta"
+#define FIRMWARE_VERSION "0.2.12-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -161,6 +161,35 @@ const DwdRegion DWD_REGIONS[] = {
   {80, "Baden-Württemberg"},
   {0,  nullptr}
 };
+
+// WMS-Bounding-Box (EPSG:4326: minLon,minLat,maxLon,maxLat) pro DWD-Region
+struct DwdBbox { int id; float minLon, minLat, maxLon, maxLat; };
+const DwdBbox DWD_BBOX[] = {
+  {10,  7.8f, 53.4f, 11.4f, 55.1f},  // Schleswig-Holstein + Hamburg
+  {20, 10.6f, 53.1f, 14.4f, 54.7f},  // Mecklenburg-Vorpommern
+  {30,  6.6f, 51.3f, 11.6f, 53.9f},  // Niedersachsen + Bremen
+  {31, 11.3f, 51.4f, 14.8f, 53.6f},  // Brandenburg + Berlin
+  {32, 10.6f, 51.0f, 13.2f, 53.1f},  // Sachsen-Anhalt
+  {33,  9.9f, 50.2f, 12.7f, 51.6f},  // Thüringen
+  {34, 11.9f, 50.2f, 15.1f, 51.7f},  // Sachsen
+  {40,  5.9f, 50.3f,  9.5f, 52.5f},  // Nordrhein-Westfalen
+  {50,  7.8f, 49.4f, 10.3f, 51.7f},  // Hessen
+  {60,  6.1f, 48.9f,  8.5f, 50.9f},  // Rheinland-Pfalz + Saarland
+  {71,  9.0f, 47.3f, 13.9f, 50.6f},  // Bayern (alle Subregionen → gesamt)
+  {72,  9.0f, 47.3f, 13.9f, 50.6f},
+  {73,  9.0f, 47.3f, 13.9f, 50.6f},
+  {74,  9.0f, 47.3f, 13.9f, 50.6f},
+  {80,  7.5f, 47.5f, 10.5f, 49.8f},  // Baden-Württemberg
+  {0, 0, 0, 0, 0}
+};
+
+// Gibt BBOX für cfg.dwd_region zurück; Fallback: Deutschland gesamt
+static const DwdBbox* getDwdBbox() {
+  for (int i = 0; DWD_BBOX[i].id != 0; i++)
+    if (DWD_BBOX[i].id == cfg.dwd_region) return &DWD_BBOX[i];
+  static const DwdBbox germany = {0, 5.9f, 47.3f, 15.1f, 55.1f};
+  return &germany;
+}
 
 // ============================================================
 //  Daten-Structs
@@ -890,57 +919,51 @@ void fetchDwdWarnungen() {
   // TODO: NINA-API als zweite Option implementieren wenn DWD-JSON zu groß
 }
 
-// -- DWD Warnkarte (PNG → RGB565A8 im PSRAM) --
-void fetchDwdWarnkarte() {
+// -- DWD WMS Niederschlagsradar (PNG → RGB565A8 im PSRAM, bundeslandbezogen) --
+void fetchWmsRadar() {
   if (WiFi.status() != WL_CONNECTED) return;
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
-  // DWD bietet nur eine Deutschland-Gesamtkarte als PNG an
-  const char* url = "https://www.dwd.de/DWD/warnungen/warnapp_gemeinden/json/warnungen_gemeinde_map_de.png";
-  Serial.printf("[Warnkarte] URL: %s\n", url);
+
+  const DwdBbox* bb = getDwdBbox();
+  String url = "https://maps.dwd.de/geoserver/dwd/ows?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap";
+  url += "&LAYERS=dwd:KV_VG250_BUNDESLAENDER_2020,dwd:Niederschlagsradar";
+  url += "&SRS=EPSG:4326";
+  url += "&WIDTH=480&HEIGHT=270";
+  url += "&FORMAT=image/png";
+  url += "&BBOX=";
+  url += String(bb->minLon, 4) + "," + String(bb->minLat, 4) + ",";
+  url += String(bb->maxLon, 4) + "," + String(bb->maxLat, 4);
+  Serial.printf("[Radar] URL: %s\n", url.c_str());
   http.begin(sc, url);
   http.addHeader("User-Agent", "WetterCubePlus/1.0");
   http.setTimeout(20000);
   int httpCode = http.GET();
-  Serial.printf("[Warnkarte] HTTP %d\n", httpCode);
+  Serial.printf("[Radar] HTTP %d\n", httpCode);
   if (httpCode != 200) { http.end(); return; }
 
-  const size_t MAXBUF = 400 * 1024;
-  uint8_t* pngBuf = (uint8_t*)ps_malloc(MAXBUF);
-  if (!pngBuf) { Serial.println("[Warnkarte] ps_malloc PNG fehlgeschlagen"); http.end(); return; }
-
-  WiFiClient* stream = http.getStreamPtr();
-  stream->setTimeout(15000);  // 15s Timeout pro Chunk (HTTPS/chunked: available() kann kurz 0 sein)
-  size_t got = 0;
+  http.setTimeout(30000);
   unsigned long tStart = millis();
-  while (got < MAXBUF && (millis() - tStart) < 20000) {
-    size_t chunk = stream->readBytes(pngBuf + got, min((size_t)4096, MAXBUF - got));
-    if (chunk > 0) {
-      got += chunk;
-    } else if (!stream->connected()) {
-      break;  // Verbindung geschlossen = Download fertig
-    } else {
-      delay(5);
-    }
-  }
+  String body = http.getString();
   http.end();
-  Serial.printf("[Warnkarte] Download: %u Bytes in %lums\n", got, millis() - tStart);
+  size_t got = body.length();
+  Serial.printf("[Radar] Download: %u Bytes in %lums\n", got, millis() - tStart);
 
-  if (got < 512) { Serial.printf("[Warnkarte] Zu wenig Daten: %u\n", got); free(pngBuf); return; }
-  Serial.printf("[Warnkarte] %u Bytes geladen, dekodiere PNG\n", got);
+  if (got < 512) { Serial.printf("[Radar] Zu wenig Daten: %u\n", got); return; }
+  const uint8_t* pngBuf = (const uint8_t*)body.c_str();
+  Serial.printf("[Radar] %u Bytes geladen, dekodiere PNG\n", got);
 
   // PNG → RGBA8888 (lodepng nutzt malloc; mit PSRAM als Heap-Erweiterung reicht der Speicher)
   unsigned char* rgba = nullptr;
   unsigned imgW = 0, imgH = 0;
   unsigned err = lodepng_decode32(&rgba, &imgW, &imgH, pngBuf, got);
-  free(pngBuf);
 
   if (err || !rgba) {
-    Serial.printf("[Warnkarte] lodepng Fehler %u\n", err);
+    Serial.printf("[Radar] lodepng Fehler %u\n", err);
     if (rgba) free(rgba);
     return;
   }
-  Serial.printf("[Warnkarte] Dekodiert: %ux%u\n", imgW, imgH);
+  Serial.printf("[Radar] Dekodiert: %ux%u\n", imgW, imgH);
 
   // RGBA8888 → RGB565A8 im PSRAM (Format: [RGB565 block][Alpha block])
   // Mit LV_COLOR_16_SWAP=1: Bytes im RGB565-Word tauschen
@@ -949,7 +972,7 @@ void fetchDwdWarnkarte() {
   size_t totalSize   = rgb565Size + alphaSize;
   uint8_t* decoded = (uint8_t*)ps_malloc(totalSize);
   if (!decoded) {
-    Serial.println("[Warnkarte] ps_malloc decoded fehlgeschlagen");
+    Serial.println("[Radar] ps_malloc decoded fehlgeschlagen");
     free(rgba); return;
   }
 
@@ -977,17 +1000,11 @@ void fetchDwdWarnkarte() {
 
   if (imgWarnkarte) {
     lv_img_set_src(imgWarnkarte, &warnkarteDsc);
-    // Auf Display-Breite skalieren
-    // Fit-to-screen: kleinster Zoom sodass Bild komplett ins Display passt
-    // 40px Platz für Navigation-Buttons unten abziehen
-    uint16_t zoomW = (uint16_t)((256.0f * TFT_WIDTH)        / imgW);
-    uint16_t zoomH = (uint16_t)((256.0f * (TFT_HEIGHT - 40)) / imgH);
-    uint16_t zoom  = min(zoomW, zoomH);
-    lv_img_set_zoom(imgWarnkarte, zoom);
+    lv_img_set_zoom(imgWarnkarte, 256);  // 1:1, WMS liefert 480x280 passend
     lv_img_set_antialias(imgWarnkarte, false);
-    lv_obj_align(imgWarnkarte, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(imgWarnkarte, LV_ALIGN_TOP_MID, 0, 0);
     if (lblWarnkarteHint) lv_obj_add_flag(lblWarnkarteHint, LV_OBJ_FLAG_HIDDEN);
-    Serial.printf("[Warnkarte] Angezeigt mit zoom=%u\n", zoom);
+    Serial.printf("[Radar] Angezeigt %ux%u\n", imgW, imgH);
   }
 }
 
@@ -996,12 +1013,12 @@ void erstelleWarnkarteScreen() {
   // Hint zuerst, Bild danach → Bild liegt im Z-Order oben
   lblWarnkarteHint = lv_label_create(objects.screenwarnkarte1);
   if (lblWarnkarteHint) {
-    lv_label_set_text(lblWarnkarteHint, "Lade Warnkarte ...");
+    lv_label_set_text(lblWarnkarteHint, "Lade Radarkarte ...");
     lv_obj_align(lblWarnkarteHint, LV_ALIGN_CENTER, 0, 0);
   }
   imgWarnkarte = lv_img_create(objects.screenwarnkarte1);
   if (imgWarnkarte) {
-    lv_obj_align(imgWarnkarte, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(imgWarnkarte, LV_ALIGN_TOP_MID, 0, 0);
   }
 }
 
@@ -1456,8 +1473,8 @@ void setup() {
   zeigeBootScreen("Lade Warnungen...");
   fetchDwdWarnungen();
   setzeBootFortschritt(95);
-  zeigeBootScreen("Lade Warnkarte...");
-  fetchDwdWarnkarte();
+  zeigeBootScreen("Lade Radarkarte...");
+  fetchWmsRadar();
   letztesWarnkarteUpdate = millis();
   setzeBootFortschritt(100);
 
@@ -1544,9 +1561,9 @@ void loop() {
   }
 
   // DWD-Warnkarte alle 30 Minuten
-  if (millis() - letztesWarnkarteUpdate >= 1800000UL) {
+  if (millis() - letztesWarnkarteUpdate >= 600000UL) {
     letztesWarnkarteUpdate = millis();
-    fetchDwdWarnkarte();
+    fetchWmsRadar();
   }
 
   // Display-Dimmen

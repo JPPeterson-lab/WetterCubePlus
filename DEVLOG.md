@@ -1,5 +1,39 @@
 # Entwicklungs-Log
 
+## 2026-06-14 – v0.2.12-beta
+
+### Radarkarte: Download-Fix + Layout
+
+**Problem 1: Truncated PNG (lodepng Fehler 28)**
+Der DWD WMS-Server liefert die Karte ohne `Content-Length`-Header (Chunked-Transfer). Die bisherige Stream-Schleife lief daher immer bis zum konfigurierten Timeout (erst 20s, dann 30s) — die Verbindung schließt sich clientseitig, nicht serverseitig. Resultat: die letzten ~1 KB des PNG fehlen, lodepng kann es nicht dekodieren.
+
+Fix: `http.getString()` statt manueller Stream-Schleife. `getString()` wartet intern korrekt auf das Ende des Chunked-Streams und gibt erst dann zurück.
+
+**Problem 2: Bild überdeckte Navigationsbuttons**
+Buttons im `screenwarnkarte1`-Screen sitzen bei Y=273, Höhe 40px. Das angeforderte Bild war 480×280 → letzten 7px überlagerten die Buttons. Fix: `HEIGHT=270`, `LV_ALIGN_TOP_MID` statt CENTER.
+
+**Aktualisierungsintervall:** 30 → 10 Minuten. DWD Niederschlagsradar aktualisiert alle 5 Minuten; 10 Minuten ist ein guter Kompromiss zwischen Aktualität und Download-Last (~30 KB pro Abruf).
+
+---
+
+## 2026-06-14 – v0.2.11-beta
+
+### DWD WMS Niederschlagsradar (bundeslandbezogen)
+
+Die bisherige Warnkarte zeigte eine fest codierte Deutschland-PNG vom DWD — auf einem 480×320 Display zu klein um Details zu erkennen.
+
+**Neue Lösung: DWD WMS GetMap-Request** mit Bundesland-BBOX.
+
+Der DWD GeoServer (`maps.dwd.de/geoserver/dwd/ows`) bietet den Layer `niederschlagsradar` als WMS-Dienst. Über den `BBOX`-Parameter lässt sich ein beliebiger Kartenausschnitt in beliebiger Pixelgröße abrufen — kein separates Kartenbild-Asset nötig, der Server rendert alles serverseitig.
+
+**BBOX-Tabelle:** Für jede der 15 DWD-Pollenregionen sind die Bounding-Box-Koordinaten (EPSG:4326: minLon, minLat, maxLon, maxLat) hinterlegt. Bayern hat 4 Subregionen (71/72/73/74) die alle auf Bayern gesamt (9.0/47.3/13.9/50.6) zeigen. Die vorhandene `cfg.dwd_region`-Einstellung aus dem Setup wird direkt genutzt — kein neues Konfigurationsfeld nötig.
+
+**WMS-Anfrage:** `WIDTH=480&HEIGHT=280` — passt exakt ins Display (320px − 40px Navigationsbuttons). Das Bild wird 1:1 ohne Zoom angezeigt (`lv_img_set_zoom(img, 256)`).
+
+**Download-Logik:** Identisch mit bisheriger Warnkarte (HTTPClient → PSRAM-Buffer → lodepng → RGB565A8-Konvertierung). Aktualisierung alle 30 Minuten.
+
+---
+
 ## 2026-06-13 – v0.2.10-beta
 
 ### Pollen-Architektur: Open-Meteo stündlich für Screen 1 und Warnung
