@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.12-beta"
+#define FIRMWARE_VERSION "0.2.13-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1155,7 +1155,7 @@ void aktualisiereUI() {
     setLabel(hzeit[i], wetter.time_forecast[i].c_str());
     if (htemp[i]) {
       snprintf(buf, sizeof(buf), "%.0f °C", wetter.temp_forecast[i]);
-      lv_label_set_text(htemp[i], buf);
+      setLabelFmt(htemp[i], tempColor(wetter.temp_forecast[i]), buf);
     }
     if (hws[i]) {
       snprintf(buf, sizeof(buf), "%.0f km/h", wetter.wind_speed_forecast[i]);
