@@ -1,5 +1,27 @@
 # Entwicklungs-Log
 
+## 2026-06-14 – v0.2.15-beta
+
+### Eigene Partitionstabelle – mehr Platz für Firmware
+
+Bei 88 % Flash-Auslastung (Slot à ~1,5 MB) war absehbar, dass weitere Features (z.B. erneute Warnkarte, mehr Icons) den Slot sprengen. Lösung: eigene `partitions.csv` im Sketch-Verzeichnis.
+
+**Neues Layout (16 MB Flash):**
+
+| Bereich | Offset | Größe |
+|---|---|---|
+| nvs | 0x9000 | 20 KB |
+| otadata | 0xe000 | 8 KB |
+| app0 (ota_0) | 0x10000 | 4 MB |
+| app1 (ota_1) | 0x410000 | 4 MB |
+| spiffs | 0x810000 | ~8 MB |
+
+Arduino IDE liest `partitions.csv` im Sketch-Ordner automatisch ein. In der IDE einmalig **Tools → Partition Scheme → Custom** wählen.
+
+**Warum kein Nachteil:** SPIFFS (9,9 → 8 MB) wird nicht genutzt – alle Bilder sind als `.inc`-Arrays in der Firmware eingebettet. OTA funktioniert weiterhin mit beiden Slots. Nur die erste Installation der neuen Partitionstabelle erfordert USB-Flash – danach wieder vollständig OTA-fähig.
+
+---
+
 ## 2026-06-14 – v0.2.14-beta
 
 ### LV_COLOR_16_SWAP + build_opt.h

@@ -146,7 +146,7 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 | Board | ESP32S3 Dev Module |
 | PSRAM | OPI PSRAM |
 | Flash Size | 16 MB |
-| Partition Scheme | 16M Flash (3MB APP/9.9MB FATFS) |
+| Partition Scheme | **Custom** (partitions.csv im Sketch-Ordner) |
 
 ---
 
@@ -317,7 +317,7 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 | Board | ESP32S3 Dev Module |
 | PSRAM | OPI PSRAM |
 | Flash Size | 16 MB |
-| Partition Scheme | 16M Flash (3MB APP/9.9MB FATFS) |
+| Partition Scheme | **Custom** (partitions.csv im Sketch-Ordner) |
 
 ---
 

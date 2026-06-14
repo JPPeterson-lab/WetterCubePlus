@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.15-beta (2026-06-14)
+
+### Neu
+- Eigene Partitionstabelle (`partitions.csv`): 2× 4 MB OTA-Slots statt 2× 1,5 MB – Speicherauslastung sinkt von 88 % auf ~66 %
+- SPIFFS bleibt mit ~8 MB erhalten (vorher 9,9 MB – kein Funktionsverlust, SPIFFS wird nicht genutzt)
+- ⚠️ Einmalige USB-Flashpflicht um Partitionstabelle einzubrennen, danach OTA wieder normal
+
+---
+
 ## v0.2.14-beta (2026-06-14)
 
 ### Fixes
