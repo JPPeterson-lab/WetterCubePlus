@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.14-beta (2026-06-14)
+
+### Fixes
+- Alle Farben korrekt: `build_opt.h` mit `LV_COLOR_16_SWAP=1` hinzugefügt — LVGL tauscht Bytes vor der Ausgabe, `swap565_t` in `disp_flush` arbeitet korrekt
+- Forecast-Temperaturen: Farbkodierung per `tempColor()` (blau/grün/gelb/rot) wie auf dem Hauptscreen
+
+---
+
 ## v0.2.12-beta (2026-06-14)
 
 ### Fixes

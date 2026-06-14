@@ -1,5 +1,25 @@
 # Entwicklungs-Log
 
+## 2026-06-14 – v0.2.14-beta
+
+### LV_COLOR_16_SWAP + build_opt.h
+
+**Problem:** Alle Farben im UI waren byte-vertauscht (blau erschien orange, rot erschien cyan etc.). Erst nach Hinzufügen farbiger Temperaturlabels auf dem Forecast-Screen fiel das Problem auf — schwarze Texte sind von Byte-Swap nicht betroffen, bunte Farben schon.
+
+**Ursache:** `disp_flush` nutzt `lgfx::swap565_t*` als Pointer-Typ für `tft.writePixels()`. Das signalisiert LovyanGFX: „Daten sind bereits im Display-Byte-Order, nicht nochmal swappen." LVGL muss die Bytes also selbst vorher tauschen — das erfordert `LV_COLOR_16_SWAP=1`. Die globale `lv_conf.h` hatte `LV_COLOR_16_SWAP=0` als Default, und es fehlte eine projektspezifische `build_opt.h`.
+
+**Fix:** `build_opt.h` im Sketch-Verzeichnis angelegt:
+```
+-Os
+-DLV_COLOR_16_SWAP=1
+-DLV_MEM_SIZE=65536
+```
+Arduino IDE liest diese Datei beim Kompilieren als zusätzliche Compiler-Flags ein. Damit ist `LV_COLOR_16_SWAP=1` projekt-lokal gesetzt, ohne die globale `lv_conf.h` zu verändern.
+
+**Merkregel:** `swap565_t` in `disp_flush` → immer `LV_COLOR_16_SWAP=1`. Ohne `swap565_t` (z.B. WetterCube mit `draw16bitRGBBitmap`) → `LV_COLOR_16_SWAP=0`.
+
+---
+
 ## 2026-06-14 – v0.2.12-beta
 
 ### Radarkarte: Download-Fix + Layout
