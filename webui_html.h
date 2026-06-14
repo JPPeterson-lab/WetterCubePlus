@@ -124,6 +124,21 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
     <option value="5" %DT5%>5 Minuten</option>
     <option value="10" %DT10%>10 Minuten</option>
   </select>
+  <hr style="margin:14px 0;border-color:#ddd">
+  <label><input type="checkbox" name="night_mode" %NM%> Nachtmodus aktiv</label>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+    <div>
+      <label>Von</label>
+      <select name="night_from">%NIGHT_FROM_OPTIONS%</select>
+    </div>
+    <div>
+      <label>Bis</label>
+      <select name="night_to">%NIGHT_TO_OPTIONS%</select>
+    </div>
+  </div>
+  <label style="margin-top:8px;display:block">Helligkeit nachts: <span id="nbv">%NBR%</span>%</label>
+  <input type="range" name="night_bright" min="0" max="50" value="%NBR%"
+    oninput="document.getElementById('nbv').textContent=this.value">
 </div>
 
 <button type="submit" class="btn btn-gruen">Einstellungen speichern</button>

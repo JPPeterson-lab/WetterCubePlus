@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.2.16-beta (2026-06-14)
+
+### Neu
+- Nachtmodus: zeitbasiertes Display-Dimmen (Von/Bis in 15-Min-Schritten, eigene Nacht-Helligkeit 0–50 %)
+- Nachtmodus per WebUI konfigurierbar unter Einstellungen → Display
+- Pollen-Schwellwerte an WetterCube angeglichen: ≤10→gering, ≤30→mittel, ≤100→hoch, >100→stark (Grains/m³)
+- Pollenwarnung: nächste Stunde korrekt (min(aktuelle Stunde +1, 23))
+
+### Fixes
+- Nachtmodus: Display blinkt nicht mehr beim Touch (Helligkeit im Nachtmodus nur über Loop geregelt, kein Reset durch Touch)
+- Radarkarte: Automatischer Fallback auf nur `dwd:Niederschlagsradar` wenn `KV_VG250_BUNDESLAENDER_2020`-Layer DWD-seitig nicht erreichbar (internalError)
+- Radarkarte: Content-Type-Prüfung vor PNG-Dekodierung verhindert lodepng-Fehler bei WMS-XML-Fehlerantwort
+
+---
+
 ## v0.2.15-beta (2026-06-14)
 
 ### Neu

@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.15-beta"
+#define FIRMWARE_VERSION "0.2.16-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -136,6 +136,10 @@ struct Config {
   int    dim_timeout = 3;       // Minuten; 0 = aus
   int    brightness = 80;       // Prozent
   bool   warn_region = true;    // DWD-Warnungen aktiv
+  bool   night_mode = false;    // Nachtmodus ein/aus
+  int    night_from = 22 * 60;  // Startzeit in Minuten seit Mitternacht (22:00)
+  int    night_to   =  6 * 60;  // Endzeit   in Minuten seit Mitternacht (06:00)
+  int    night_brightness = 10; // Helligkeit im Nachtmodus (%)
 };
 Config cfg;
 
@@ -304,7 +308,8 @@ static void touch_read(lv_indev_drv_t* drv, lv_indev_data_t* data) {
     if (!wasPressed) {
       // Nur beim echten Press-Start updaten, nicht bei gehaltenem Finger oder Rauschen
       letztesTouchZeit = millis();
-      if (dimmed) {
+      if (dimmed && !cfg.night_mode) {
+        // Im Nachtmodus kein Aufhellen beim Touch – Loop regelt Helligkeit
         setBrightness(cfg.brightness);
         dimmed = false;
       }
@@ -435,9 +440,13 @@ void ladeCfg() {
   cfg.regen_warn      = prefs.getBool  ("regen_warn",  true);
   cfg.pollen_warn     = prefs.getBool  ("pollen_warn", true);
   cfg.pollen_schwelle = prefs.getInt   ("pol_schw",    2);
-  cfg.dim_timeout     = prefs.getInt   ("dim_time",    3);
-  cfg.brightness      = prefs.getInt   ("bright",      80);
-  cfg.warn_region     = prefs.getBool  ("warn_reg",    true);
+  cfg.dim_timeout       = prefs.getInt   ("dim_time",    3);
+  cfg.brightness        = prefs.getInt   ("bright",      80);
+  cfg.warn_region       = prefs.getBool  ("warn_reg",    true);
+  cfg.night_mode        = prefs.getBool  ("night_mode",  false);
+  cfg.night_from        = prefs.getInt   ("night_from",  22 * 60);
+  cfg.night_to          = prefs.getInt   ("night_to",     6 * 60);
+  cfg.night_brightness  = prefs.getInt   ("night_bright", 10);
   prefs.end();
 }
 
@@ -452,9 +461,13 @@ void speichereCfg() {
   prefs.putBool  ("regen_warn", cfg.regen_warn);
   prefs.putBool  ("pollen_warn",cfg.pollen_warn);
   prefs.putInt   ("pol_schw",   cfg.pollen_schwelle);
-  prefs.putInt   ("dim_time",   cfg.dim_timeout);
-  prefs.putInt   ("bright",     cfg.brightness);
-  prefs.putBool  ("warn_reg",   cfg.warn_region);
+  prefs.putInt   ("dim_time",    cfg.dim_timeout);
+  prefs.putInt   ("bright",      cfg.brightness);
+  prefs.putBool  ("warn_reg",    cfg.warn_region);
+  prefs.putBool  ("night_mode",  cfg.night_mode);
+  prefs.putInt   ("night_from",  cfg.night_from);
+  prefs.putInt   ("night_to",    cfg.night_to);
+  prefs.putInt   ("night_bright",cfg.night_brightness);
   prefs.end();
 }
 
@@ -574,6 +587,22 @@ void handleWebRoot() {
     String key = "%PS" + String(i) + "%";
     html.replace(key, (cfg.pollen_schwelle == i) ? "selected" : "");
   }
+  html.replace("%NM%",    cfg.night_mode ? "checked" : "");
+  html.replace("%NBR%",   String(cfg.night_brightness));
+  // Nacht-Von/Bis Dropdowns (96 Einträge je, 15-Min-Schritte)
+  {
+    String optFrom, optTo;
+    for (int m = 0; m < 24 * 60; m += 15) {
+      int hh = m / 60, mm = m % 60;
+      char buf[8]; snprintf(buf, sizeof(buf), "%02d:%02d", hh, mm);
+      String sel_f = (m == cfg.night_from) ? " selected" : "";
+      String sel_t = (m == cfg.night_to)   ? " selected" : "";
+      optFrom += "<option value='" + String(m) + "'" + sel_f + ">" + buf + "</option>";
+      optTo   += "<option value='" + String(m) + "'" + sel_t + ">" + buf + "</option>";
+    }
+    html.replace("%NIGHT_FROM_OPTIONS%", optFrom);
+    html.replace("%NIGHT_TO_OPTIONS%",   optTo);
+  }
   server.send(200, "text/html", html);
 }
 
@@ -584,6 +613,10 @@ void handleWebSave() {
   cfg.regen_warn      = server.hasArg("regen_warn");
   cfg.pollen_warn     = server.hasArg("pollen_warn");
   cfg.warn_region     = server.hasArg("warn_region");
+  cfg.night_mode      = server.hasArg("night_mode");
+  if (server.hasArg("night_from"))   cfg.night_from       = server.arg("night_from").toInt();
+  if (server.hasArg("night_to"))     cfg.night_to         = server.arg("night_to").toInt();
+  if (server.hasArg("night_bright")) cfg.night_brightness = server.arg("night_bright").toInt();
   if (server.hasArg("pol_schw"))   cfg.pollen_schwelle = server.arg("pol_schw").toInt();
   if (server.hasArg("brightness")) cfg.brightness      = server.arg("brightness").toInt();
   if (server.hasArg("dim_time"))   cfg.dim_timeout     = server.arg("dim_time").toInt();
@@ -707,13 +740,14 @@ static float parseDwdWert(const char* s) {
 }
 
 // Konvertiert Open-Meteo Pollenwerte (Körner/m³) auf DWD 0–3 Skala
+// Schwellwerte identisch mit WetterCube setPollenLabel()
 float openMeteoToDwd(float grains) {
   if (grains < 0)    return -1.0f;
   if (grains == 0)   return  0.0f;
-  if (grains < 25)   return  1.0f;
-  if (grains < 75)   return  2.0f;
-  if (grains < 150)  return  2.5f;
-  return                     3.0f;
+  if (grains <= 10)  return  1.0f;   // gering
+  if (grains <= 30)  return  2.0f;   // mittel
+  if (grains <= 100) return  2.5f;   // hoch
+  return                     3.0f;   // stark
 }
 
 const char* pollenText(float v) {
@@ -938,6 +972,8 @@ void fetchWmsRadar() {
   http.begin(sc, url);
   http.addHeader("User-Agent", "WetterCubePlus/1.0");
   http.setTimeout(20000);
+  const char* hdrs[] = {"Content-Type"};
+  http.collectHeaders(hdrs, 1);
   int httpCode = http.GET();
   Serial.printf("[Radar] HTTP %d\n", httpCode);
   if (httpCode != 200) { http.end(); return; }
@@ -949,6 +985,32 @@ void fetchWmsRadar() {
   size_t got = body.length();
   Serial.printf("[Radar] Download: %u Bytes in %lums\n", got, millis() - tStart);
 
+  String ct = http.header("Content-Type");
+  if (!ct.startsWith("image/png")) {
+    Serial.printf("[Radar] Fehler (mit Grenzen): %s\n", body.substring(0, 200).c_str());
+    // Fallback: nur Radar-Layer ohne Bundesland-Grenzen
+    WiFiClientSecure sc2; sc2.setInsecure();
+    HTTPClient http2;
+    String url2 = "https://maps.dwd.de/geoserver/dwd/ows?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap";
+    url2 += "&LAYERS=dwd:Niederschlagsradar";
+    url2 += "&SRS=EPSG:4326&WIDTH=480&HEIGHT=270&FORMAT=image/png";
+    url2 += "&BBOX=" + String(bb->minLon,4) + "," + String(bb->minLat,4) + ","
+                     + String(bb->maxLon,4) + "," + String(bb->maxLat,4);
+    Serial.printf("[Radar] Fallback-URL: %s\n", url2.c_str());
+    http2.begin(sc2, url2);
+    http2.addHeader("User-Agent", "WetterCubePlus/1.0");
+    http2.setTimeout(30000);
+    const char* hdrs2[] = {"Content-Type"};
+    http2.collectHeaders(hdrs2, 1);
+    int c2 = http2.GET();
+    if (c2 != 200) { http2.end(); return; }
+    body = http2.getString();
+    ct   = http2.header("Content-Type");
+    http2.end();
+    got  = body.length();
+    Serial.printf("[Radar] Fallback: %u Bytes, CT: %s\n", got, ct.c_str());
+    if (!ct.startsWith("image/png")) { Serial.println("[Radar] Fallback fehlgeschlagen"); return; }
+  }
   if (got < 512) { Serial.printf("[Radar] Zu wenig Daten: %u\n", got); return; }
   const uint8_t* pngBuf = (const uint8_t*)body.c_str();
   Serial.printf("[Radar] %u Bytes geladen, dekodiere PNG\n", got);
@@ -1566,9 +1628,27 @@ void loop() {
     fetchWmsRadar();
   }
 
-  // Display-Dimmen
-  if (cfg.dim_timeout > 0 && !dimmed) {
-    // dim_timeout -1 = 30 Sekunden (Testmodus), sonst Minuten
+  // Nachtmodus (zeitbasiert)
+  if (cfg.night_mode) {
+    struct tm ti; getLocalTime(&ti);
+    int nowMin = ti.tm_hour * 60 + ti.tm_min;
+    bool inNight;
+    if (cfg.night_from < cfg.night_to) {
+      inNight = (nowMin >= cfg.night_from && nowMin < cfg.night_to);
+    } else {
+      inNight = (nowMin >= cfg.night_from || nowMin < cfg.night_to);  // über Mitternacht
+    }
+    if (inNight && !dimmed) {
+      setBrightness(cfg.night_brightness);
+      dimmed = true;
+    } else if (!inNight && dimmed) {
+      setBrightness(cfg.brightness);
+      dimmed = false;
+    }
+  }
+
+  // Display-Dimmen (Inaktivitäts-Timeout)
+  if (!cfg.night_mode && cfg.dim_timeout > 0 && !dimmed) {
     unsigned long ms = (cfg.dim_timeout == -1) ? 30000UL : (unsigned long)cfg.dim_timeout * 60000UL;
     if (millis() - letztesTouchZeit >= ms) {
       Serial.printf("[Dim] Dimme: elapsed=%lus, timeout=%d\n",

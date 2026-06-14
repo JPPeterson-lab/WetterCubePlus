@@ -72,6 +72,7 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 |---|---|
 | **Display** | Helligkeit: 10–100 % (Slider, sofort aktiv) |
 | | Dimm-Timeout: Aus / 1 / 3 / 5 / 10 Minuten |
+| | Nachtmodus: Von/Bis (15-Min-Schritte), eigene Nacht-Helligkeit 0–50 % |
 | **Warnungen** | Regenwarnung ein/aus |
 | | Pollenwarnung ein/aus |
 | | Pollen-Schwellwert: Gering / Mittel / Hoch / Sehr hoch |
@@ -243,6 +244,7 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 |---|---|
 | **Display** | Brightness: 10–100 % (slider, applied instantly) |
 | | Dimming timeout: Off / 1 / 3 / 5 / 10 minutes |
+| | Night mode: From/To (15-min steps), separate night brightness 0–50 % |
 | **Warnings** | Rain warning on/off |
 | | Pollen warning on/off |
 | | Pollen threshold: Low / Moderate / High / Very High |

@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-06-14 – v0.2.16-beta
+
+### Nachtmodus + Pollen-Fix + Radar-Fallback
+
+**Nachtmodus:** Zeitbasiertes Dimmen unabhängig vom Inaktivitäts-Timeout. Von/Bis in 15-Min-Schritten, eigene Nacht-Helligkeit (0–50 %). Mitternachts-Überlapp korrekt behandelt (`night_from >= night_to` → OR-Logik). Konfigurierbar in der WebUI unter Display.
+
+**Touch-Blinken im Nachtmodus:** `touch_read()` restaurierte bei jedem Touch bedingungslos die volle Helligkeit via `setBrightness(cfg.brightness)`. Im Nachtmodus ist `dimmed = true` dauerhaft gesetzt → Touch setzte zurück auf hell, Loop dimmed wieder → sichtbares Blinken. Fix: Touch-Reset nur bei `!cfg.night_mode`.
+
+**Pollen-Schwellwerte:** Abweichung zwischen WetterCube (≤10/≤30/≤100 Grains/m³) und WetterCubePlus (altes System: <25/<75/<150) führte zu unterschiedlichen Anzeigen bei denselben Daten. Angeglichen auf WetterCube-Schwellen.
+
+**Radar-Fallback:** DWD GeoServer gibt für Layer-Kombination `KV_VG250_BUNDESLAENDER_2020 + Niederschlagsradar` gelegentlich `internalError: Unable to obtain connection` zurück (Datenbankproblem serverseitig). Content-Type-Prüfung (`application/vnd.ogc.se_xml`) erkennt den Fehler; automatischer Fallback auf nur `dwd:Niederschlagsradar`. Radarkarte erscheint ohne Bundeslandgrenzen statt gar nicht.
+
+---
+
 ## 2026-06-14 – v0.2.15-beta
 
 ### Eigene Partitionstabelle – mehr Platz für Firmware
