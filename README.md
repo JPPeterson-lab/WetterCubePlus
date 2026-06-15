@@ -54,7 +54,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 2. WLAN-Hotspot **„WetterCubePlus-Setup"** verbinden (Smartphone oder PC)
 3. Browser öffnet Portal automatisch – alternativ `192.168.4.1`
 4. WLAN-Zugangsdaten eingeben
-5. Standort eingeben – **ohne Umlaute**: `Munchen`, `Koeln`, `Dusseldorf`
+5. Standort eingeben – **ohne Umlaute**: `Munchen statt München`, `Koln statt Köln`, `Dusseldorf statt Düsseldorf`
 6. DWD-Pollenregion / Bundesland wählen (gilt auch für die Radarkarte)
 7. Speichern & Neustart
 
