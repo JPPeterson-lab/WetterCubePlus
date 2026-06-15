@@ -20,6 +20,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌧️ | **Regenwarnung** | Blinkendes Warn-Screen 60 Min. vor erwartetem Regen |
 | ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen (Level ≥ 2) |
 | 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert |
+| ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
@@ -35,7 +36,8 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 2 | **Wettervorhersage** | 4×3-Stunden-Slots mit Icon, Temperatur, Wind |
 | 3 | **Pollenvorhersage** | 8 Allergene (DWD), Stufen heute/morgen/übermorgen |
 | 4 | **Niederschlagsradar** | Bundesland-Ausschnitt, DWD WMS, 10-Min.-Aktualisierung |
-| 5 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung |
+| 5 | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
+| 6 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung |
 
 ---
 
@@ -192,6 +194,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🌧️ | **Rain warning** | Flashing warning screen 60 min before expected rainfall |
 | ⚠️ | **DWD weather warnings** | Up to 5 active warnings (level ≥ 2) |
 | 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min |
+| ☀️ | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
 | 🖥️ | **WebUI** | All settings at `wettercubeplus.local` – no reflashing needed |
 | 📡 | **Captive Portal** | Wi-Fi setup without an app |
 | 🔄 | **OTA update** | Firmware update via WebUI over Wi-Fi |
@@ -207,7 +210,8 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 2 | **Forecast** | 4×3-hour slots with icon, temperature, wind |
 | 3 | **Pollen forecast** | 8 allergens (DWD), levels today/tomorrow/day after |
 | 4 | **Precipitation radar** | Federal-state map view, DWD WMS, updated every 10 min |
-| 5 | **Warning screen** | Flashing alert for rain or pollen warnings |
+| 5 | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
+| 6 | **Warning screen** | Flashing alert for rain or pollen warnings |
 
 ---
 

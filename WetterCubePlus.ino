@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.2.16-beta"
+#define FIRMWARE_VERSION "0.3.0-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1275,6 +1275,16 @@ void aktualisiereUI() {
     setLabel(objects.labelwarnhint,   "Tippen zum Bestätigen");
   }
 
+  // ── SunMoon (screensunmoon) ─────────────────────────────────
+  if (objects.labeluvindexvalue) {
+    snprintf(buf, sizeof(buf), "%.0f", wetter.uv_index);
+    lv_label_set_text(objects.labeluvindexvalue, buf);
+  }
+  if (objects.labelsunrisetime)
+    lv_label_set_text(objects.labelsunrisetime, wetter.sunrise.isEmpty() ? "--:--" : wetter.sunrise.c_str());
+  if (objects.labelsundowntime)
+    lv_label_set_text(objects.labelsundowntime, wetter.sunset.isEmpty()  ? "--:--" : wetter.sunset.c_str());
+
   // ── Pollenwarnung (screenwarnungpollen) ─────────────────────
   // Basiert auf Open-Meteo naechste Stunde (umgerechnet auf DWD-Skala)
   float pollenWerte[] = {openMeteoToDwd(pollen.birke), openMeteoToDwd(pollen.erle),
@@ -1345,7 +1355,7 @@ void setzeBootFortschritt(int prozent) {
 //  LVGL Event-Callbacks
 // ============================================================
 
-// screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screen_1
+// screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
 static void cbHome(lv_event_t*)   { loadScreen(SCREEN_ID_SCREEN_1); }
 static void cbFwd1(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }   // screen_1 >
 static void cbBack1(lv_event_t*) { loadScreen(SCREEN_ID_SCREEN_1); }               // forecastwetter <
@@ -1353,7 +1363,9 @@ static void cbFwd2(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }
 static void cbBack2(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }   // forecastpollen <
 static void cbFwd3(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }       // forecastpollen >
 static void cbBack3(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }   // screenwarnkarte1 <
-static void cbFwd4(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }               // screenwarnkarte1 >
+static void cbFwd4(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENSUNMOON); }          // screenwarnkarte1 >
+static void cbFwd5(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }               // screensunmoon >
+static void cbBack5(lv_event_t*) { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }       // screensunmoon <
 
 // ── Blinken auf Warnscreens (500 ms, Icon + Titel) ──────────
 static bool warnBlinkState = false;
@@ -1461,18 +1473,21 @@ void setup() {
   erstelleWarnkarteScreen();
 
   // Navigations-Buttons sofort verdrahten (vor WiFi-Check, gilt auch im Portal-Modus)
-  // Navigation: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screen_1
+  // Navigation: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
   #define REG_CB(obj, cb, evt) do { if (obj) lv_obj_add_event_cb(obj, cb, evt, nullptr); } while(0)
-  REG_CB(objects.labelbuttonforward,    cbFwd1,    LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonbackward,   cbBack1,   LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonforward_1,  cbFwd2,    LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonbackward_2, cbBack2,   LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonforward_2,  cbFwd3,    LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonbackward_1, cbBack3,   LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonforward_3,  cbFwd4,    LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonforward,    cbFwd1,    LV_EVENT_CLICKED);  // screen_1 >
+  REG_CB(objects.labelbuttonbackward,   cbBack1,   LV_EVENT_CLICKED);  // forecastwetter <
+  REG_CB(objects.labelbuttonforward_1,  cbFwd2,    LV_EVENT_CLICKED);  // forecastwetter >
+  REG_CB(objects.labelbuttonbackward_2, cbBack2,   LV_EVENT_CLICKED);  // forecastpollen <
+  REG_CB(objects.labelbuttonforward_3,  cbFwd3,    LV_EVENT_CLICKED);  // forecastpollen >
+  REG_CB(objects.labelbuttonbackward_1, cbBack3,   LV_EVENT_CLICKED);  // screenwarnkarte1 <
+  REG_CB(objects.labelbuttonforward_4,  cbFwd4,    LV_EVENT_CLICKED);  // screenwarnkarte1 >
+  REG_CB(objects.labelbuttonforward_2,  cbFwd5,    LV_EVENT_CLICKED);  // screensunmoon >
+  REG_CB(objects.button_1,              cbBack5,   LV_EVENT_CLICKED);  // screensunmoon <
   REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnung,         cbWarnTap, LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnungpollen,   cbWarnTap, LV_EVENT_CLICKED);
   #undef REG_CB

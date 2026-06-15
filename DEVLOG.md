@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-06-15 – v0.3.0-beta
+
+### ScreenSunMoon – neuer 5. Screen
+
+Neuer Screen mit UV-Index, Sonnenaufgang und -untergang. Navigation ist jetzt eine vollständige Runde über 5 Screens.
+
+**Datenquelle UV:** `uv_index_max` aus Open-Meteo Daily-API – bereits im Wetter-Fetch vorhanden, kein zusätzlicher API-Call nötig. Stundenwerte wären für UV nicht sinnvoll (tags 0, abends 0).
+
+**Datenquelle Sunrise/Sunset:** `sunrise`/`sunset` aus Open-Meteo Daily-API, bereits als `wetter.sunrise`/`wetter.sunset` (Format `HH:MM`) im Struct.
+
+**Navigation:** PicoPixel vergibt Button-Namen inkrementell je Export. Der neue Screen brachte `labelbuttonforward_4` für ScreenWarnkarte1 (vorher `_3`) und `labelbuttonforward_2` + `button_1` für SunMoon. Alle REG_CB-Einträge entsprechend angepasst.
+
+---
+
 ## 2026-06-14 – v0.2.16-beta
 
 ### Nachtmodus + Pollen-Fix + Radar-Fallback

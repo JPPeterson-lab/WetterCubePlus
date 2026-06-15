@@ -13,6 +13,7 @@ typedef struct _objects_t {
     lv_obj_t *lagerscreen;
     lv_obj_t *screenforecastpollen;
     lv_obj_t *screenwarnkarte1;
+    lv_obj_t *screensunmoon;
     lv_obj_t *screenboot;
     lv_obj_t *screenwarnung;
     lv_obj_t *screenwarnungpollen;
@@ -34,9 +35,11 @@ typedef struct _objects_t {
     lv_obj_t *labelnamebirke;
     lv_obj_t *labeldatum;
     lv_obj_t *labelh4winddirection;
+    lv_obj_t *labelsunrise;
     lv_obj_t *labelh2zeit;
     lv_obj_t *labelpollenforecast1mainvalue;
     lv_obj_t *labelhaselday2;
+    lv_obj_t *labeluvindex;
     lv_obj_t *labelgraeserday3;
     lv_obj_t *labelday2;
     lv_obj_t *labeltemp;
@@ -49,6 +52,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonforward_1;
     lv_obj_t *image_1;
     lv_obj_t *labelescheday2;
+    lv_obj_t *labelsundown;
     lv_obj_t *labelnameroggen;
     lv_obj_t *labelroggenday1;
     lv_obj_t *labelwarntitel;
@@ -59,6 +63,8 @@ typedef struct _objects_t {
     lv_obj_t *labelambrosiaday3;
     lv_obj_t *labelambrosiaday1;
     lv_obj_t *imageh2;
+    lv_obj_t *labelbuttonforward_2;
+    lv_obj_t *image_2;
     lv_obj_t *labelh4windspeed;
     lv_obj_t *labelwarnhint;
     lv_obj_t *labelwinddirection;
@@ -66,7 +72,7 @@ typedef struct _objects_t {
     lv_obj_t *labelh1windspeed;
     lv_obj_t *labelwarndetail;
     lv_obj_t *labelpollenforecast2mainvalue;
-    lv_obj_t *labelbuttonforward_2;
+    lv_obj_t *labelbuttonforward_3;
     lv_obj_t *labelroggenday3;
     lv_obj_t *labelescheday3;
     lv_obj_t *labelh2winddirection;
@@ -80,6 +86,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbeifussday2;
     lv_obj_t *imagealert;
     lv_obj_t *imageh1;
+    lv_obj_t *button_1;
     lv_obj_t *labelpollenforecast3mainvalue;
     lv_obj_t *labelpollenforecast2main;
     lv_obj_t *labelambrosiaday2;
@@ -88,14 +95,19 @@ typedef struct _objects_t {
     lv_obj_t *labeltime;
     lv_obj_t *labelroggenday2;
     lv_obj_t *labelpollenforecasttext;
+    lv_obj_t *labeluvindexvalue;
     lv_obj_t *labelh3zeit;
     lv_obj_t *imagewarnregen;
     lv_obj_t *labelhaselday3;
     lv_obj_t *labelwetter;
     lv_obj_t *labelh2temp;
+    lv_obj_t *image_3;
     lv_obj_t *labelnamegraeser;
+    lv_obj_t *labelsunrisetime;
+    lv_obj_t *labelsundowntime;
     lv_obj_t *labelh4temp;
     lv_obj_t *labelbeifussday1;
+    lv_obj_t *labelbuttonhome_3;
     lv_obj_t *labelescheday1;
     lv_obj_t *labelwindspeed;
     lv_obj_t *labelnamehasel;
@@ -109,7 +121,7 @@ typedef struct _objects_t {
     lv_obj_t *labelerleday3;
     lv_obj_t *labelpollenforecast3main;
     lv_obj_t *labelbuttonbackward_2;
-    lv_obj_t *labelbuttonforward_3;
+    lv_obj_t *labelbuttonforward_4;
     lv_obj_t *labelh3temp;
     lv_obj_t *labelwarndetail2;
     lv_obj_t *imagewetter;
@@ -120,9 +132,12 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonforward_label;
     lv_obj_t *labelbuttonforward_1_label;
     lv_obj_t *labelbuttonforward_2_label;
+    lv_obj_t *labelbuttonforward_3_label;
+    lv_obj_t *button_1_label;
+    lv_obj_t *labelbuttonhome_3_label;
     lv_obj_t *labelbuttonbackward_1_label;
     lv_obj_t *labelbuttonbackward_2_label;
-    lv_obj_t *labelbuttonforward_3_label;
+    lv_obj_t *labelbuttonforward_4_label;
 } objects_t;
 
 extern objects_t objects;
@@ -132,10 +147,11 @@ enum ScreensEnum {
     SCREEN_ID_LAGERSCREEN = 2,
     SCREEN_ID_SCREENFORECASTPOLLEN = 3,
     SCREEN_ID_SCREENWARNKARTE1 = 4,
-    SCREEN_ID_SCREENBOOT = 5,
-    SCREEN_ID_SCREENWARNUNG = 6,
-    SCREEN_ID_SCREENWARNUNGPOLLEN = 7,
-    SCREEN_ID_SCREENFORECASTWETTER = 8,
+    SCREEN_ID_SCREENSUNMOON = 5,
+    SCREEN_ID_SCREENBOOT = 6,
+    SCREEN_ID_SCREENWARNUNG = 7,
+    SCREEN_ID_SCREENWARNUNGPOLLEN = 8,
+    SCREEN_ID_SCREENFORECASTWETTER = 9,
 };
 
 void create_screen_screen_1();
@@ -150,6 +166,9 @@ void delete_screen_screenforecastpollen();
 void create_screen_screenwarnkarte1();
 void tick_screen_screenwarnkarte1();
 void delete_screen_screenwarnkarte1();
+void create_screen_screensunmoon();
+void tick_screen_screensunmoon();
+void delete_screen_screensunmoon();
 void create_screen_screenboot();
 void tick_screen_screenboot();
 void delete_screen_screenboot();

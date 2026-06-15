@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.0-beta (2026-06-15)
+
+### Neu
+- Neuer Screen **ScreenSunMoon**: UV-Index (Tages-Maximum), Sonnenaufgangszeit, Sonnenuntergangszeit
+- Navigation erweitert: screen_1 → Wetter → Pollen → Radar → **SunMoon** → screen_1
+- Zwei neue Icons auf SunMoon-Screen: Sonne (`day_clear`) und Mond (`night_full_moon_clear`)
+
+---
+
 ## v0.2.16-beta (2026-06-14)
 
 ### Neu
