@@ -1,5 +1,20 @@
 # Entwicklungs-Log
 
+## 2026-06-15 – v0.3.1-beta
+
+### Standort-Marker auf Radarkarte
+
+Roter Punkt auf dem Bundesland-Radar zeigt den konfigurierten Standort. Pixel-Position berechnet aus `cfg.lat`/`cfg.lon` und der BBOX des Bundeslandes:
+
+```
+px = (cfg.lon - bb->minLon) / (bb->maxLon - bb->minLon) * 480
+py = (1 - (cfg.lat - bb->minLat) / (bb->maxLat - bb->minLat)) * 270
+```
+
+Marker ist ein LVGL-Objekt (`lv_obj`) mit `LV_RADIUS_CIRCLE`, 10×10 px, rot, im Z-Order über dem Radarbild. Wird beim ersten erfolgreichen Radar-Download positioniert und bei jedem Update aktualisiert. Vor dem ersten Download versteckt (`LV_OBJ_FLAG_HIDDEN`).
+
+---
+
 ## 2026-06-15 – v0.3.0-beta
 
 ### ScreenSunMoon – neuer 5. Screen

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.1-beta (2026-06-15)
+
+### Neu
+- Standort-Marker auf der Radarkarte: roter Punkt zeigt den konfigurierten Standort im Bundesland-Ausschnitt
+
+---
+
 ## v0.3.0-beta (2026-06-15)
 
 ### Neu

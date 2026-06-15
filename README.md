@@ -19,7 +19,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌿 | **Pollenflug** | Top-3 Allergene stündlich (Open-Meteo), 3-Tage-Forecast für 8 Allergene (DWD) |
 | 🌧️ | **Regenwarnung** | Blinkendes Warn-Screen 60 Min. vor erwartetem Regen |
 | ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen (Level ≥ 2) |
-| 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert |
+| 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert, mit Standort-Marker |
 | ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
@@ -193,7 +193,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🌿 | **Pollen** | Top-3 allergens hourly (Open-Meteo), 3-day forecast for 8 allergens (DWD) |
 | 🌧️ | **Rain warning** | Flashing warning screen 60 min before expected rainfall |
 | ⚠️ | **DWD weather warnings** | Up to 5 active warnings (level ≥ 2) |
-| 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min |
+| 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min, with location marker |
 | ☀️ | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
 | 🖥️ | **WebUI** | All settings at `wettercubeplus.local` – no reflashing needed |
 | 📡 | **Captive Portal** | Wi-Fi setup without an app |

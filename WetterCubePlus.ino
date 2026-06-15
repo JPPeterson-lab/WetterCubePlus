@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.3.0-beta"
+#define FIRMWARE_VERSION "0.3.1-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1066,9 +1066,12 @@ void fetchWmsRadar() {
     lv_img_set_antialias(imgWarnkarte, false);
     lv_obj_align(imgWarnkarte, LV_ALIGN_TOP_MID, 0, 0);
     if (lblWarnkarteHint) lv_obj_add_flag(lblWarnkarteHint, LV_OBJ_FLAG_HIDDEN);
+    aktualisiereRadarMarker();
     Serial.printf("[Radar] Angezeigt %ux%u\n", imgW, imgH);
   }
 }
+
+static lv_obj_t* radarMarker = nullptr;
 
 void erstelleWarnkarteScreen() {
   if (!objects.screenwarnkarte1) return;
@@ -1082,6 +1085,29 @@ void erstelleWarnkarteScreen() {
   if (imgWarnkarte) {
     lv_obj_align(imgWarnkarte, LV_ALIGN_TOP_MID, 0, 0);
   }
+  // Standort-Marker (roter Punkt) – über dem Bild im Z-Order
+  radarMarker = lv_obj_create(objects.screenwarnkarte1);
+  if (radarMarker) {
+    lv_obj_set_size(radarMarker, 10, 10);
+    lv_obj_set_style_radius(radarMarker, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(radarMarker, lv_color_hex(0xff0000), 0);
+    lv_obj_set_style_bg_opa(radarMarker, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(radarMarker, 0, 0);
+    lv_obj_clear_flag(radarMarker, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(radarMarker, LV_OBJ_FLAG_HIDDEN);  // erst nach Kartenload zeigen
+  }
+}
+
+void aktualisiereRadarMarker() {
+  if (!radarMarker || cfg.lat == 0.0f) return;
+  const DwdBbox* bb = getDwdBbox();
+  float px = (cfg.lon - bb->minLon) / (bb->maxLon - bb->minLon) * 480.0f;
+  float py = (1.0f - (cfg.lat - bb->minLat) / (bb->maxLat - bb->minLat)) * 270.0f;
+  int ix = (int)px - 5;
+  int iy = (int)py - 5;
+  lv_obj_set_pos(radarMarker, ix, iy);
+  lv_obj_clear_flag(radarMarker, LV_OBJ_FLAG_HIDDEN);
+  Serial.printf("[Radar] Marker gesetzt: lat=%.4f lon=%.4f → px=%d py=%d\n", cfg.lat, cfg.lon, ix+5, iy+5);
 }
 
 // -- Open-Meteo Pollen --
