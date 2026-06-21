@@ -11,7 +11,9 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 ## 🎥 Demo
 
-https://github.com/user-attachments/assets/1b636d18-6aa9-4c0a-a6c1-bec0f37d73b8
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1b636d18-6aa9-4c0a-a6c1-bec0f37d73b8" width="360">
+</p>
 
 ---
 
@@ -191,7 +193,9 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 
 ## 🎥 Demo
 
-https://github.com/user-attachments/assets/1b636d18-6aa9-4c0a-a6c1-bec0f37d73b8
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1b636d18-6aa9-4c0a-a6c1-bec0f37d73b8" width="360">
+</p>
 
 ---
 
