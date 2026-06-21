@@ -9,12 +9,6 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 ---
 
-## 🎥 Demo
-
-https://github.com/user-attachments/assets/1b636d18-6aa9-4c0a-a6c1-bec0f37d73b8
-
----
-
 ## ✨ Funktionen
 
 | | Funktion | Details |
@@ -186,12 +180,6 @@ A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touc
 This project is the successor to [WetterCube](https://github.com/JPPeterson-lab/wettercube), built and programmed with AI assistance.
 
 Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) and the [German Weather Service (DWD)](https://www.dwd.de) – no API key required.
-
----
-
-## 🎥 Demo
-
-https://github.com/user-attachments/assets/1b636d18-6aa9-4c0a-a6c1-bec0f37d73b8
 
 ---
 
