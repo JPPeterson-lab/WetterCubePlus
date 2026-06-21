@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.2-beta (2026-06-21)
+
+### Fixes
+- Windpfeil auf Radarkarte: Hintergrundkreis jetzt halbtransparent (Opacity 90/255 statt 160/255)
+
+---
+
 ## v0.3.1-beta (2026-06-15)
 
 ### Neu

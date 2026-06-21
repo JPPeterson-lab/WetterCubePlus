@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-06-21 – v0.3.2-beta
+
+### Windpfeil Transparenz-Fix
+
+`lv_obj_set_style_bg_opa(windBg, 160, 0)` war zu opak (~63%) — Radarkarte darunter kaum sichtbar. Auf 90 (~35%) reduziert, Karte bleibt gut lesbar, Pfeil trotzdem klar erkennbar.
+
+---
+
 ## 2026-06-15 – v0.3.1-beta
 
 ### Standort-Marker auf Radarkarte

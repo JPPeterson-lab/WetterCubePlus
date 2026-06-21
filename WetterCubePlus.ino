@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.3.1-beta"
+#define FIRMWARE_VERSION "0.3.2-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1071,7 +1071,12 @@ void fetchWmsRadar() {
   }
 }
 
-static lv_obj_t* radarMarker = nullptr;
+static lv_obj_t* radarMarker  = nullptr;
+static lv_obj_t* windBg       = nullptr;   // dunkler Hintergrundkreis für Pfeil
+static lv_obj_t* windShaft    = nullptr;   // Pfeilschaft
+static lv_obj_t* windHead1    = nullptr;   // Pfeilspitze links
+static lv_obj_t* windHead2    = nullptr;   // Pfeilspitze rechts
+static lv_point_t wPts0[2], wPts1[2], wPts2[2];  // Punkte-Arrays (müssen static bleiben)
 
 void erstelleWarnkarteScreen() {
   if (!objects.screenwarnkarte1) return;
@@ -1085,7 +1090,7 @@ void erstelleWarnkarteScreen() {
   if (imgWarnkarte) {
     lv_obj_align(imgWarnkarte, LV_ALIGN_TOP_MID, 0, 0);
   }
-  // Standort-Marker (roter Punkt) – über dem Bild im Z-Order
+  // Standort-Marker (roter Punkt)
   radarMarker = lv_obj_create(objects.screenwarnkarte1);
   if (radarMarker) {
     lv_obj_set_size(radarMarker, 10, 10);
@@ -1094,8 +1099,31 @@ void erstelleWarnkarteScreen() {
     lv_obj_set_style_bg_opa(radarMarker, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(radarMarker, 0, 0);
     lv_obj_clear_flag(radarMarker, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(radarMarker, LV_OBJ_FLAG_HIDDEN);  // erst nach Kartenload zeigen
+    lv_obj_add_flag(radarMarker, LV_OBJ_FLAG_HIDDEN);
   }
+  // Windpfeil – dunkler Hintergrundkreis (50×50) oben rechts
+  windBg = lv_obj_create(objects.screenwarnkarte1);
+  if (windBg) {
+    lv_obj_set_size(windBg, 50, 50);
+    lv_obj_set_pos(windBg, 424, 4);
+    lv_obj_set_style_radius(windBg, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(windBg, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(windBg, 90, 0);
+    lv_obj_set_style_border_width(windBg, 0, 0);
+    lv_obj_clear_flag(windBg, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(windBg, LV_OBJ_FLAG_HIDDEN);
+  }
+  // Pfeillinien (3 Segmente: Schaft + 2 Pfeilspitzen)
+  auto mkLine = [](lv_obj_t*& l, lv_obj_t* parent) {
+    l = lv_line_create(parent);
+    lv_obj_set_style_line_color(l, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_line_width(l, 2, 0);
+    lv_obj_set_style_line_rounded(l, true, 0);
+    lv_obj_add_flag(l, LV_OBJ_FLAG_HIDDEN);
+  };
+  mkLine(windShaft, objects.screenwarnkarte1);
+  mkLine(windHead1, objects.screenwarnkarte1);
+  mkLine(windHead2, objects.screenwarnkarte1);
 }
 
 void aktualisiereRadarMarker() {
@@ -1107,7 +1135,35 @@ void aktualisiereRadarMarker() {
   int iy = (int)py - 5;
   lv_obj_set_pos(radarMarker, ix, iy);
   lv_obj_clear_flag(radarMarker, LV_OBJ_FLAG_HIDDEN);
-  Serial.printf("[Radar] Marker gesetzt: lat=%.4f lon=%.4f → px=%d py=%d\n", cfg.lat, cfg.lon, ix+5, iy+5);
+  Serial.printf("[Radar] Marker: lat=%.4f lon=%.4f → px=%d py=%d\n", cfg.lat, cfg.lon, ix+5, iy+5);
+
+  // Windpfeil: wind_dir gibt an, woher der Wind kommt → +180° = Zugrichtung
+  if (!windShaft) return;
+  const int CX = 449, CY = 29;   // Mitte des 50×50 Kreises (pos 424+25, 4+25)
+  const int LEN = 16, HEAD = 7;
+  float rad = fmod(wetter.wind_dir + 180.0f, 360.0f) * M_PI / 180.0f;
+  float dx = sinf(rad), dy = -cosf(rad);
+  int tx = CX + (int)(dx * LEN);  // Pfeilspitze
+  int ty = CY + (int)(dy * LEN);
+  int bx = CX - (int)(dx * LEN);  // Pfeilende
+  int by = CY - (int)(dy * LEN);
+  // Schaft
+  wPts0[0] = {(lv_coord_t)bx, (lv_coord_t)by};
+  wPts0[1] = {(lv_coord_t)tx, (lv_coord_t)ty};
+  lv_line_set_points(windShaft, wPts0, 2);
+  // Pfeilspitzen (±140° von Zugrichtung)
+  float h1 = rad + 2.44f, h2 = rad - 2.44f;
+  wPts1[0] = {(lv_coord_t)tx, (lv_coord_t)ty};
+  wPts1[1] = {(lv_coord_t)(tx + (int)(sinf(h1)*HEAD)), (lv_coord_t)(ty - (int)(cosf(h1)*HEAD))};
+  wPts2[0] = {(lv_coord_t)tx, (lv_coord_t)ty};
+  wPts2[1] = {(lv_coord_t)(tx + (int)(sinf(h2)*HEAD)), (lv_coord_t)(ty - (int)(cosf(h2)*HEAD))};
+  lv_line_set_points(windHead1, wPts1, 2);
+  lv_line_set_points(windHead2, wPts2, 2);
+  lv_obj_clear_flag(windBg,    LV_OBJ_FLAG_HIDDEN);
+  lv_obj_clear_flag(windShaft, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_clear_flag(windHead1, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_clear_flag(windHead2, LV_OBJ_FLAG_HIDDEN);
+  Serial.printf("[Radar] Windpfeil: dir=%.0f° → Zug=%.0f°\n", wetter.wind_dir, fmod(wetter.wind_dir+180.0f,360.0f));
 }
 
 // -- Open-Meteo Pollen --
