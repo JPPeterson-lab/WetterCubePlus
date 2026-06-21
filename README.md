@@ -9,13 +9,6 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 ---
 
-## 🎥 Demo
-
-[https://github.com/user-attachments/assets/b8b5115e-53a3-456c-b7ec-c5bc2de4b1df](https://github.com/user-attachments/assets/8925ee40-c79b-4991-a99c-0a9bbc63f879)
-
----
-
-
 ## ✨ Funktionen
 
 | | Funktion | Details |
