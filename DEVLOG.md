@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-06-25 – v0.3.3-beta
+
+### NTP-Zeitsync beschleunigt
+
+`configTzTime` mit einem einzigen Server (`europe.pool.ntp.org`) war bei langsamer Server-Antwort bis zu 10s blockierend. Umgestellt auf `configTime` + `setenv("TZ", ...)` mit 3 Servern parallel. ESP32 nimmt die schnellste Antwort — in der Praxis sync in unter 1s.
+
+### Pollenwarnung-Reset-Bug
+
+`pollenWarnGezeigt` wurde nach einmaligem Anzeigen nie zurückgesetzt (anders als `regenWarnGezeigt`, das bei neuer Regenwarnung zurückgesetzt wird). Folge: Pollenwarnung erschien nach dem ersten Mal nie wieder, auch wenn die Belastung in der nächsten Stunde weiterhin über der Schwelle lag. Fix: beide Flags (`pollenWarnGezeigt` + `pollenWarnBestaetigt`) werden nach jedem stündlichen Pollen-Fetch zurückgesetzt.
+
+---
+
 ## 2026-06-21 – v0.3.2-beta
 
 ### Windpfeil Transparenz-Fix

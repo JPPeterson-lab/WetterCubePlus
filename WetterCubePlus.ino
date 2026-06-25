@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.3.2-beta"
+#define FIRMWARE_VERSION "0.3.3-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1607,10 +1607,12 @@ void setup() {
     Serial.println("[mDNS] wettercubeplus.local aktiv");
   }
 
-  configTzTime("CET-1CEST,M3.5.0,M10.5.0/3", "europe.pool.ntp.org");
+  configTime(0, 0, "pool.ntp.org", "time.cloudflare.com", "time.google.com");
+  setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
+  tzset();
   zeigeBootScreen("Synchronisiere Zeit...");
   setzeBootFortschritt(45);
-  { struct tm ti; int r = 0; while (!getLocalTime(&ti) && r++ < 20) { delay(500); lv_timer_handler(); } }
+  { struct tm ti; int r = 0; while (!getLocalTime(&ti) && r++ < 30) { delay(300); lv_timer_handler(); } }
 
   starteWebUI();
   setzeBootFortschritt(55);
@@ -1702,6 +1704,9 @@ void loop() {
     fetchDwdPollen();
     fetchOpenMeteoPollen();
     aktualisiereUI();
+    // Warnung nach jedem stündlichen Update zurücksetzen damit neue Belastung erneut warnt
+    pollenWarnGezeigt    = false;
+    pollenWarnBestaetigt = false;
   }
 
   // Warnbildschirme einmalig anzeigen wenn neue Warnung

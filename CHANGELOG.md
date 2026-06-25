@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.3-beta (2026-06-25)
+
+### Fixes
+- NTP-Zeitsynchronisierung deutlich schneller: 3 Server parallel (`pool.ntp.org`, `time.cloudflare.com`, `time.google.com`) statt nur einem
+- Pollenwarnung: `pollenWarnGezeigt` und `pollenWarnBestaetigt` werden nach jedem stündlichen Update zurückgesetzt – Warnung erscheint bei erneuter Belastung wieder
+
+---
+
 ## v0.3.2-beta (2026-06-21)
 
 ### Fixes
