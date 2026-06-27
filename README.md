@@ -144,6 +144,8 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 
 Ein eigenständiges WLAN-Addon, das den WetterCubePlus als Datenquelle nutzt. Es fragt regelmäßig den Endpunkt `http://wettercubeplus.local/api/ampel` ab und zeigt das Ergebnis über drei WS2812B-LEDs als Temperaturampel an.
 
+Die Firmware liegt unter [`WetterAmpel/WetterAmpel.ino`](WetterAmpel/WetterAmpel.ino). Vor dem Flashen WLAN-Zugangsdaten und IP des WetterCubePlus eintragen.
+
 ### Funktion
 
 | LED-Farbe | Bedeutung |
@@ -374,6 +376,8 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 ## 🚦 Hardware Addon: WetterAmpel (ESP32-C3)
 
 A standalone Wi-Fi addon that uses the WetterCubePlus as its data source. It periodically polls `http://wettercubeplus.local/api/ampel` and displays the result via three WS2812B LEDs as a temperature traffic light.
+
+The firmware is located at [`WetterAmpel/WetterAmpel.ino`](WetterAmpel/WetterAmpel.ino). Enter your Wi-Fi credentials and the WetterCubePlus IP before flashing.
 
 ### Function
 
