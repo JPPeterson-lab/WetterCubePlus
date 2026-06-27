@@ -11,7 +11,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 ## 🎬 Demo
 
-<video src="https://github.com/user-attachments/assets/290eae98-c70c-4688-8af9-603fba5e0c50" controls width="100%"></video>
+[<video src="https://github.com/user-attachments/assets/290eae98-c70c-4688-8af9-603fba5e0c50" /video>](https://github.com/user-attachments/assets/5859e79a-330e-4ba6-8e4d-4b23fa65cfb6)
 
 ---
 
