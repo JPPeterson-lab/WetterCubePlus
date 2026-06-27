@@ -25,6 +25,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌿 | **Pollenflug** | Top-3 Allergene stündlich (Open-Meteo), 3-Tage-Forecast für 8 Allergene (DWD) |
 | 🌧️ | **Regenwarnung** | Blinkendes Warn-Screen 60 Min. vor erwartetem Regen |
 | ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen als farbige Karten (DWD-Warnstufe), tippbar für Details; blinkender Indikator auf dem Hauptscreen |
+| 🚦 | **Ampel-Addon API** | HTTP-JSON-Endpunkt `/api/ampel` für ESP32-C3 Hardware-Addon: Temperatur, Ampelfarbe, DWD-Warnstatus, konfigurierbare Schwellwerte |
 | 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert, mit Standort-Marker |
 | ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
@@ -201,6 +202,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🌿 | **Pollen** | Top-3 allergens hourly (Open-Meteo), 3-day forecast for 8 allergens (DWD) |
 | 🌧️ | **Rain warning** | Flashing warning screen 60 min before expected rainfall |
 | ⚠️ | **DWD weather warnings** | Up to 5 active warnings as color-coded cards (DWD severity level), tap for details; blinking indicator on main screen |
+| 🚦 | **Traffic light addon API** | HTTP JSON endpoint `/api/ampel` for ESP32-C3 hardware addon: temperature, active color, DWD warning status, configurable thresholds |
 | 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min, with location marker |
 | ☀️ | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
 | 🖥️ | **WebUI** | All settings at `wettercubeplus.local` – no reflashing needed |

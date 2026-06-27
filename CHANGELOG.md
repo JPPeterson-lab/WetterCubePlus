@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.0-beta (2026-06-27)
+
+### Neu
+- **Hardware-Addon API `/api/ampel`:** Neuer JSON-Endpunkt für ESP32-C3 Ampel-Addon – liefert aktuelle Temperatur, berechnete Ampelfarbe (green/yellow/red), DWD-Warnstatus und alle 6 Temperaturschwellen
+- **`dwd_warning`** im API-Response ist `true` nur solange neue Warnungen noch nicht durch Öffnen der Warnkarte im Cube bestätigt wurden
+- **Ampel-Konfiguration in WebUI:** Neue Sektion mit 6 Zahlenfeldern (min/max für grün/gelb/rot) + Live-Anzeige der aktuellen Temperatur und aktiven Farbe
+- Schwellwerte werden in Preferences gespeichert (Defaults: grün 15–19°C, gelb 20–24°C, rot 25–99°C)
+
+---
+
 ## v0.4.1-beta (2026-06-27)
 
 ### Neu

@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.4.1-beta"
+#define FIRMWARE_VERSION "0.5.0-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -140,6 +140,13 @@ struct Config {
   int    night_from = 22 * 60;  // Startzeit in Minuten seit Mitternacht (22:00)
   int    night_to   =  6 * 60;  // Endzeit   in Minuten seit Mitternacht (06:00)
   int    night_brightness = 10; // Helligkeit im Nachtmodus (%)
+  // Ampel-Schwellwerte (°C)
+  int    ampel_gruen_min  = 15;
+  int    ampel_gruen_max  = 19;
+  int    ampel_gelb_min   = 20;
+  int    ampel_gelb_max   = 24;
+  int    ampel_rot_min    = 25;
+  int    ampel_rot_max    = 99;
 };
 Config cfg;
 
@@ -281,6 +288,7 @@ bool   regenWarnBestaetigt    = false;
 bool   regenWarnGezeigt       = false;
 bool   dwdWarnAktiv           = false;
 bool   dwdWarnBestaetigt      = false;
+bool   dwdWarningSeen         = false;
 
 static lv_obj_t*  dwdWarnBtn    = nullptr;
 static lv_timer_t* dwdBlinker   = nullptr;
@@ -461,6 +469,12 @@ void ladeCfg() {
   cfg.night_from        = prefs.getInt   ("night_from",  22 * 60);
   cfg.night_to          = prefs.getInt   ("night_to",     6 * 60);
   cfg.night_brightness  = prefs.getInt   ("night_bright", 10);
+  cfg.ampel_gruen_min   = prefs.getInt   ("amp_gn_min",  15);
+  cfg.ampel_gruen_max   = prefs.getInt   ("amp_gn_max",  19);
+  cfg.ampel_gelb_min    = prefs.getInt   ("amp_ge_min",  20);
+  cfg.ampel_gelb_max    = prefs.getInt   ("amp_ge_max",  24);
+  cfg.ampel_rot_min     = prefs.getInt   ("amp_ro_min",  25);
+  cfg.ampel_rot_max     = prefs.getInt   ("amp_ro_max",  99);
   prefs.end();
 }
 
@@ -482,6 +496,12 @@ void speichereCfg() {
   prefs.putInt   ("night_from",  cfg.night_from);
   prefs.putInt   ("night_to",    cfg.night_to);
   prefs.putInt   ("night_bright",cfg.night_brightness);
+  prefs.putInt   ("amp_gn_min",  cfg.ampel_gruen_min);
+  prefs.putInt   ("amp_gn_max",  cfg.ampel_gruen_max);
+  prefs.putInt   ("amp_ge_min",  cfg.ampel_gelb_min);
+  prefs.putInt   ("amp_ge_max",  cfg.ampel_gelb_max);
+  prefs.putInt   ("amp_ro_min",  cfg.ampel_rot_min);
+  prefs.putInt   ("amp_ro_max",  cfg.ampel_rot_max);
   prefs.end();
 }
 
@@ -577,6 +597,8 @@ void startePortal() {
 // Vorwärts-Deklarationen
 void handleWebRoot();
 void handleWebSave();
+void handleApiAmpel();
+void handleApiAmpelSave();
 void handleWebOtaCheck();
 void handleWebOtaDoUpdate();
 void handleWebWlanAendern();
@@ -617,6 +639,12 @@ void handleWebRoot() {
     html.replace("%NIGHT_FROM_OPTIONS%", optFrom);
     html.replace("%NIGHT_TO_OPTIONS%",   optTo);
   }
+  html.replace("%AMP_GN_MIN%", String(cfg.ampel_gruen_min));
+  html.replace("%AMP_GN_MAX%", String(cfg.ampel_gruen_max));
+  html.replace("%AMP_GE_MIN%", String(cfg.ampel_gelb_min));
+  html.replace("%AMP_GE_MAX%", String(cfg.ampel_gelb_max));
+  html.replace("%AMP_RO_MIN%", String(cfg.ampel_rot_min));
+  html.replace("%AMP_RO_MAX%", String(cfg.ampel_rot_max));
   server.send(200, "text/html", html);
 }
 
@@ -638,6 +666,39 @@ void handleWebSave() {
   if (cfg.location != prevLocation) { cfg.lat = 0.0f; cfg.lon = 0.0f; }
   speichereCfg();
   setBrightness(cfg.brightness);
+  server.sendHeader("Location", "/"); server.send(302);
+}
+
+void handleApiAmpel() {
+  float t = wetter.temp;
+  const char* active = "none";
+  if (t >= cfg.ampel_gruen_min && t <= cfg.ampel_gruen_max) active = "green";
+  else if (t >= cfg.ampel_gelb_min  && t <= cfg.ampel_gelb_max)  active = "yellow";
+  else if (t >= cfg.ampel_rot_min   && t <= cfg.ampel_rot_max)   active = "red";
+
+  bool dwd_warn = (anzahl_warnungen > 0 && !dwdWarningSeen);
+
+  String json = "{";
+  json += "\"temperature\":"  + String(t, 1) + ",";
+  json += "\"dwd_warning\":"  + String(dwd_warn ? "true" : "false") + ",";
+  json += "\"active\":\""     + String(active) + "\",";
+  json += "\"thresholds\":{";
+  json += "\"green\":{\"min\":"  + String(cfg.ampel_gruen_min) + ",\"max\":" + String(cfg.ampel_gruen_max) + "},";
+  json += "\"yellow\":{\"min\":" + String(cfg.ampel_gelb_min)  + ",\"max\":" + String(cfg.ampel_gelb_max)  + "},";
+  json += "\"red\":{\"min\":"    + String(cfg.ampel_rot_min)   + ",\"max\":" + String(cfg.ampel_rot_max)   + "}";
+  json += "}}";
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "application/json", json);
+}
+
+void handleApiAmpelSave() {
+  if (server.hasArg("amp_gn_min")) cfg.ampel_gruen_min = server.arg("amp_gn_min").toInt();
+  if (server.hasArg("amp_gn_max")) cfg.ampel_gruen_max = server.arg("amp_gn_max").toInt();
+  if (server.hasArg("amp_ge_min")) cfg.ampel_gelb_min  = server.arg("amp_ge_min").toInt();
+  if (server.hasArg("amp_ge_max")) cfg.ampel_gelb_max  = server.arg("amp_ge_max").toInt();
+  if (server.hasArg("amp_ro_min")) cfg.ampel_rot_min   = server.arg("amp_ro_min").toInt();
+  if (server.hasArg("amp_ro_max")) cfg.ampel_rot_max   = server.arg("amp_ro_max").toInt();
+  speichereCfg();
   server.sendHeader("Location", "/"); server.send(302);
 }
 
@@ -725,12 +786,14 @@ void handleWebWlanSave() {
 }
 
 void starteWebUI() {
-  server.on("/",            HTTP_GET,  handleWebRoot);
-  server.on("/speichern",   HTTP_POST, handleWebSave);
-  server.on("/ota_check",   HTTP_GET,  handleWebOtaCheck);
-  server.on("/ota_update",  HTTP_POST, handleWebOtaDoUpdate);
-  server.on("/wlan",        HTTP_GET,  handleWebWlanAendern);
+  server.on("/",               HTTP_GET,  handleWebRoot);
+  server.on("/speichern",      HTTP_POST, handleWebSave);
+  server.on("/ota_check",      HTTP_GET,  handleWebOtaCheck);
+  server.on("/ota_update",     HTTP_POST, handleWebOtaDoUpdate);
+  server.on("/wlan",           HTTP_GET,  handleWebWlanAendern);
   server.on("/wlan_speichern", HTTP_POST, handleWebWlanSave);
+  server.on("/api/ampel",      HTTP_GET,  handleApiAmpel);
+  server.on("/api/ampel_save", HTTP_POST, handleApiAmpelSave);
   server.begin();
   Serial.println("[WebUI] Gestartet auf wettercubeplus.local");
 }
@@ -1017,6 +1080,7 @@ void fetchDwdWarnungen() {
           count, sev, warnungen[count].typ.c_str(), warnungen[count].titel.substring(0,40).c_str());
         count++;
       }
+      if (count > 0 && count != anzahl_warnungen) dwdWarningSeen = false;
       anzahl_warnungen = count;
     }
   } else {
@@ -1718,6 +1782,7 @@ static void cbBack5(lv_event_t*) { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }    
 static void cbHubPollen(lv_event_t*)     { loadScreen(SCREEN_ID_SCREENFORECASTPOLLENHOUR); } // forecastpollen → stündlich
 static void cbHubPollenBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }     // stündlich → tages
 static void cbHubWarn(lv_event_t*) {
+  dwdWarningSeen = true;
   loadScreen(SCREEN_ID_SCREENWARNKARTE2);
   aktualisiereWarnliste();
 }
@@ -1734,6 +1799,7 @@ static void cbDwdBlinker(lv_timer_t*) {
 
 static void cbDwdWarnBtnTap(lv_event_t*) {
   dwdWarnBestaetigt = true;
+  dwdWarningSeen    = true;
   if (dwdBlinker) { lv_timer_del(dwdBlinker); dwdBlinker = nullptr; }
   if (dwdWarnBtn) lv_obj_clear_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
   loadScreen(SCREEN_ID_SCREENWARNKARTE2);

@@ -79,6 +79,8 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
   .btn-rot{background:#b91c1c;color:#fff}.btn-rot:hover{background:#dc2626}
   .status{font-size:.85em;color:#8b949e;margin-top:6px}
   .hint{font-size:.78em;color:#8b949e;margin-top:3px}
+  .row{display:flex;gap:10px;margin-top:8px}
+  .col{flex:1}
 </style></head><body>
 <h1>WetterCubePlus</h1>
 <div class="ver">Firmware: %VERSION% | IP: %IP% | wettercubeplus.local</div>
@@ -145,6 +147,44 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
 </form>
 
 <div class="card">
+  <h2>Ampel-Konfiguration</h2>
+  <p class="hint">Temperaturschwellen fuer das Hardware-Addon (Ampel). Aktuelle Temperatur: <strong id="amp_t">…</strong> °C &nbsp;|&nbsp; Aktiv: <strong id="amp_a">…</strong></p>
+  <form action="/api/ampel_save" method="post">
+  <div class="row">
+    <div class="col">
+      <label>Gruen min (°C)</label>
+      <input type="number" name="amp_gn_min" value="%AMP_GN_MIN%" min="-30" max="60">
+    </div>
+    <div class="col">
+      <label>Gruen max (°C)</label>
+      <input type="number" name="amp_gn_max" value="%AMP_GN_MAX%" min="-30" max="60">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <label>Gelb min (°C)</label>
+      <input type="number" name="amp_ge_min" value="%AMP_GE_MIN%" min="-30" max="60">
+    </div>
+    <div class="col">
+      <label>Gelb max (°C)</label>
+      <input type="number" name="amp_ge_max" value="%AMP_GE_MAX%" min="-30" max="60">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <label>Rot min (°C)</label>
+      <input type="number" name="amp_ro_min" value="%AMP_RO_MIN%" min="-30" max="60">
+    </div>
+    <div class="col">
+      <label>Rot max (°C)</label>
+      <input type="number" name="amp_ro_max" value="%AMP_RO_MAX%" min="-30" max="60">
+    </div>
+  </div>
+  <button type="submit" class="btn btn-gruen">Ampel-Schwellen speichern</button>
+  </form>
+</div>
+
+<div class="card">
   <h2>WLAN-Zugangsdaten aendern</h2>
   <p class="hint">SSID/Passwort aendern ohne neu zu flashen.</p>
   <a href="/wlan" class="btn btn-blau">WLAN aendern</a>
@@ -176,6 +216,14 @@ function doUpdate(){
     document.getElementById('ota_status').textContent=t;
   });
 }
+function ladeAmpel(){
+  fetch('/api/ampel').then(function(r){return r.json();}).then(function(d){
+    document.getElementById('amp_t').textContent=d.temperature.toFixed(1);
+    var farben={'green':'Gruen','yellow':'Gelb','red':'Rot','none':'keine'};
+    document.getElementById('amp_a').textContent=farben[d.active]||d.active;
+  }).catch(function(){});
+}
+ladeAmpel();
 </script>
 </body></html>
 )rawhtml";

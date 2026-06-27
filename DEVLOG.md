@@ -1,5 +1,37 @@
 # Entwicklungs-Log
 
+## 2026-06-27 – v0.5.0-beta
+
+### Hardware-Addon API: /api/ampel
+
+Neuer HTTP-GET-Endpunkt für das ESP32-C3 Ampel-Addon. Antwortformat:
+
+```json
+{
+  "temperature": 22.4,
+  "dwd_warning": false,
+  "active": "yellow",
+  "thresholds": {
+    "green":  { "min": 15, "max": 19 },
+    "yellow": { "min": 20, "max": 24 },
+    "red":    { "min": 25, "max": 99 }
+  }
+}
+```
+
+**dwd_warning-Semantik:** Nicht einfach "Warnungen aktiv", sondern "neue ungesehene Warnung". Variable `dwdWarningSeen`:
+- `false` (default) → wird auf `true` gesetzt wenn Nutzer Warnkarte öffnet (cbHubWarn oder cbDwdWarnBtnTap)
+- Neuer Fetch bringt andere Anzahl Warnungen (>0) → zurück auf `false`
+- API liefert `dwd_warning = (anzahl_warnungen > 0 && !dwdWarningSeen)`
+
+**Schwellwerte:** 6 int-Werte in cfg (ampel_gruen_min/max, ampel_gelb_min/max, ampel_rot_min/max), gespeichert in Preferences unter "wcp" mit Schlüsseln amp_gn_min/max, amp_ge_min/max, amp_ro_min/max.
+
+**WebUI:** Eigenes `<form action="/api/ampel_save">` mit 2-spaltigem Layout. Live-Status lädt beim Seitenaufruf via `fetch('/api/ampel')` aktuelle Temperatur und aktive Farbe.
+
+**CORS-Header:** `/api/ampel` sendet `Access-Control-Allow-Origin: *` damit der C3 direkt fetchen kann.
+
+---
+
 ## 2026-06-27 – v0.4.1-beta
 
 ### DWD-Warn-Indikator auf screen_1
