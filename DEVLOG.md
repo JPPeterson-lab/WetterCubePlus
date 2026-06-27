@@ -1,5 +1,23 @@
 # Entwicklungs-Log
 
+## 2026-06-27 – v0.4.1-beta
+
+### DWD-Warn-Indikator auf screen_1
+
+Anforderung: sichtbare Warnung auf dem Hauptscreen wenn DWD-Warnungen aktiv sind, ohne PicoPixel-Export zu erfordern.
+
+**Umsetzung:** LVGL-Button wird rein per Code nach dem UI-Setup auf `objects.screen_1` aufgesetzt (`lv_btn_create(objects.screen_1)`). Position x=160, y=273 (160×40 px) – mittig in der Nav-Reihe, gleiche Höhe wie `labelbuttonforward`. Kein PicoPixel-Objekt, kein screens.c-Eintrag nötig.
+
+**Zustandsmaschine:**
+- Keine Warnungen → `LV_OBJ_FLAG_HIDDEN`, kein Timer
+- Warnungen aktiv + nicht bestätigt → sichtbar + `lv_timer_create(cbDwdBlinker, 600ms)` wechselt Hidden/Visible
+- Antippen (`cbDwdWarnBtnTap`) → `dwdWarnBestaetigt = true`, Timer gelöscht, Button permanent sichtbar, navigiert zu ScreenWarnkarte2
+- Warnungen fallen weg (nächster 15-Min-Fetch) → Button versteckt, `dwdWarnBestaetigt` zurückgesetzt
+
+`aktualisiereDwdWarnBtn()` wird nach jedem `fetchDwdWarnungen()` (Boot + Loop) aufgerufen.
+
+---
+
 ## 2026-06-27 – v0.4.0-beta
 
 ### DWD Warnkarte: WMS-Karte durch WFS-Textliste ersetzt

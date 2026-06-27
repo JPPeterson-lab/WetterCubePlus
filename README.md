@@ -18,7 +18,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🕐 | **4-Stunden-Vorhersage** | Icons, Temperatur, Wind pro Slot |
 | 🌿 | **Pollenflug** | Top-3 Allergene stündlich (Open-Meteo), 3-Tage-Forecast für 8 Allergene (DWD) |
 | 🌧️ | **Regenwarnung** | Blinkendes Warn-Screen 60 Min. vor erwartetem Regen |
-| ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen als farbige Karten (DWD-Warnstufe), tippbar für Details |
+| ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen als farbige Karten (DWD-Warnstufe), tippbar für Details; blinkender Indikator auf dem Hauptscreen |
 | 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert, mit Standort-Marker |
 | ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
@@ -34,11 +34,12 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 |---|---|---|
 | 1 | **Hauptscreen** | Wetter aktuell, Uhrzeit, Datum, Top-3 Pollen (nächste Stunde) |
 | 2 | **Wettervorhersage** | 4×3-Stunden-Slots mit Icon, Temperatur, Wind |
-| 3 | **Pollenvorhersage** | 8 Allergene (DWD), Stufen heute/morgen/übermorgen |
-| 4 | **Niederschlagsradar** | Bundesland-Ausschnitt, DWD WMS, 10-Min.-Aktualisierung |
-| 5 | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
-| 6 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung (Antippen für Details) |
-| 7 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
+| 3 | **Pollenvorhersage (Stunden)** | Pollenbelastung der nächsten 3 Stunden (Open-Meteo, stündlich) |
+| 4 | **Pollenvorhersage (Tage)** | 8 Allergene (DWD), Stufen heute/morgen/übermorgen |
+| 5 | **Niederschlagsradar** | Bundesland-Ausschnitt, DWD WMS, 10-Min.-Aktualisierung |
+| 6 | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
+| 7 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung (Antippen für Details) |
+| 8 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
 
 ---
 
@@ -193,7 +194,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🕐 | **4-hour forecast** | Icons, temperature, and wind per time slot |
 | 🌿 | **Pollen** | Top-3 allergens hourly (Open-Meteo), 3-day forecast for 8 allergens (DWD) |
 | 🌧️ | **Rain warning** | Flashing warning screen 60 min before expected rainfall |
-| ⚠️ | **DWD weather warnings** | Up to 5 active warnings as color-coded cards (DWD severity level), tap for details |
+| ⚠️ | **DWD weather warnings** | Up to 5 active warnings as color-coded cards (DWD severity level), tap for details; blinking indicator on main screen |
 | 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min, with location marker |
 | ☀️ | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
 | 🖥️ | **WebUI** | All settings at `wettercubeplus.local` – no reflashing needed |
@@ -209,11 +210,12 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 |---|---|---|
 | 1 | **Main screen** | Current weather, time, date, top-3 pollen (next hour) |
 | 2 | **Forecast** | 4×3-hour slots with icon, temperature, wind |
-| 3 | **Pollen forecast** | 8 allergens (DWD), levels today/tomorrow/day after |
-| 4 | **Precipitation radar** | Federal-state map view, DWD WMS, updated every 10 min |
-| 5 | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
-| 6 | **Warning screen** | Flashing alert for rain or pollen warnings (tap for details) |
-| 7 | **DWD warning list** | Location-based DWD warnings as color-coded cards by severity level |
+| 3 | **Pollen forecast (hourly)** | Pollen levels for the next 3 hours (Open-Meteo, updated hourly) |
+| 4 | **Pollen forecast (daily)** | 8 allergens (DWD), levels today/tomorrow/day after |
+| 5 | **Precipitation radar** | Federal-state map view, DWD WMS, updated every 10 min |
+| 6 | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
+| 7 | **Warning screen** | Flashing alert for rain or pollen warnings (tap for details) |
+| 8 | **DWD warning list** | Location-based DWD warnings as color-coded cards by severity level |
 
 ---
 

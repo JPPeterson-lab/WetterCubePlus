@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.1-beta (2026-06-27)
+
+### Neu
+- **DWD-Warn-Indikator auf Hauptscreen:** Roter blinkender Button in der Nav-Reihe (Mitte unten) erscheint sobald aktive DWD-Warnungen vorliegen – Antippen stoppt das Blinken und öffnet direkt die DWD-Warnkarte, Button bleibt dauerhaft rot solange Warnungen aktiv sind
+
+---
+
 ## v0.4.0-beta (2026-06-27)
 
 ### Neu

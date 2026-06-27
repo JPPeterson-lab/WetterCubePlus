@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.4.0-beta"
+#define FIRMWARE_VERSION "0.4.1-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -281,6 +281,9 @@ bool   regenWarnBestaetigt    = false;
 bool   regenWarnGezeigt       = false;
 bool   dwdWarnAktiv           = false;
 bool   dwdWarnBestaetigt      = false;
+
+static lv_obj_t*  dwdWarnBtn    = nullptr;
+static lv_timer_t* dwdBlinker   = nullptr;
 
 unsigned long letztesDatenUpdate  = 0;
 unsigned long letztesPollenUpdate = 0;
@@ -1720,6 +1723,55 @@ static void cbHubWarn(lv_event_t*) {
 }
 static void cbHubWarnBack(lv_event_t*)   { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }         // warnkarte2 → warnkarte1
 
+// ── DWD-Warn-Indikator auf screen_1 ─────────────────────────
+static void cbDwdBlinker(lv_timer_t*) {
+  if (!dwdWarnBtn || dwdWarnBestaetigt) return;
+  if (lv_obj_has_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN))
+    lv_obj_clear_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
+  else
+    lv_obj_add_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void cbDwdWarnBtnTap(lv_event_t*) {
+  dwdWarnBestaetigt = true;
+  if (dwdBlinker) { lv_timer_del(dwdBlinker); dwdBlinker = nullptr; }
+  if (dwdWarnBtn) lv_obj_clear_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
+  loadScreen(SCREEN_ID_SCREENWARNKARTE2);
+  aktualisiereWarnliste();
+}
+
+void erstelleDwdWarnBtn() {
+  if (dwdWarnBtn) return;
+  // Mittig in der Nav-Reihe (y=273, h=40 – gleiche Zeile wie labelbuttonforward)
+  dwdWarnBtn = lv_btn_create(objects.screen_1);
+  lv_obj_set_size(dwdWarnBtn, 160, 40);
+  lv_obj_set_pos(dwdWarnBtn, (480 - 160) / 2, 273);
+  lv_obj_set_style_bg_color(dwdWarnBtn, lv_color_hex(0xcc0000), 0);
+  lv_obj_set_style_bg_opa(dwdWarnBtn, LV_OPA_COVER, 0);
+  lv_obj_set_style_radius(dwdWarnBtn, 6, 0);
+  lv_obj_set_style_border_width(dwdWarnBtn, 0, 0);
+  lv_obj_t* lbl = lv_label_create(dwdWarnBtn);
+  lv_label_set_text(lbl, LV_SYMBOL_WARNING "  DWD Warnung");
+  lv_obj_set_style_text_color(lbl, lv_color_hex(0xffffff), 0);
+  lv_obj_set_style_text_font(lbl, &lv_font_montserrat_14, 0);
+  lv_obj_center(lbl);
+  lv_obj_add_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_add_event_cb(dwdWarnBtn, cbDwdWarnBtnTap, LV_EVENT_CLICKED, nullptr);
+}
+
+void aktualisiereDwdWarnBtn() {
+  if (!dwdWarnBtn) return;
+  if (anzahl_warnungen > 0) {
+    lv_obj_clear_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
+    if (!dwdWarnBestaetigt && !dwdBlinker)
+      dwdBlinker = lv_timer_create(cbDwdBlinker, 600, nullptr);
+  } else {
+    lv_obj_add_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
+    dwdWarnBestaetigt = false;
+    if (dwdBlinker) { lv_timer_del(dwdBlinker); dwdBlinker = nullptr; }
+  }
+}
+
 // ── Blinken auf Warnscreens (500 ms, Icon + Titel) ──────────
 static bool warnBlinkState = false;
 static void cbWarnBlink(lv_timer_t*) {
@@ -2003,6 +2055,8 @@ void setup() {
 
   // UI vollständig befüllen bevor der Hauptscreen erscheint
   aktualisiereUI();
+  erstelleDwdWarnBtn();
+  aktualisiereDwdWarnBtn();
   // Kurz warten damit 100% sichtbar ist, dann Hauptscreen laden
   delay(400);
   // LVGL-Animation-Timing: 600ms lv_timer_handler() vor weiteren Calls (Lessons Learned!)
@@ -2084,6 +2138,7 @@ void loop() {
   if (millis() - letztesWarnUpdate >= 900000UL) {
     letztesWarnUpdate = millis();
     fetchDwdWarnungen();
+    aktualisiereDwdWarnBtn();
     if (lv_scr_act() == objects.screenwarnkarte2) aktualisiereWarnliste();
   }
 
