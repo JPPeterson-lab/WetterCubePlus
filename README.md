@@ -140,6 +140,60 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 
 ---
 
+## 🚦 Hardware-Addon: WetterAmpel (ESP32-C3)
+
+Ein eigenständiges WLAN-Addon, das den WetterCubePlus als Datenquelle nutzt. Es fragt regelmäßig den Endpunkt `http://wettercubeplus.local/api/ampel` ab und zeigt das Ergebnis über drei WS2812B-LEDs als Temperaturampel an.
+
+### Funktion
+
+| LED-Farbe | Bedeutung |
+|---|---|
+| 🟢 Grün | Temperatur im grünen Bereich (Standard: 15–19 °C) |
+| 🟡 Gelb | Temperatur im gelben Bereich (Standard: 20–24 °C) |
+| 🔴 Rot | Temperatur im roten Bereich (Standard: 25–99 °C) |
+| Alle blinken | DWD-Wetterwarnung vorhanden, noch nicht am Cube bestätigt |
+
+Die Schwellwerte sind in der WebUI des WetterCubePlus unter **Ampel-Konfiguration** einstellbar.
+
+### Hardware
+
+| Komponente | Typ |
+|---|---|
+| MCU | ESP32-C3 (WLAN integriert) |
+| LEDs | 3× WS2812B (adressierbare RGB-LEDs), in Serie geschaltet |
+| Stromversorgung | 5 V via USB |
+
+### Pinbelegung ESP32-C3
+
+| Funktion | GPIO |
+|---|---|
+| WS2812B Daten | **GPIO 8** |
+| WS2812B VCC | 5 V |
+| WS2812B GND | GND |
+
+> Die drei WS2812B-LEDs werden als Kette in Serie verdrahtet (DIN → DOUT → DIN → ...). Nur der erste DIN-Anschluss wird an GPIO 8 angeschlossen. Ein 300–470 Ω Widerstand in der Datenleitung und ein 100 µF Kondensator an VCC/GND sind empfohlen.
+
+### API-Endpunkt
+
+Der C3 fragt `GET http://wettercubeplus.local/api/ampel` ab. Beide Geräte müssen im selben WLAN sein. Beispielantwort:
+
+```json
+{
+  "temperature": 22.4,
+  "dwd_warning": false,
+  "active": "yellow",
+  "thresholds": {
+    "green":  { "min": 15, "max": 19 },
+    "yellow": { "min": 20, "max": 24 },
+    "red":    { "min": 25, "max": 99 }
+  }
+}
+```
+
+`dwd_warning: true` bedeutet: es gibt aktive DWD-Warnungen, die am Cube noch nicht durch Öffnen der Warnkarte bestätigt wurden → alle drei LEDs blinken.
+
+---
+
 ## 🛠️ Manuelle Installation (Arduino IDE)
 
 **Benötigte Bibliotheken:**
@@ -314,6 +368,60 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 | Touch MISO | 8 |
 
 > ⚠️ **GPIO 33–37** are reserved internally for OPI-PSRAM – **do not use!**
+
+---
+
+## 🚦 Hardware Addon: WetterAmpel (ESP32-C3)
+
+A standalone Wi-Fi addon that uses the WetterCubePlus as its data source. It periodically polls `http://wettercubeplus.local/api/ampel` and displays the result via three WS2812B LEDs as a temperature traffic light.
+
+### Function
+
+| LED colour | Meaning |
+|---|---|
+| 🟢 Green | Temperature in the green range (default: 15–19 °C) |
+| 🟡 Yellow | Temperature in the yellow range (default: 20–24 °C) |
+| 🔴 Red | Temperature in the red range (default: 25–99 °C) |
+| All blinking | Active DWD weather warning, not yet acknowledged on the Cube |
+
+Thresholds are configurable in the WetterCubePlus WebUI under **Ampel-Konfiguration**.
+
+### Hardware
+
+| Component | Type |
+|---|---|
+| MCU | ESP32-C3 (Wi-Fi integrated) |
+| LEDs | 3× WS2812B (addressable RGB LEDs), daisy-chained |
+| Power supply | 5 V via USB |
+
+### ESP32-C3 Pin Assignment
+
+| Function | GPIO |
+|---|---|
+| WS2812B Data | **GPIO 8** |
+| WS2812B VCC | 5 V |
+| WS2812B GND | GND |
+
+> The three WS2812B LEDs are wired in series (DIN → DOUT → DIN → ...). Only the first DIN connects to GPIO 8. A 300–470 Ω resistor on the data line and a 100 µF capacitor across VCC/GND are recommended.
+
+### API Endpoint
+
+The C3 polls `GET http://wettercubeplus.local/api/ampel`. Both devices must be on the same Wi-Fi network. Example response:
+
+```json
+{
+  "temperature": 22.4,
+  "dwd_warning": false,
+  "active": "yellow",
+  "thresholds": {
+    "green":  { "min": 15, "max": 19 },
+    "yellow": { "min": 20, "max": 24 },
+    "red":    { "min": 25, "max": 99 }
+  }
+}
+```
+
+`dwd_warning: true` means: there are active DWD warnings that have not yet been acknowledged by opening the warning screen on the Cube → all three LEDs blink.
 
 ---
 
