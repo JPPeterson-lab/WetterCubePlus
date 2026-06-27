@@ -1,6 +1,6 @@
 {
   "name": "WetterCubePlus",
-  "version": "0.3.3-beta",
+  "version": "0.4.0-beta",
   "home_assistant_domain": "esphome",
   "funding_url": "https://github.com/JPPeterson-lab/WetterCubePlus",
   "new_install_prompt_erase": true,

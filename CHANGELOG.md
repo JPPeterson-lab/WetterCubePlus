@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.4.0-beta (2026-06-27)
+
+### Neu
+- **DWD Warnkarte (ScreenWarnkarte2):** Statt WMS-Karte jetzt farbige Warnkarten-Liste direkt aus dem DWD GeoServer WFS – bis zu 5 aktive Warnungen standortbezogen, farbkodiert nach DWD-Warnstufe (gelb/orange/rot/violett)
+- Warnkarten sind tippbar: Detail-Popup mit vollständiger Warnmeldung
+- Warn-Screens (Regen & Pollen) zeigen beim Antippen ein Popup mit Warndetails
+
+### Fixes
+- Umlaute (ä/ö/ü/ß) in DWD-Warnmeldungen und Pollennamen korrekt dargestellt (ä→ae usw.)
+- OK-Button im Warn-Popup überdeckt nicht mehr den Beschreibungstext (Popup-Höhe 270 px)
+- DWD Wetterwarnungen: API-Abruf über WFS BBOX-Filter statt nicht mehr erreichbarer `/warnings.json`-URL
+
+---
+
 ## v0.3.3-beta (2026-06-25)
 
 ### Fixes

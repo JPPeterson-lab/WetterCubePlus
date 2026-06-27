@@ -1,5 +1,31 @@
 # Entwicklungs-Log
 
+## 2026-06-27 – v0.4.0-beta
+
+### DWD Warnkarte: WMS-Karte durch WFS-Textliste ersetzt
+
+Die `dwd:Warnungen_Gemeinden` WMS-Layer zeigt alle Gemeinden als blaue/graue Verwaltungsflächen – unabhängig davon ob eine Warnung aktiv ist. Für eine echte Warnkarte wäre ein SLD-Styling nötig, das DWD nicht öffentlich anbietet.
+
+**Lösung:** Gleicher GeoServer (`maps.dwd.de/geoserver/dwd/ows`), aber WFS statt WMS. BBOX-Filter auf die BBOX des konfigurierten Bundeslandes liefert alle aktiven Warnungen als GeoJSON. Felder: `SEVERITY` (Minor/Moderate/Severe/Extreme), `HEADLINE`, `DESCRIPTION`, `EVENT`. Bis zu 5 Warnungen werden als LVGL-Karten (farbkodiert nach DWD-Schema) dargestellt und sind tippbar für ein Detail-Popup.
+
+**DWD Farb-Schema:** Level 1 (Vorinformation) → `#FFCC00` (dunkler Text), Level 2 → `#FF8000`, Level 3 → `#FF0000`, Level 4 → `#C000C0`.
+
+**Vorherige API-Versuche (alle gescheitert):**
+- `/warnings.json` → HTTP 404 (URL geändert)
+- NINA API → HTTP -1 (nicht erreichbar vom ESP32)
+- WFS mit `CQL_FILTER=STATE_SHORT='SH'` → HTTP 400 (Feld existiert nicht im Layer)
+- BBOX-Filter → ✅ funktioniert
+
+### Umlaut-Darstellung in LVGL
+
+Montserrat-Fonts in LVGL enthalten keine deutschen Sonderzeichen. Lösung: `ohneUmlaute()` konvertiert UTF-8-Sequenzen (0xC3-Prefix) und Latin-1-Kodierungen zu ASCII-Digraphen (ä→ae, ö→oe, ü→ue, ß→ss). Wird auf alle angezeigten DWD-Texte und Pollennamen angewendet.
+
+### Popup-Layout-Fix
+
+`zeigeWarnPopup` hatte 220 px Höhe; längere DWD-Beschreibungstexte (bis 200 Zeichen) überlagerten den OK-Button. Fix: Popup auf 270 px erhöht, Textlabel auf feste Höhe 180 px begrenzt (`lv_obj_set_size` statt nur `set_width`), OK-Button mit `LV_ALIGN_BOTTOM_MID` immer unten.
+
+---
+
 ## 2026-06-25 – v0.3.3-beta
 
 ### NTP-Zeitsync beschleunigt

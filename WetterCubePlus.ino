@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.3.3-beta"
+#define FIRMWARE_VERSION "0.4.0-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -218,12 +218,23 @@ struct WetterDaten {
 };
 
 struct PollenDaten {
-  // Open-Meteo Air Quality (Stundenwerte)
+  // Open-Meteo Air Quality (Stundenwerte – nächste Stunde, für Screen 1 + Warnung)
   float birke    = -1.0f;
   float graeser  = -1.0f;
   float erle     = -1.0f;
   float beifuss  = -1.0f;
   float ambrosia = -1.0f;
+  // Open-Meteo Stunden-Forecast (3 Slots: h+1, h+2, h+3) für ScreenForecastPollenHour
+  // [0]=nächste Stunde [1]=übernächste [2]=3. Stunde
+  float h_birke[3]    = {-1,-1,-1};
+  float h_graeser[3]  = {-1,-1,-1};
+  float h_erle[3]     = {-1,-1,-1};
+  float h_beifuss[3]  = {-1,-1,-1};
+  float h_ambrosia[3] = {-1,-1,-1};
+  float h_roggen[3]   = {-1,-1,-1};
+  float h_esche[3]    = {-1,-1,-1};
+  float h_hasel[3]    = {-1,-1,-1};
+  int   h_slot[3]     = {0,0,0};   // Stunde des jeweiligen Slots (0-23)
   // DWD Pollenflug – heute / morgen / übermorgen (Stufen 0-3 als Float)
   float dwd_birke    = -1.0f; float dwd_birke_tmr    = -1.0f; float dwd_birke_da    = -1.0f;
   float dwd_hasel    = -1.0f; float dwd_hasel_tmr    = -1.0f; float dwd_hasel_da    = -1.0f;
@@ -904,53 +915,111 @@ void fetchDwdPollen() {
   http.end();
 }
 
-// -- DWD Wetterwarnungen --
-// Endpoint: opendata.dwd.de (WARNUNG nach Bundesland/Region)
-// Liefert aktive CAP-Warnungen als JSON; wir filtern nach Bundesland
+// Mappt DWD Pollen-Region auf 2-stellige AGS-Bundesland-Prefixes (AGS-Schlüssel in warnings.json)
+static const char* agsPrefix(int region) {
+  switch (region) {
+    case 10: return "01,02";      // Schleswig-Holstein, Hamburg
+    case 20: return "13";         // Mecklenburg-Vorpommern
+    case 30: return "03,04";      // Niedersachsen, Bremen
+    case 31: return "11,12";      // Berlin, Brandenburg
+    case 32: return "15";         // Sachsen-Anhalt
+    case 33: return "16";         // Thüringen
+    case 34: return "14";         // Sachsen
+    case 40: return "05";         // Nordrhein-Westfalen
+    case 50: return "06";         // Hessen
+    case 60: return "07,10";      // Rheinland-Pfalz, Saarland
+    case 71: case 72: case 73: case 74: return "09"; // Bayern
+    case 80: return "08";         // Baden-Württemberg
+    default: return "";
+  }
+}
+
+static bool agsMatchesRegion(const char* ags, int region) {
+  const char* prefixes = agsPrefix(region);
+  if (!prefixes || !prefixes[0]) return true; // kein Filter → alle
+  // prefixes ist kommagetrennt, z.B. "01,02"
+  while (*prefixes) {
+    if (strncmp(ags, prefixes, 2) == 0) return true;
+    prefixes += 2;
+    if (*prefixes == ',') prefixes++;
+  }
+  return false;
+}
+
+// -- DWD Wetterwarnungen via GeoServer WFS mit BBOX-Filter --
 void fetchDwdWarnungen() {
   if (WiFi.status() != WL_CONNECTED || !cfg.warn_region) return;
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
-  // Warnungen aggregiert nach Landkreis/Bundesland
-  // URL liefert strukturiertes JSON mit Warnungen
-  http.begin(sc, "https://www.dwd.de/DWD/warnungen/warnapp_gemeinden/json/warnings.json");
+
+  const DwdBbox* bb = getDwdBbox();
+  // WFS BBOX-Filter: nur Warnungen im Bundesland-Ausschnitt (keine Feldnamen nötig)
+  // BBOX-Format für WFS 1.1.0: minLon,minLat,maxLon,maxLat,EPSG:4326
+  String url = "https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=1.1.0"
+               "&request=GetFeature&typeName=dwd:Warnungen_Gemeinden"
+               "&outputFormat=application/json&maxFeatures=20";
+  url += "&BBOX=" + String(bb->minLon,4) + "," + String(bb->minLat,4) + ","
+               + String(bb->maxLon,4) + "," + String(bb->maxLat,4) + ",EPSG:4326";
+
+  Serial.printf("[DWD-Warn] URL: %s\n", url.c_str());
+  http.begin(sc, url);
   http.addHeader("User-Agent", "WetterCubePlus/1.0");
+  http.setTimeout(15000);
   int code = http.GET();
   anzahl_warnungen = 0;
+  Serial.printf("[DWD-Warn] HTTP %d\n", code);
 
   if (code == 200) {
-    // Warnungen-JSON ist groß (~100-500KB) – mit PSRAM als Stream parsen
-    // Struktur: {"warnings":{"AGS_CODE":[{event,headline,description,severity,urgency}]}}
-    // Da der volle Parse zu viel RAM braucht, filtern wir nach region_id-Prefix
-    // Einfachere Alternative: Nur ersten 10 Warnungen laden
-    DynamicJsonDocument doc(32768);  // 32KB mit PSRAM kein Problem
-    DeserializationError err = deserializeJson(doc, http.getStream());
-    if (err == DeserializationError::Ok) {
+    String body = http.getString();
+    http.end();
+    Serial.printf("[DWD-Warn] %u Bytes\n", body.length());
+    // GeoJSON FeatureCollection – Feldnamen aus properties loggen um sie zu kennen
+    DynamicJsonDocument doc(32768);
+    DeserializationError err = deserializeJson(doc, body);
+    body = String();
+    Serial.printf("[DWD-Warn] parse: %s\n", err.c_str());
+    if (err == DeserializationError::Ok || err == DeserializationError::NoMemory) {
       int count = 0;
-      JsonObject warnings = doc["warnings"].as<JsonObject>();
-      for (JsonPair kv : warnings) {
+      for (JsonObject feat : doc["features"].as<JsonArray>()) {
         if (count >= 5) break;
-        JsonArray arr = kv.value().as<JsonArray>();
-        if (arr.size() == 0) continue;
-        JsonObject w = arr[0].as<JsonObject>();
-        int sev = w["severity"].as<int>();
-        if (sev < 2) continue;  // nur Warnungen, keine Vorinformationen
-        warnungen[count].aktiv       = true;
-        warnungen[count].level       = sev;
-        warnungen[count].typ         = w["event"].as<String>();
-        warnungen[count].titel       = w["headline"].as<String>();
-        warnungen[count].beschreibung= w["description"].as<String>();
+        JsonObject p = feat["properties"];
+
+        // Feldnamen beim ersten Feature ins Serial schreiben (Diagnose)
+        if (count == 0) {
+          Serial.print("[DWD-Warn] Felder: ");
+          for (JsonPair kv : p) { Serial.print(kv.key().c_str()); Serial.print(" "); }
+          Serial.println();
+        }
+
+        // Severity – verschiedene mögliche Feldnamen probieren
+        const char* sevStr = p["SEVERITY"] | p["severity"] | p["Severity"] | "Minor";
+        int sev = 1;
+        if      (strcmp(sevStr, "Extreme")  == 0) sev = 4;
+        else if (strcmp(sevStr, "Severe")   == 0) sev = 3;
+        else if (strcmp(sevStr, "Moderate") == 0) sev = 2;
+
+        // Titel / Headline
+        const char* titelC = p["HEADLINE"] | p["headline"] | p["Headline"] | p["NAME"] | "";
+        String titel = titelC;
+        bool dup = false;
+        for (int i = 0; i < count; i++) if (warnungen[i].titel == titel) { dup = true; break; }
+        if (dup) continue;
+
+        warnungen[count].aktiv        = true;
+        warnungen[count].level        = sev;
+        warnungen[count].typ          = String(p["EVENT"]       | p["event"]       | p["Event"]       | "");
+        warnungen[count].titel        = titel;
+        warnungen[count].beschreibung = String(p["DESCRIPTION"] | p["description"] | p["Description"] | "");
+        Serial.printf("[DWD-Warn] #%d sev=%d typ=%s titel=%s\n",
+          count, sev, warnungen[count].typ.c_str(), warnungen[count].titel.substring(0,40).c_str());
         count++;
       }
       anzahl_warnungen = count;
     }
+  } else {
+    http.end();
   }
-  http.end();
-
-  // Alternativ: Warnungen nach Bundesland via NINA-API des BBK (sehr gut strukturiert)
-  // https://nina.api.proxy.bund.dev/api31/dwd/mapData.json
-  // Liefert {id, payload{data{headline,msgType,severity,areas[]}}} – leichter zu parsen
-  // TODO: NINA-API als zweite Option implementieren wenn DWD-JSON zu groß
+  Serial.printf("[DWD-Warn] %d Warnungen fuer Region %d\n", anzahl_warnungen, cfg.dwd_region);
 }
 
 // -- DWD WMS Niederschlagsradar (PNG → RGB565A8 im PSRAM, bundeslandbezogen) --
@@ -971,14 +1040,12 @@ void fetchWmsRadar() {
   Serial.printf("[Radar] URL: %s\n", url.c_str());
   http.begin(sc, url);
   http.addHeader("User-Agent", "WetterCubePlus/1.0");
-  http.setTimeout(20000);
+  http.setTimeout(30000);
   const char* hdrs[] = {"Content-Type"};
   http.collectHeaders(hdrs, 1);
   int httpCode = http.GET();
   Serial.printf("[Radar] HTTP %d\n", httpCode);
   if (httpCode != 200) { http.end(); return; }
-
-  http.setTimeout(30000);
   unsigned long tStart = millis();
   String body = http.getString();
   http.end();
@@ -1166,6 +1233,159 @@ void aktualisiereRadarMarker() {
   Serial.printf("[Radar] Windpfeil: dir=%.0f° → Zug=%.0f°\n", wetter.wind_dir, fmod(wetter.wind_dir+180.0f,360.0f));
 }
 
+// Forward-Deklarationen (definiert weiter unten)
+static String ohneUmlaute(const String& s);
+static lv_obj_t* warnPopup = nullptr;
+static bool warnPopupIstRegen = false;
+static bool warnPopupNurSchliessen = false;
+static void zeigeWarnPopup(lv_obj_t* parent, bool istRegen, const char* titel, const char* text, bool nurSchliessen = false);
+
+// -- DWD Warnliste (ScreenWarnkarte2) --
+static lv_obj_t* warnListeContainer = nullptr;
+
+static lv_color_t dwdSevColor(int sev) {
+  switch (sev) {
+    case 4: return lv_color_hex(0xC000C0);
+    case 3: return lv_color_hex(0xFF0000);
+    case 2: return lv_color_hex(0xFF8000);
+    default:return lv_color_hex(0xFFCC00);
+  }
+}
+static bool dwdSevDarkText(int sev) { return sev <= 1; }
+
+// Ersetzt deutsche Umlaute durch ASCII-Äquivalente (Montserrat-Font hat keine)
+static String ohneUmlaute(const String& s) {
+  String r = "";
+  const uint8_t* p = (const uint8_t*)s.c_str();
+  while (*p) {
+    if (p[0] == 0xC3) { // UTF-8 2-Byte-Sequenz
+      switch (p[1]) {
+        case 0xA4: r += "ae"; p+=2; continue; // ä
+        case 0xB6: r += "oe"; p+=2; continue; // ö
+        case 0xBC: r += "ue"; p+=2; continue; // ü
+        case 0x84: r += "Ae"; p+=2; continue; // Ä
+        case 0x96: r += "Oe"; p+=2; continue; // Ö
+        case 0x9C: r += "Ue"; p+=2; continue; // Ü
+        case 0x9F: r += "ss"; p+=2; continue; // ß
+        default: break;
+      }
+    }
+    // Latin-1 Umlaute (falls nicht UTF-8)
+    uint8_t c = *p;
+    if      (c == 0xE4) { r += "ae"; p++; continue; }
+    else if (c == 0xF6) { r += "oe"; p++; continue; }
+    else if (c == 0xFC) { r += "ue"; p++; continue; }
+    else if (c == 0xC4) { r += "Ae"; p++; continue; }
+    else if (c == 0xD6) { r += "Oe"; p++; continue; }
+    else if (c == 0xDC) { r += "Ue"; p++; continue; }
+    else if (c == 0xDF) { r += "ss"; p++; continue; }
+    r += (char)c; p++;
+  }
+  return r;
+}
+
+static void cbWarnKarteCardTap(lv_event_t* e) {
+  if (warnPopup) { lv_obj_del(warnPopup); warnPopup = nullptr; return; }
+  int idx = (int)(intptr_t)lv_event_get_user_data(e);
+  if (idx < 0 || idx >= anzahl_warnungen) return;
+  const char* levelName[] = {"", "Vorinformation", "Warnung", "Schwere Warnung", "Extreme Warnung"};
+  int lv = constrain(warnungen[idx].level, 0, 4);
+  String text = String(levelName[lv]) + "\n" + ohneUmlaute(warnungen[idx].beschreibung).substring(0, 200);
+  String titel = ohneUmlaute(warnungen[idx].titel);
+  zeigeWarnPopup(objects.screenwarnkarte2, false, titel.c_str(), text.c_str(), true);
+}
+
+void aktualisiereWarnliste() {
+  if (!objects.screenwarnkarte2) return;
+  if (warnListeContainer) { lv_obj_del(warnListeContainer); warnListeContainer = nullptr; }
+
+  warnListeContainer = lv_obj_create(objects.screenwarnkarte2);
+  lv_obj_set_size(warnListeContainer, 480, 270);
+  lv_obj_align(warnListeContainer, LV_ALIGN_TOP_MID, 0, 0);
+  lv_obj_set_style_bg_color(warnListeContainer, lv_color_hex(0x111111), 0);
+  lv_obj_set_style_bg_opa(warnListeContainer, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_width(warnListeContainer, 0, 0);
+  lv_obj_set_style_pad_all(warnListeContainer, 4, 0);
+  // Scrollbar-Stil
+  lv_obj_set_style_bg_color(warnListeContainer, lv_color_hex(0x444444), LV_PART_SCROLLBAR);
+  lv_obj_set_style_bg_opa(warnListeContainer, LV_OPA_COVER, LV_PART_SCROLLBAR);
+
+  if (anzahl_warnungen == 0) {
+    lv_obj_t* lbl = lv_label_create(warnListeContainer);
+    lv_label_set_text(lbl, "Keine aktiven\nDWD-Wetterwarnungen");
+    lv_obj_set_style_text_color(lbl, lv_color_hex(0xaaaaaa), 0);
+    lv_obj_set_style_text_font(lbl, &lv_font_montserrat_16, 0);
+    lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_clear_flag(warnListeContainer, LV_OBJ_FLAG_SCROLLABLE);
+    return;
+  }
+
+  const int CARD_H = 120; // feste Kartenhöhe → scrollbar wenn >2 Warnungen
+  int totalH = anzahl_warnungen * (CARD_H + 4) + 4;
+  lv_obj_set_height(warnListeContainer, 270);
+  // Innerhalb des Containers: flexibler Inhalt durch manuelles Positionieren
+
+  for (int i = 0; i < anzahl_warnungen && i < 5; i++) {
+    lv_color_t col = dwdSevColor(warnungen[i].level);
+    bool dark = dwdSevDarkText(warnungen[i].level);
+    lv_color_t textCol = dark ? lv_color_hex(0x111111) : lv_color_hex(0xffffff);
+
+    lv_obj_t* card = lv_obj_create(warnListeContainer);
+    lv_obj_set_size(card, 466, CARD_H);
+    lv_obj_set_pos(card, 0, i * (CARD_H + 4));
+    lv_obj_set_style_bg_color(card, col, 0);
+    lv_obj_set_style_bg_opa(card, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(card, 0, 0);
+    lv_obj_set_style_radius(card, 6, 0);
+    lv_obj_set_style_pad_all(card, 6, 0);
+    lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(card, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(card, cbWarnKarteCardTap, LV_EVENT_CLICKED, (void*)(intptr_t)i);
+
+    lv_obj_t* lblTyp = lv_label_create(card);
+    lv_label_set_text(lblTyp, ohneUmlaute(warnungen[i].typ).c_str());
+    lv_obj_set_style_text_font(lblTyp, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblTyp, textCol, 0);
+    lv_obj_align(lblTyp, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    lv_obj_t* lblTitel = lv_label_create(card);
+    lv_label_set_long_mode(lblTitel, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(lblTitel, 454);
+    lv_label_set_text(lblTitel, ohneUmlaute(warnungen[i].titel).c_str());
+    lv_obj_set_style_text_font(lblTitel, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_color(lblTitel, textCol, 0);
+    lv_obj_align(lblTitel, LV_ALIGN_TOP_LEFT, 0, 15);
+
+    lv_obj_t* lblDesc = lv_label_create(card);
+    lv_label_set_long_mode(lblDesc, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(lblDesc, 454);
+    lv_label_set_text(lblDesc, ohneUmlaute(warnungen[i].beschreibung).substring(0, 100).c_str());
+    lv_obj_set_style_text_font(lblDesc, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblDesc, textCol, 0);
+    lv_obj_align(lblDesc, LV_ALIGN_TOP_LEFT, 0, 54);
+
+    // Hinweis: tippen für Details
+    lv_obj_t* lblHint = lv_label_create(card);
+    lv_label_set_text(lblHint, ">> Tippen fuer Details");
+    lv_obj_set_style_text_font(lblHint, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(lblHint, dark ? lv_color_hex(0x333333) : lv_color_hex(0xdddddd), 0);
+    lv_obj_align(lblHint, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+  }
+
+  // Scrollbar aktivieren wenn Inhalt > Sichtbereich
+  if (totalH > 270) {
+    lv_obj_add_flag(warnListeContainer, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scroll_dir(warnListeContainer, LV_DIR_VER);
+  } else {
+    lv_obj_clear_flag(warnListeContainer, LV_OBJ_FLAG_SCROLLABLE);
+  }
+}
+
+void erstelleWarnkarte2Screen() {
+  aktualisiereWarnliste();
+}
+
+
 // -- Open-Meteo Pollen --
 void fetchOpenMeteoPollen() {
   if (WiFi.status() != WL_CONNECTED || cfg.lat == 0.0f) return;
@@ -1175,18 +1395,34 @@ void fetchOpenMeteoPollen() {
   url += "?latitude="  + String(cfg.lat, 4);
   url += "&longitude=" + String(cfg.lon, 4);
   url += "&hourly=birch_pollen,grass_pollen,alder_pollen,mugwort_pollen,ragweed_pollen";
+  url += ",european_aqi,dust";  // Platzhalter – Open-Meteo hat kein Roggen/Esche/Hasel stündlich
   url += "&timezone=auto&forecast_days=1";
   http.begin(sc, url);
   if (http.GET() == 200) {
-    DynamicJsonDocument doc(4096);
+    DynamicJsonDocument doc(6144);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
       struct tm ti; getLocalTime(&ti);
       int h = min(ti.tm_hour + 1, 23);
+      // Nächste Stunde (für Screen 1 + Warnung)
       pollen.birke    = doc["hourly"]["birch_pollen"][h].as<float>();
       pollen.graeser  = doc["hourly"]["grass_pollen"][h].as<float>();
       pollen.erle     = doc["hourly"]["alder_pollen"][h].as<float>();
       pollen.beifuss  = doc["hourly"]["mugwort_pollen"][h].as<float>();
       pollen.ambrosia = doc["hourly"]["ragweed_pollen"][h].as<float>();
+      // 3 Stunden-Slots (h+1, h+2, h+3) für ScreenForecastPollenHour
+      for (int i = 0; i < 3; i++) {
+        int slot = min(h + i, 23);
+        pollen.h_slot[i]    = slot;
+        pollen.h_birke[i]   = doc["hourly"]["birch_pollen"][slot].as<float>();
+        pollen.h_graeser[i] = doc["hourly"]["grass_pollen"][slot].as<float>();
+        pollen.h_erle[i]    = doc["hourly"]["alder_pollen"][slot].as<float>();
+        pollen.h_beifuss[i] = doc["hourly"]["mugwort_pollen"][slot].as<float>();
+        pollen.h_ambrosia[i]= doc["hourly"]["ragweed_pollen"][slot].as<float>();
+        // Roggen, Esche, Hasel: Open-Meteo bietet diese nicht stündlich → DWD-Tageswert als Näherung
+        pollen.h_roggen[i]  = pollen.dwd_roggen;
+        pollen.h_esche[i]   = pollen.dwd_esche;
+        pollen.h_hasel[i]   = pollen.dwd_hasel;
+      }
     }
   }
   http.end();
@@ -1367,6 +1603,32 @@ void aktualisiereUI() {
   if (objects.labelsundowntime)
     lv_label_set_text(objects.labelsundowntime, wetter.sunset.isEmpty()  ? "--:--" : wetter.sunset.c_str());
 
+  // ── ScreenForecastPollenHour (stündliche Pollen, 3 Slots) ───
+  {
+    char hbuf[6];
+    lv_obj_t* timeLabels[3]   = {objects.labelhour1,   objects.labelhour2,   objects.labelhour3};
+    lv_obj_t* birke[3]        = {objects.labelbirkehour1,   objects.labelbirkehour2,   objects.labelbirkehour3};
+    lv_obj_t* graeser[3]      = {objects.labelgraeserhour1, objects.labelgraeserhour2, objects.labelgraeserhour3};
+    lv_obj_t* erle[3]         = {objects.labelerlehour1,    objects.labelerlehour2,    objects.labelerlehour3};
+    lv_obj_t* hasel[3]        = {objects.labelhaselhour1,   objects.labelhaselhour2,   objects.labelhaselhour3};
+    lv_obj_t* beifuss[3]      = {objects.labelbeifusshour1, objects.labelbeifusshour2, objects.labelbeifusshour3};
+    lv_obj_t* ambrosia[3]     = {objects.labelambrosiahour1,objects.labelambrosiahour2,objects.labelambrosiahour3};
+    lv_obj_t* roggen[3]       = {objects.labelroggenhour1,  objects.labelroggenhour2,  objects.labelroggenhour3};
+    lv_obj_t* esche[3]        = {objects.labeleschehour1,   objects.labeleschehour2,   objects.labeleschehour3};
+    for (int i = 0; i < 3; i++) {
+      snprintf(hbuf, sizeof(hbuf), "%02d:00", pollen.h_slot[i]);
+      setLabel(timeLabels[i], hbuf);
+      setPollenLabel(birke[i],    openMeteoToDwd(pollen.h_birke[i]));
+      setPollenLabel(graeser[i],  openMeteoToDwd(pollen.h_graeser[i]));
+      setPollenLabel(erle[i],     openMeteoToDwd(pollen.h_erle[i]));
+      setPollenLabel(hasel[i],    pollen.h_hasel[i]);
+      setPollenLabel(beifuss[i],  openMeteoToDwd(pollen.h_beifuss[i]));
+      setPollenLabel(ambrosia[i], openMeteoToDwd(pollen.h_ambrosia[i]));
+      setPollenLabel(roggen[i],   pollen.h_roggen[i]);
+      setPollenLabel(esche[i],    pollen.h_esche[i]);
+    }
+  }
+
   // ── Pollenwarnung (screenwarnungpollen) ─────────────────────
   // Basiert auf Open-Meteo naechste Stunde (umgerechnet auf DWD-Skala)
   float pollenWerte[] = {openMeteoToDwd(pollen.birke), openMeteoToDwd(pollen.erle),
@@ -1437,17 +1699,26 @@ void setzeBootFortschritt(int prozent) {
 //  LVGL Event-Callbacks
 // ============================================================
 
-// screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
+// Hauptnavigation: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
+// Untermenüs: forecastpollen ↔ forecastpollenhour | screenwarnkarte1 ↔ screenwarnkarte2
 static void cbHome(lv_event_t*)   { loadScreen(SCREEN_ID_SCREEN_1); }
-static void cbFwd1(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }   // screen_1 >
-static void cbBack1(lv_event_t*) { loadScreen(SCREEN_ID_SCREEN_1); }               // forecastwetter <
-static void cbFwd2(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }   // forecastwetter >
-static void cbBack2(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }   // forecastpollen <
-static void cbFwd3(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }       // forecastpollen >
-static void cbBack3(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }   // screenwarnkarte1 <
-static void cbFwd4(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENSUNMOON); }          // screenwarnkarte1 >
-static void cbFwd5(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }               // screensunmoon >
-static void cbBack5(lv_event_t*) { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }       // screensunmoon <
+static void cbFwd1(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }       // screen_1 >
+static void cbBack1(lv_event_t*) { loadScreen(SCREEN_ID_SCREEN_1); }                   // forecastwetter <
+static void cbFwd2(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }       // forecastwetter >
+static void cbBack2(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }       // forecastpollen <
+static void cbFwd3(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }           // forecastpollen >
+static void cbBack3(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }       // screenwarnkarte1 <
+static void cbFwd4(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENSUNMOON); }              // screenwarnkarte1 >
+static void cbFwd5(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }                   // screensunmoon >
+static void cbBack5(lv_event_t*) { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }           // screensunmoon <
+// Untermenü-Buttons (Hub)
+static void cbHubPollen(lv_event_t*)     { loadScreen(SCREEN_ID_SCREENFORECASTPOLLENHOUR); } // forecastpollen → stündlich
+static void cbHubPollenBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }     // stündlich → tages
+static void cbHubWarn(lv_event_t*) {
+  loadScreen(SCREEN_ID_SCREENWARNKARTE2);
+  aktualisiereWarnliste();
+}
+static void cbHubWarnBack(lv_event_t*)   { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }         // warnkarte2 → warnkarte1
 
 // ── Blinken auf Warnscreens (500 ms, Icon + Titel) ──────────
 static bool warnBlinkState = false;
@@ -1465,14 +1736,95 @@ static void cbWarnBlink(lv_timer_t*) {
   }
 }
 
+// ── Warn-Popup (Detail-Overlay auf dem Warnscreen) ──────────
+
+static void cbWarnPopupOk(lv_event_t*) {
+  if (warnPopup) {
+    lv_obj_del(warnPopup);
+    warnPopup = nullptr;
+  }
+  if (warnPopupNurSchliessen) return;
+  if (warnPopupIstRegen) {
+    regenWarnBestaetigt = true;
+  } else {
+    pollenWarnBestaetigt = true;
+  }
+  loadScreen(SCREEN_ID_SCREEN_1);
+}
+
+static void zeigeWarnPopup(lv_obj_t* parent, bool istRegen, const char* titel, const char* text, bool nurSchliessen) {
+  if (warnPopup) { lv_obj_del(warnPopup); warnPopup = nullptr; }
+  warnPopupIstRegen    = istRegen;
+  warnPopupNurSchliessen = nurSchliessen;
+
+  // Halbtransparentes dunkles Overlay über dem Warnscreen
+  warnPopup = lv_obj_create(parent);
+  lv_obj_set_size(warnPopup, 440, 270);
+  lv_obj_align(warnPopup, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_style_bg_color(warnPopup, lv_color_hex(0x111111), 0);
+  lv_obj_set_style_bg_opa(warnPopup, LV_OPA_90, 0);
+  lv_obj_set_style_border_color(warnPopup, lv_color_hex(0xffffff), 0);
+  lv_obj_set_style_border_width(warnPopup, 2, 0);
+  lv_obj_set_style_radius(warnPopup, 10, 0);
+  lv_obj_clear_flag(warnPopup, LV_OBJ_FLAG_SCROLLABLE);
+
+  lv_obj_t* lblTitel = lv_label_create(warnPopup);
+  lv_label_set_text(lblTitel, titel);
+  lv_obj_set_style_text_font(lblTitel, &lv_font_montserrat_18, 0);
+  lv_obj_set_style_text_color(lblTitel, lv_color_hex(0xffcc00), 0);
+  lv_obj_align(lblTitel, LV_ALIGN_TOP_MID, 0, 8);
+
+  lv_obj_t* lblText = lv_label_create(warnPopup);
+  lv_label_set_long_mode(lblText, LV_LABEL_LONG_WRAP);
+  lv_obj_set_size(lblText, 400, 180);
+  lv_label_set_text(lblText, text);
+  lv_obj_set_style_text_font(lblText, &lv_font_montserrat_14, 0);
+  lv_obj_set_style_text_color(lblText, lv_color_hex(0xeeeeee), 0);
+  lv_obj_align(lblText, LV_ALIGN_TOP_MID, 0, 38);
+
+  lv_obj_t* btn = lv_btn_create(warnPopup);
+  lv_obj_set_size(btn, 160, 40);
+  lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -6);
+  lv_obj_set_style_bg_color(btn, lv_color_hex(0x333333), 0);
+  lv_obj_set_style_border_color(btn, lv_color_hex(0xffffff), 0);
+  lv_obj_set_style_border_width(btn, 1, 0);
+  lv_obj_t* lblBtn = lv_label_create(btn);
+  lv_label_set_text(lblBtn, LV_SYMBOL_OK "  OK");
+  lv_obj_set_style_text_color(lblBtn, lv_color_hex(0xffffff), 0);
+  lv_obj_center(lblBtn);
+  lv_obj_add_event_cb(btn, cbWarnPopupOk, LV_EVENT_CLICKED, nullptr);
+}
+
+static void cbWarnkarte2Tap(lv_event_t*) {
+  // Karten-Tap wird über cbWarnKarteCardTap abgewickelt; Screen-Tap schließt offenes Popup
+  if (warnPopup) { lv_obj_del(warnPopup); warnPopup = nullptr; }
+}
+
 static void cbWarnTap(lv_event_t* e) {
   lv_obj_t* src = lv_event_get_current_target(e);
+  if (warnPopup) return; // Popup schon offen – nur OK-Button schließt
+
   if (src == objects.screenwarnung) {
-    regenWarnBestaetigt = true;
-    loadScreen(SCREEN_ID_SCREEN_1);
+    String details = "";
+    for (int i = 0; i < anzahl_warnungen && i < 3; i++) {
+      if (i > 0) details += "\n\n";
+      details += ohneUmlaute(warnungen[i].titel);
+      if (!warnungen[i].beschreibung.isEmpty())
+        details += "\n" + ohneUmlaute(warnungen[i].beschreibung).substring(0, 100);
+    }
+    if (details.isEmpty()) details = "Regen in den naechsten 60 Min. erwartet.";
+    zeigeWarnPopup(objects.screenwarnung, true, "Wetterwarnung", details.c_str(), false);
+
   } else if (src == objects.screenwarnungpollen) {
-    pollenWarnBestaetigt = true;
-    loadScreen(SCREEN_ID_SCREEN_1);
+    String pollenName = ohneUmlaute(schleimsterPollen());
+    float pollenWerte[] = {openMeteoToDwd(pollen.birke), openMeteoToDwd(pollen.erle),
+                           openMeteoToDwd(pollen.graeser), openMeteoToDwd(pollen.beifuss),
+                           openMeteoToDwd(pollen.ambrosia)};
+    float maxP = -1; for (int i=0;i<5;i++) maxP=max(maxP,pollenWerte[i]);
+    const char* stufe = maxP>=3?"stark":(maxP>=2?"hoch":(maxP>=1?"mittel":"gering"));
+    String msg = pollenName + ": " + stufe + " Belastung\n(Stufe " + String((int)maxP) + " von 3)";
+    msg += "\nSchwelle: >" + String(cfg.pollen_schwelle);
+    zeigeWarnPopup(objects.screenwarnungpollen, false, "Pollenwarnung", msg.c_str(), false);
   }
 }
 
@@ -1553,9 +1905,11 @@ void setup() {
 
   // Warnkarte-Screen programmatisch anlegen
   erstelleWarnkarteScreen();
+  erstelleWarnkarte2Screen();
 
   // Navigations-Buttons sofort verdrahten (vor WiFi-Check, gilt auch im Portal-Modus)
-  // Navigation: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
+  // Navigation Hauptkette: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
+  // Untermenüs: forecastpollen ↔ forecastpollenhour | screenwarnkarte1 ↔ screenwarnkarte2
   #define REG_CB(obj, cb, evt) do { if (obj) lv_obj_add_event_cb(obj, cb, evt, nullptr); } while(0)
   REG_CB(objects.labelbuttonforward,    cbFwd1,    LV_EVENT_CLICKED);  // screen_1 >
   REG_CB(objects.labelbuttonbackward,   cbBack1,   LV_EVENT_CLICKED);  // forecastwetter <
@@ -1566,13 +1920,21 @@ void setup() {
   REG_CB(objects.labelbuttonforward_4,  cbFwd4,    LV_EVENT_CLICKED);  // screenwarnkarte1 >
   REG_CB(objects.labelbuttonforward_2,  cbFwd5,    LV_EVENT_CLICKED);  // screensunmoon >
   REG_CB(objects.button_1,              cbBack5,   LV_EVENT_CLICKED);  // screensunmoon <
+  // Untermenü Hub-Buttons
+  REG_CB(objects.labelbuttonscreenhub,       cbHubPollen,    LV_EVENT_CLICKED);  // forecastpollen → stündlich
+  REG_CB(objects.labelbuttonscreenhubback,   cbHubPollenBack,LV_EVENT_CLICKED);  // stündlich → tages
+  REG_CB(objects.labelbuttonscreenhub_1,     cbHubWarn,      LV_EVENT_CLICKED);  // warnkarte1 → warnkarte2
+  REG_CB(objects.labelbuttonscreenhubback_1, cbHubWarnBack,  LV_EVENT_CLICKED);  // warnkarte2 → warnkarte1
+  // Home-Buttons
   REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);
-  REG_CB(objects.screenwarnung,         cbWarnTap, LV_EVENT_CLICKED);
-  REG_CB(objects.screenwarnungpollen,   cbWarnTap, LV_EVENT_CLICKED);
+  REG_CB(objects.screenwarnung,         cbWarnTap,        LV_EVENT_CLICKED);
+  REG_CB(objects.screenwarnungpollen,   cbWarnTap,        LV_EVENT_CLICKED);
+  REG_CB(objects.screenwarnkarte2,      cbWarnkarte2Tap,  LV_EVENT_CLICKED);
   #undef REG_CB
+  // Warnliste-Screen ist clickbar für Popup (registriert via REG_CB auf screenwarnkarte2)
 
   // WiFi verbinden oder Portal starten
   if (cfg.ssid.isEmpty()) {
@@ -1722,6 +2084,7 @@ void loop() {
   if (millis() - letztesWarnUpdate >= 900000UL) {
     letztesWarnUpdate = millis();
     fetchDwdWarnungen();
+    if (lv_scr_act() == objects.screenwarnkarte2) aktualisiereWarnliste();
   }
 
   // DWD-Warnkarte alle 30 Minuten
