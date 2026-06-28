@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.5.0-beta"
+#define FIRMWARE_VERSION "0.5.1-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -288,7 +288,6 @@ bool   regenWarnBestaetigt    = false;
 bool   regenWarnGezeigt       = false;
 bool   dwdWarnAktiv           = false;
 bool   dwdWarnBestaetigt      = false;
-bool   dwdWarningSeen         = false;
 
 static lv_obj_t*  dwdWarnBtn    = nullptr;
 static lv_timer_t* dwdBlinker   = nullptr;
@@ -676,7 +675,7 @@ void handleApiAmpel() {
   else if (t >= cfg.ampel_gelb_min  && t <= cfg.ampel_gelb_max)  active = "yellow";
   else if (t >= cfg.ampel_rot_min   && t <= cfg.ampel_rot_max)   active = "red";
 
-  bool dwd_warn = (anzahl_warnungen > 0 && !dwdWarningSeen);
+  bool dwd_warn = (anzahl_warnungen > 0 && !dwdWarnBestaetigt);
 
   String json = "{";
   json += "\"temperature\":"  + String(t, 1) + ",";
@@ -1080,7 +1079,6 @@ void fetchDwdWarnungen() {
           count, sev, warnungen[count].typ.c_str(), warnungen[count].titel.substring(0,40).c_str());
         count++;
       }
-      if (count > 0 && count != anzahl_warnungen) dwdWarningSeen = false;
       anzahl_warnungen = count;
     }
   } else {
@@ -1469,17 +1467,19 @@ void fetchOpenMeteoPollen() {
     DynamicJsonDocument doc(6144);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
       struct tm ti; getLocalTime(&ti);
-      int h = min(ti.tm_hour + 1, 23);
+      // Index in das 48h-Array: Stunde 0–23 = heute, 24–47 = morgen
+      int h = ti.tm_hour + 1;  // nächste Stunde; läuft bis max 24 (=Index 0 von morgen)
+      if (h > 47) h = 47;
       // Nächste Stunde (für Screen 1 + Warnung)
       pollen.birke    = doc["hourly"]["birch_pollen"][h].as<float>();
       pollen.graeser  = doc["hourly"]["grass_pollen"][h].as<float>();
       pollen.erle     = doc["hourly"]["alder_pollen"][h].as<float>();
       pollen.beifuss  = doc["hourly"]["mugwort_pollen"][h].as<float>();
       pollen.ambrosia = doc["hourly"]["ragweed_pollen"][h].as<float>();
-      // 3 Stunden-Slots (h+1, h+2, h+3) für ScreenForecastPollenHour
+      // 3 Stunden-Slots für ScreenForecastPollenHour — Index läuft über Tagesgrenze
       for (int i = 0; i < 3; i++) {
-        int slot = min(h + i, 23);
-        pollen.h_slot[i]    = slot;
+        int slot = min(h + i, 47);
+        pollen.h_slot[i]    = slot % 24;  // Anzeige-Stunde: 0–23
         pollen.h_birke[i]   = doc["hourly"]["birch_pollen"][slot].as<float>();
         pollen.h_graeser[i] = doc["hourly"]["grass_pollen"][slot].as<float>();
         pollen.h_erle[i]    = doc["hourly"]["alder_pollen"][slot].as<float>();
@@ -1782,7 +1782,6 @@ static void cbBack5(lv_event_t*) { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }    
 static void cbHubPollen(lv_event_t*)     { loadScreen(SCREEN_ID_SCREENFORECASTPOLLENHOUR); } // forecastpollen → stündlich
 static void cbHubPollenBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }     // stündlich → tages
 static void cbHubWarn(lv_event_t*) {
-  dwdWarningSeen = true;
   loadScreen(SCREEN_ID_SCREENWARNKARTE2);
   aktualisiereWarnliste();
 }
@@ -1799,7 +1798,6 @@ static void cbDwdBlinker(lv_timer_t*) {
 
 static void cbDwdWarnBtnTap(lv_event_t*) {
   dwdWarnBestaetigt = true;
-  dwdWarningSeen    = true;
   if (dwdBlinker) { lv_timer_del(dwdBlinker); dwdBlinker = nullptr; }
   if (dwdWarnBtn) lv_obj_clear_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
   loadScreen(SCREEN_ID_SCREENWARNKARTE2);

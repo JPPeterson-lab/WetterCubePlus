@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.5.1-beta (2026-06-28)
+
+### Fixes
+- **Pollenforecast stündlich:** Slots klemmen nicht mehr auf 23h — API-Index läuft jetzt über die Tagesgrenze (0–47), Anzeige-Stunde korrekt mit `% 24` berechnet
+- **Ampel-Addon DWD-Logik:** `dwd_warning` im API-Response spiegelt jetzt exakt den Blink-Zustand des screen_1-Warn-Buttons — blinkt nur solange die Warnung am Cube noch nicht angetippt wurde, stoppt sofort wenn der Nutzer bestätigt
+- `dwdWarningSeen`-Variable entfernt (redundant, durch `dwdWarnBestaetigt` ersetzt)
+
+---
+
 ## v0.5.0-beta (2026-06-27)
 
 ### Neu

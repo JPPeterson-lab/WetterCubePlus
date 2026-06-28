@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-06-28 – v0.5.1-beta
+
+### Pollenforecast stündlich – Tagesgrenze-Fix
+
+`min(h + i, 23)` klemmte alle drei Slots auf Index 23 sobald die aktuelle Stunde 21–23 war. Open-Meteo liefert immer 48 Stunden (Index 0–47, also heute + morgen). Fix: Array-Index darf bis 47 laufen, `pollen.h_slot[i] = slot % 24` berechnet die korrekte Anzeige-Stunde. Identisches Problem wie damals im WetterCube.
+
+### Ampel DWD-Logik vereinfacht
+
+`dwdWarningSeen` war redundant — `dwdWarnBestaetigt` steuert bereits exakt den Blink-Zustand des screen_1-Buttons und wird zurückgesetzt wenn Warnungen wegfallen. API nutzt jetzt direkt `(anzahl_warnungen > 0 && !dwdWarnBestaetigt)`. Damit ist das Ampel-Blinken 1:1 synchron zum Button-Blinken auf dem Hauptscreen.
+
+---
+
 ## 2026-06-27 – v0.5.0-beta
 
 ### Hardware-Addon API: /api/ampel
