@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.2-beta (2026-06-29)
+
+### Fixes
+- **Ampel-API `active`-Berechnung:** Kaskadierter Vergleich über `min`-Werte statt min+max-Bereiche — keine Lücken mehr zwischen Schwellen, Ampel zeigt immer eine Farbe solange Temperatur ≥ gruen_min
+
+---
+
 ## v0.5.1-beta (2026-06-28)
 
 ### Fixes

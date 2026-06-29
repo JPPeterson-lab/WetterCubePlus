@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.5.1-beta"
+#define FIRMWARE_VERSION "0.5.2-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -671,9 +671,9 @@ void handleWebSave() {
 void handleApiAmpel() {
   float t = wetter.temp;
   const char* active = "none";
-  if (t >= cfg.ampel_gruen_min && t <= cfg.ampel_gruen_max) active = "green";
-  else if (t >= cfg.ampel_gelb_min  && t <= cfg.ampel_gelb_max)  active = "yellow";
-  else if (t >= cfg.ampel_rot_min   && t <= cfg.ampel_rot_max)   active = "red";
+  if      (t >= cfg.ampel_rot_min)   active = "red";
+  else if (t >= cfg.ampel_gelb_min)  active = "yellow";
+  else if (t >= cfg.ampel_gruen_min) active = "green";
 
   bool dwd_warn = (anzahl_warnungen > 0 && !dwdWarnBestaetigt);
 

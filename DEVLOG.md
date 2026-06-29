@@ -1,5 +1,21 @@
 # Entwicklungs-Log
 
+## 2026-06-29 – v0.5.2-beta
+
+### Ampel-API: Lücken in Schwellwert-Logik behoben
+
+Die ursprüngliche Logik prüfte `t >= min && t <= max` pro Farbe. Das erzeugt Lücken wenn Bereiche nicht lückenlos aneinanderstoßen (z.B. grün 15–19, gelb 20–24 → 19.5°C = none) und lässt Temperaturen unter gruen_min immer dunkel.
+
+Fix: Kaskadenvergleich nur über min-Werte (höchste Priorität zuerst):
+```cpp
+if      (t >= cfg.ampel_rot_min)   active = "red";
+else if (t >= cfg.ampel_gelb_min)  active = "yellow";
+else if (t >= cfg.ampel_gruen_min) active = "green";
+```
+Jede Temperatur ab gruen_min bekommt garantiert eine Farbe. Die max-Felder bleiben in der WebUI als Orientierungshilfe, werden aber nicht mehr zur Berechnung verwendet.
+
+---
+
 ## 2026-06-28 – v0.5.1-beta
 
 ### Pollenforecast stündlich – Tagesgrenze-Fix
