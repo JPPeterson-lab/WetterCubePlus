@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.5.3-beta (2026-07-11)
+
+### Neu
+- **Home-Button auf ScreenSunMoon:** Antippen bringt zurück zu Screen 1 (war nicht verdrahtet)
+- **Home-Button auf ScreenForecastPollenHour:** Antippen bringt zurück zu Screen 1 (war nicht verdrahtet)
+- **Tagestemperatur Min/Max auf ScreenSunMoon:** Tief- und Höchsttemperatur des Tages (`LabelTempminValue` / `LabelTempmaxValue`) mit temperaturbasierter Farbkodierung (blau/grün/gelb/rot)
+
+---
+
 ## v0.5.2-beta (2026-06-29)
 
 ### Fixes

@@ -2,14 +2,13 @@
 #ifndef PICOPIXEL_LVGL_UI_FONTS_H
 #define PICOPIXEL_LVGL_UI_FONTS_H
 
-#include <lvgl.h>
+#include "../screens.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Custom font declarations (externally visible const structs, no init needed) */
-extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea3;
 extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea4;
 extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea5;
 extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea6;

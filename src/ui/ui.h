@@ -2,8 +2,6 @@
 #ifndef PICOPIXEL_LVGL_UI_H
 #define PICOPIXEL_LVGL_UI_H
 
-#include <lvgl.h>
-
 #include "screens.h"
 
 #ifdef __cplusplus

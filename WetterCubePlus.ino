@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.5.2-beta"
+#define FIRMWARE_VERSION "0.5.3-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -214,6 +214,8 @@ struct WetterDaten {
   float  pressure    = 0.0f;
   int    wmo_code    = 0;
   float  uv_index    = 0.0f;
+  float  temp_min    = 0.0f;
+  float  temp_max    = 0.0f;
   String sunrise;
   String sunset;
   float  temp_forecast[4]       = {};
@@ -876,7 +878,7 @@ void fetchWetter() {
   url += "&longitude=" + String(cfg.lon, 4);
   url += "&current=temperature_2m,relative_humidity_2m,apparent_temperature";
   url += ",wind_speed_10m,wind_direction_10m,surface_pressure,weather_code";
-  url += "&daily=uv_index_max,sunrise,sunset";
+  url += "&daily=uv_index_max,sunrise,sunset,temperature_2m_min,temperature_2m_max";
   url += "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m";
   url += "&timezone=auto&forecast_days=2";
   http.begin(sc, url);
@@ -892,6 +894,8 @@ void fetchWetter() {
       wetter.pressure   = c["surface_pressure"].as<float>();
       wetter.wmo_code   = c["weather_code"].as<int>();
       wetter.uv_index   = doc["daily"]["uv_index_max"][0].as<float>();
+      wetter.temp_min   = doc["daily"]["temperature_2m_min"][0].as<float>();
+      wetter.temp_max   = doc["daily"]["temperature_2m_max"][0].as<float>();
       // Sunrise/Sunset als String (ISO)
       String sr = doc["daily"]["sunrise"][0].as<String>();
       String ss = doc["daily"]["sunset"][0].as<String>();
@@ -1669,6 +1673,14 @@ void aktualisiereUI() {
     lv_label_set_text(objects.labelsunrisetime, wetter.sunrise.isEmpty() ? "--:--" : wetter.sunrise.c_str());
   if (objects.labelsundowntime)
     lv_label_set_text(objects.labelsundowntime, wetter.sunset.isEmpty()  ? "--:--" : wetter.sunset.c_str());
+  if (objects.labeltempminvalue) {
+    snprintf(buf, sizeof(buf), "%.0f °C", wetter.temp_min);
+    setLabelFmt(objects.labeltempminvalue, tempColor(wetter.temp_min), buf);
+  }
+  if (objects.labeltempmaxvalue) {
+    snprintf(buf, sizeof(buf), "%.0f °C", wetter.temp_max);
+    setLabelFmt(objects.labeltempmaxvalue, tempColor(wetter.temp_max), buf);
+  }
 
   // ── ScreenForecastPollenHour (stündliche Pollen, 3 Slots) ───
   {
@@ -2045,7 +2057,9 @@ void setup() {
   REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte2
+  REG_CB(objects.labelbuttonhome_4, cbHome, LV_EVENT_CLICKED);  // screensunmoon
+  REG_CB(objects.labelbuttonhome_5, cbHome, LV_EVENT_CLICKED);  // screenforecastpollenhour
   REG_CB(objects.screenwarnung,         cbWarnTap,        LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnungpollen,   cbWarnTap,        LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnkarte2,      cbWarnkarte2Tap,  LV_EVENT_CLICKED);

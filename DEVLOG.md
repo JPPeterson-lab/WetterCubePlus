@@ -1,5 +1,20 @@
 # Entwicklungs-Log
 
+## 2026-07-11 – v0.5.3-beta
+
+### Home-Buttons + SunMoon Tagestemperatur
+
+**Problem 1:** Home-Buttons auf ScreenSunMoon und ScreenForecastPollenHour hatten keinen registrierten Callback.
+- `labelbuttonhome_4` (screensunmoon) und `labelbuttonhome_5` (screenforecastpollenhour) fehlten im REG_CB-Block
+- Ergänzt: beide routen jetzt auf `cbHome` → `loadScreen(SCREEN_ID_SCREEN_1)`
+
+**Neu:** Tagestemperatur Min/Max auf ScreenSunMoon
+- `temperature_2m_min` und `temperature_2m_max` in Open-Meteo daily-URL ergänzt
+- Neue Felder `temp_min`/`temp_max` in `WetterDaten`-Struct
+- Anzeige via `setLabelFmt()` + `tempColor()` auf `labeltempminvalue` / `labeltempmaxvalue`
+
+---
+
 ## 2026-06-29 – v0.5.2-beta
 
 ### Ampel-API: Lücken in Schwellwert-Logik behoben

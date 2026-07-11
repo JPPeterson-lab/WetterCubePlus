@@ -4,11 +4,7 @@
  * Bpp: 4
  ******************************************************************************/
 
-#ifdef LV_LVGL_H_INCLUDE_SIMPLE
-#include "lvgl.h"
-#else
-#include <lvgl.h>
-#endif
+#include "../screens.h"
 
 #ifndef FONT_17E6CA586D88805280082A7BFE21EEA5
 #define FONT_17E6CA586D88805280082A7BFE21EEA5 1

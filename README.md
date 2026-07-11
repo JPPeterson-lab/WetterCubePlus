@@ -27,7 +27,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen als farbige Karten (DWD-Warnstufe), tippbar für Details; blinkender Indikator auf dem Hauptscreen |
 | 🚦 | **Ampel-Addon API** | HTTP-JSON-Endpunkt `/api/ampel` für ESP32-C3 Hardware-Addon: Temperatur, Ampelfarbe, DWD-Warnstatus, konfigurierbare Schwellwerte |
 | 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert, mit Standort-Marker |
-| ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
+| ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang, Tages-Min/Max-Temperatur |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
@@ -44,7 +44,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 3 | **Pollenvorhersage (Stunden)** | Pollenbelastung der nächsten 3 Stunden (Open-Meteo, stündlich) |
 | 4 | **Pollenvorhersage (Tage)** | 8 Allergene (DWD), Stufen heute/morgen/übermorgen |
 | 5 | **Niederschlagsradar** | Bundesland-Ausschnitt, DWD WMS, 10-Min.-Aktualisierung |
-| 6 | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang |
+| 6 | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang, Min/Max-Tagestemperatur |
 | 7 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung (Antippen für Details) |
 | 8 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
 
@@ -260,7 +260,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | ⚠️ | **DWD weather warnings** | Up to 5 active warnings as color-coded cards (DWD severity level), tap for details; blinking indicator on main screen |
 | 🚦 | **Traffic light addon API** | HTTP JSON endpoint `/api/ampel` for ESP32-C3 hardware addon: temperature, active color, DWD warning status, configurable thresholds |
 | 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min, with location marker |
-| ☀️ | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
+| ☀️ | **Sun & Moon** | UV index (daily max), sunrise & sunset times, daily min/max temperature |
 | 🖥️ | **WebUI** | All settings at `wettercubeplus.local` – no reflashing needed |
 | 📡 | **Captive Portal** | Wi-Fi setup without an app |
 | 🔄 | **OTA update** | Firmware update via WebUI over Wi-Fi |
@@ -277,7 +277,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 3 | **Pollen forecast (hourly)** | Pollen levels for the next 3 hours (Open-Meteo, updated hourly) |
 | 4 | **Pollen forecast (daily)** | 8 allergens (DWD), levels today/tomorrow/day after |
 | 5 | **Precipitation radar** | Federal-state map view, DWD WMS, updated every 10 min |
-| 6 | **Sun & Moon** | UV index (daily max), sunrise & sunset times |
+| 6 | **Sun & Moon** | UV index (daily max), sunrise & sunset times, daily min/max temperature |
 | 7 | **Warning screen** | Flashing alert for rain or pollen warnings (tap for details) |
 | 8 | **DWD warning list** | Location-based DWD warnings as color-coded cards by severity level |
 
