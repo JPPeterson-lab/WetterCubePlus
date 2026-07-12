@@ -1,7 +1,7 @@
 # 🌦️ WetterCubePlus
 
 Ein kompaktes WLAN-Wetterdisplay auf Basis des **ESP32-S3 N16R8** mit 3,5"-Touchdisplay, DWD-Wetterwarnungen, Pollenflug und Web-Interface.
-Dieses Projekt ist die Weiterentwicklung des [WetterCube](https://github.com/JPPeterson-lab/wettercube) und mit KI-Hilfe programmiert.
+Dieses Projekt ist die Weiterentwicklung des [WetterCube](https://github.com/JPPeterson-lab/wettercube).
 
 Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [Deutschen Wetterdienst (DWD)](https://www.dwd.de) – kein API-Key nötig.
 
@@ -223,6 +223,7 @@ Der C3 fragt `GET http://wettercubeplus.local/api/ampel` ab. Beide Geräte müss
 | Ressource | Urheber | Lizenz |
 |---|---|---|
 | Wetter-Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| LVGL Editor | [PicoPixel](https://picopixel.io/) | PicoPixel (kostenlos) |
 | Wetterdaten | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (kostenlos) |
 | DWD-Daten | [Deutscher Wetterdienst](https://opendata.dwd.de) | DWD Opendata |
 | DWD WMS | [DWD GeoServer](https://maps.dwd.de) | DWD Opendata |
@@ -242,7 +243,7 @@ Die enthaltenen Wetter-Icons unterliegen der **CC BY-SA 4.0**-Lizenz (siehe [CRE
 # 🌦️ WetterCubePlus (English)
 
 A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touchscreen, DWD weather warnings, pollen data, and a web interface.
-This project is the successor to [WetterCube](https://github.com/JPPeterson-lab/wettercube), built and programmed with AI assistance.
+This project is the successor to [WetterCube](https://github.com/JPPeterson-lab/wettercube).
 
 Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) and the [German Weather Service (DWD)](https://www.dwd.de) – no API key required.
 
