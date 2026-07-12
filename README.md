@@ -32,6 +32,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
 | 👆 | **Touch-Kalibrierung** | Automatisch beim Erststart, jederzeit neu auslösbar |
+| 🎨 | **Theme-System** *(experimentell)* | Menü-Screen mit Theme-Umschalter – Grundlage für vollständige Farbthemes; wird in kommenden Versionen schrittweise ausgebaut |
 
 ---
 
@@ -266,6 +267,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 📡 | **Captive Portal** | Wi-Fi setup without an app |
 | 🔄 | **OTA update** | Firmware update via WebUI over Wi-Fi |
 | 👆 | **Touch calibration** | Automatic on first boot, re-triggerable anytime |
+| 🎨 | **Theme system** *(experimental)* | Menu screen with theme switcher – foundation for full color themes; gradually expanded in future versions |
 
 ---
 

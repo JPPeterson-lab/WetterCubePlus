@@ -16,6 +16,7 @@ typedef struct _objects_t {
     lv_obj_t *screenwarnkarte1;
     lv_obj_t *screenforecastpollenhour;
     lv_obj_t *screensunmoon;
+    lv_obj_t *screenmenu;
     lv_obj_t *screenboot;
     lv_obj_t *screenwarnung;
     lv_obj_t *screenwarnungpollen;
@@ -72,6 +73,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonscreenhubback;
     lv_obj_t *image_1;
     lv_obj_t *labelbeifusshour3;
+    lv_obj_t *labelswitchtheme;
     lv_obj_t *labelbeifusshour1;
     lv_obj_t *labelescheday2;
     lv_obj_t *labelsundown;
@@ -134,6 +136,7 @@ typedef struct _objects_t {
     lv_obj_t *labelroggenday2;
     lv_obj_t *labelambrosiahour2;
     lv_obj_t *labelnameesche;
+    lv_obj_t *labelbuttonmenu_2;
     lv_obj_t *labelpollenforecasttext;
     lv_obj_t *labeluvindexvalue;
     lv_obj_t *labelh3zeit;
@@ -155,6 +158,7 @@ typedef struct _objects_t {
     lv_obj_t *labelnamehasel_1;
     lv_obj_t *labeltempmax;
     lv_obj_t *labelhumidity;
+    lv_obj_t *labeltheme;
     lv_obj_t *imageh4;
     lv_obj_t *labelbuttonhome_5;
     lv_obj_t *labelpollenwarnhint;
@@ -167,6 +171,7 @@ typedef struct _objects_t {
     lv_obj_t *labelpollenforecast3main;
     lv_obj_t *labelnameambrosia_1;
     lv_obj_t *labelbuttonbackward_2;
+    lv_obj_t *labelbuttonmenu;
     lv_obj_t *labelbuttonforward_4;
     lv_obj_t *labelh3temp;
     lv_obj_t *labelwarndetail2;
@@ -181,15 +186,18 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonscreenhub_1_label;
     lv_obj_t *labelbuttonforward_1_label;
     lv_obj_t *labelbuttonscreenhubback_label;
+    lv_obj_t *labelswitchtheme_label;
     lv_obj_t *labelbuttonforward_2_label;
     lv_obj_t *labelbuttonhome_3_label;
     lv_obj_t *labelbuttonforward_3_label;
     lv_obj_t *button_1_label;
     lv_obj_t *labelbuttonscreenhubback_1_label;
+    lv_obj_t *labelbuttonmenu_2_label;
     lv_obj_t *labelbuttonhome_4_label;
     lv_obj_t *labelbuttonhome_5_label;
     lv_obj_t *labelbuttonbackward_1_label;
     lv_obj_t *labelbuttonbackward_2_label;
+    lv_obj_t *labelbuttonmenu_label;
     lv_obj_t *labelbuttonforward_4_label;
 } objects_t;
 
@@ -203,10 +211,11 @@ enum ScreensEnum {
     SCREEN_ID_SCREENWARNKARTE1 = 5,
     SCREEN_ID_SCREENFORECASTPOLLENHOUR = 6,
     SCREEN_ID_SCREENSUNMOON = 7,
-    SCREEN_ID_SCREENBOOT = 8,
-    SCREEN_ID_SCREENWARNUNG = 9,
-    SCREEN_ID_SCREENWARNUNGPOLLEN = 10,
-    SCREEN_ID_SCREENFORECASTWETTER = 11,
+    SCREEN_ID_SCREENMENU = 8,
+    SCREEN_ID_SCREENBOOT = 9,
+    SCREEN_ID_SCREENWARNUNG = 10,
+    SCREEN_ID_SCREENWARNUNGPOLLEN = 11,
+    SCREEN_ID_SCREENFORECASTWETTER = 12,
 };
 
 void create_screen_screen_1();
@@ -230,6 +239,9 @@ void delete_screen_screenforecastpollenhour();
 void create_screen_screensunmoon();
 void tick_screen_screensunmoon();
 void delete_screen_screensunmoon();
+void create_screen_screenmenu();
+void tick_screen_screenmenu();
+void delete_screen_screenmenu();
 void create_screen_screenboot();
 void tick_screen_screenboot();
 void delete_screen_screenboot();

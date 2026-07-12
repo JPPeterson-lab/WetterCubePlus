@@ -8,6 +8,21 @@
 extern "C" {
 #endif
 
+enum ThemesEnum {
+    THEME_LIGHT,
+    THEME_DARK,
+    THEME_SUMMER,
+};
+
+enum ThemeColorsEnum {
+    THEME_COLOR_TEXT,
+};
+
+extern const char *theme_names[3];
+extern uint32_t theme_colors[3][1];
+extern uint32_t active_theme_index;
+void change_color_theme(uint32_t theme_index);
+
 // Common colors
 extern const uint32_t common_000000;
 extern const uint32_t common_87ceeb;

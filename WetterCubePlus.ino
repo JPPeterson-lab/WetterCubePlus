@@ -2,13 +2,13 @@
 //  WetterCubePlus.ino
 //  ESP32-S3 N16R8 | ILI9488 3.5" 480x320 | XPT2046 Touch
 //  LVGL 8.x | LovyanGFX | HTTP-OTA | WebUI | DWD-Warnungen
-//  Version: 0.1.1-beta
+//  Version: 0.5.4-beta
 // ============================================================
 
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.5.3-beta"
+#define FIRMWARE_VERSION "0.5.4-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1781,6 +1781,7 @@ void setzeBootFortschritt(int prozent) {
 // Hauptnavigation: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
 // Untermenüs: forecastpollen ↔ forecastpollenhour | screenwarnkarte1 ↔ screenwarnkarte2
 static void cbHome(lv_event_t*)   { loadScreen(SCREEN_ID_SCREEN_1); }
+static void cbMenu(lv_event_t*)   { loadScreen(SCREEN_ID_SCREENMENU); }
 static void cbFwd1(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }       // screen_1 >
 static void cbBack1(lv_event_t*) { loadScreen(SCREEN_ID_SCREEN_1); }                   // forecastwetter <
 static void cbFwd2(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }       // forecastwetter >
@@ -2053,6 +2054,9 @@ void setup() {
   REG_CB(objects.labelbuttonscreenhubback,   cbHubPollenBack,LV_EVENT_CLICKED);  // stündlich → tages
   REG_CB(objects.labelbuttonscreenhub_1,     cbHubWarn,      LV_EVENT_CLICKED);  // warnkarte1 → warnkarte2
   REG_CB(objects.labelbuttonscreenhubback_1, cbHubWarnBack,  LV_EVENT_CLICKED);  // warnkarte2 → warnkarte1
+  // Menu-Button (screen_1 → screenmenu) + Zurück
+  REG_CB(objects.labelbuttonmenu,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
+  REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
   // Home-Buttons
   REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);

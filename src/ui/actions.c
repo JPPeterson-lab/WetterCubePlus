@@ -10,7 +10,24 @@ void pp_anim_stop_timelines_for_deleted_tree(lv_obj_t * root) {
 }
 
 
+// Cycle theme helpers
+static const uint32_t cycle_themes_0[] = { THEME_SUMMER, THEME_LIGHT };
+void do_cycle_theme_0(void) {
+    uint32_t n = sizeof(cycle_themes_0) / sizeof(uint32_t);
+    uint32_t cur = 0;
+    int found = 0;
+    for (uint32_t i = 0; i < n; i++) {
+        if (cycle_themes_0[i] == active_theme_index) { cur = i; found = 1; break; }
+    }
+    uint32_t next = found ? (cur + 1) % n : 0;
+    change_color_theme(cycle_themes_0[next]);
+}
+
+
 // Event callback implementations
 
-// No event callbacks defined
+// Event callback for labelswitchtheme on clicked
+void labelswitchtheme_clicked_cb(lv_event_t * e) {
+    do_cycle_theme_0();
+}
 

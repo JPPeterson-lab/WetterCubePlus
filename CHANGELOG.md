@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.4-beta (2026-07-12)
+
+### Neu
+- **Menü-Screen (ScreenMenu):** Neuer Screen erreichbar über `LabelButtonMenu` auf screen_1 – `LabelButtonMenu_2` führt zurück zu screen_1
+- **Theme-Wechsel (experimentell):** `LabelSwitchTheme` im Menü wechselt zwischen den Themes „Light" und „Summer" – Grundlage für das spätere vollständige Theme-System, aktuell noch in Entwicklung
+
+---
+
 ## v0.5.3-beta (2026-07-11)
 
 ### Neu

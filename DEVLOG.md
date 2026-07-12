@@ -1,5 +1,21 @@
 # Entwicklungs-Log
 
+## 2026-07-12 – v0.5.4-beta
+
+### Menü-Screen + Theme-System (Grundlage)
+
+**Neu: ScreenMenu**
+- `LabelButtonMenu` auf screen_1 öffnet via `cbMenu()` → `loadScreen(SCREEN_ID_SCREENMENU)`
+- `LabelButtonMenu_2` auf screenmenu kehrt via `cbHome()` zurück zu screen_1
+- PicoPixel verdrahtet `LabelSwitchTheme` direkt über `labelswitchtheme_clicked_cb` in screens.c → `do_cycle_theme_0()` in actions.c
+
+**Theme-System (experimentell):**
+- PicoPixel generiert `colors.c` / `colors.h` mit `change_color_theme()` und `active_theme_index`
+- Derzeit: Wechsel zwischen THEME_SUMMER und THEME_LIGHT, betrifft nur `labeltime` und `labeltheme`
+- Ziel: alle Screen-Elemente farblich steuerbar – Ausbau folgt schrittweise mit weiterem UI-Export
+
+---
+
 ## 2026-07-11 – v0.5.3-beta
 
 ### Home-Buttons + SunMoon Tagestemperatur
