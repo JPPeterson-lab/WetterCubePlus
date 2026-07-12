@@ -457,6 +457,7 @@ The C3 polls `GET http://wettercubeplus.local/api/ampel`. Both devices must be o
 | Resource | Author | License |
 |---|---|---|
 | Weather Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| LVGL Editor | [PicoPixel](https://picopixel.io/) | PicoPixel (free) |
 | Weather Data | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (free) |
 | DWD Data | [Deutscher Wetterdienst](https://opendata.dwd.de) | DWD Opendata |
 | DWD WMS | [DWD GeoServer](https://maps.dwd.de) | DWD Opendata |
