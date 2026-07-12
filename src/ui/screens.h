@@ -57,6 +57,7 @@ typedef struct _objects_t {
     lv_obj_t *labeleschehour1;
     lv_obj_t *labelerlehour1;
     lv_obj_t *labelgraeserday3;
+    lv_obj_t *labellightchangevalue;
     lv_obj_t *labelday2;
     lv_obj_t *labeltemp;
     lv_obj_t *labelbirkeday1;
@@ -72,6 +73,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonforward_1;
     lv_obj_t *labelbuttonscreenhubback;
     lv_obj_t *image_1;
+    lv_obj_t *labelregenchange;
     lv_obj_t *labelbeifusshour3;
     lv_obj_t *labelswitchtheme;
     lv_obj_t *labelbeifusshour1;
@@ -91,16 +93,20 @@ typedef struct _objects_t {
     lv_obj_t *labelambrosiaday1;
     lv_obj_t *imageh2;
     lv_obj_t *labelbuttonforward_2;
+    lv_obj_t *regenswitch;
     lv_obj_t *image_2;
     lv_obj_t *labelh4windspeed;
+    lv_obj_t *labeldwdchange;
     lv_obj_t *labelhour2;
     lv_obj_t *labelwarnhint;
     lv_obj_t *labelwinddirection;
+    lv_obj_t *pollenswitch;
     lv_obj_t *barwifi;
     lv_obj_t *labelh1windspeed;
     lv_obj_t *labelbuttonhome_3;
     lv_obj_t *labelwarndetail;
     lv_obj_t *labelpollenforecast2mainvalue;
+    lv_obj_t *labelpollenchange;
     lv_obj_t *labelbuttonforward_3;
     lv_obj_t *labelroggenday3;
     lv_obj_t *labelescheday3;
@@ -109,6 +115,7 @@ typedef struct _objects_t {
     lv_obj_t *labelroggenhour3;
     lv_obj_t *labelauthor;
     lv_obj_t *labelnamebeifuss;
+    lv_obj_t *labellightchange;
     lv_obj_t *labelbirkeday3;
     lv_obj_t *labelh1temp;
     lv_obj_t *labelh3windspeed;
@@ -124,6 +131,7 @@ typedef struct _objects_t {
     lv_obj_t *button_1;
     lv_obj_t *labelpollenforecast3mainvalue;
     lv_obj_t *labeltempmin;
+    lv_obj_t *dwdswitch;
     lv_obj_t *labelpollenforecast2main;
     lv_obj_t *labeleschehour3;
     lv_obj_t *labelambrosiaday2;

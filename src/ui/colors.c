@@ -19,8 +19,40 @@ uint32_t theme_colors[3][1] = {
 
 void change_color_theme(uint32_t theme_index) {
     active_theme_index = theme_index;
+    lv_obj_set_style_text_color(objects.labeldatum, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labeldatum, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelsunrise, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelsunrise, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labeluvindex, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labeluvindex, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelregenchange, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelregenchange, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelsundown, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelsundown, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelairpressur, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelairpressur, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labeldwdchange, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labeldwdchange, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelwinddirection, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelwinddirection, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelpollenchange, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelpollenchange, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labellightchange, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labellightchange, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labeltempmin, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labeltempmin, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(objects.labeltime, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(objects.labeltime, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelsunrisetime, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelsunrisetime, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelsundowntime, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelsundowntime, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelwindspeed, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelwindspeed, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labeltempmax, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labeltempmax, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(objects.labelhumidity, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(objects.labelhumidity, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(objects.labeltheme, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(objects.labeltheme, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
 }

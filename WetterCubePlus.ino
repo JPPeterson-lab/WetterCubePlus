@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.5.4-beta"
+#define FIRMWARE_VERSION "0.6.0-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1781,7 +1781,65 @@ void setzeBootFortschritt(int prozent) {
 // Hauptnavigation: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
 // Untermenüs: forecastpollen ↔ forecastpollenhour | screenwarnkarte1 ↔ screenwarnkarte2
 static void cbHome(lv_event_t*)   { loadScreen(SCREEN_ID_SCREEN_1); }
-static void cbMenu(lv_event_t*)   { loadScreen(SCREEN_ID_SCREENMENU); }
+
+// ── Menü-Screen Callbacks ────────────────────────────────────────────────────
+static void cbMenuBrightness(lv_event_t* e) {
+  lv_obj_t* arc = lv_event_get_target(e);
+  int val = lv_arc_get_value(arc);
+  cfg.brightness = val;
+  setBrightness(val);
+  Preferences prefs; prefs.begin("wcp", false);
+  prefs.putInt("bright", val);
+  prefs.end();
+}
+
+static void cbMenuRegenSwitch(lv_event_t* e) {
+  lv_obj_t* sw = lv_event_get_target(e);
+  cfg.regen_warn = lv_obj_has_state(sw, LV_STATE_CHECKED);
+  Preferences prefs; prefs.begin("wcp", false);
+  prefs.putBool("regen_warn", cfg.regen_warn);
+  prefs.end();
+}
+
+static void cbMenuPollenSwitch(lv_event_t* e) {
+  lv_obj_t* sw = lv_event_get_target(e);
+  cfg.pollen_warn = lv_obj_has_state(sw, LV_STATE_CHECKED);
+  Preferences prefs; prefs.begin("wcp", false);
+  prefs.putBool("pollen_warn", cfg.pollen_warn);
+  prefs.end();
+}
+
+static void cbMenuDwdSwitch(lv_event_t* e) {
+  lv_obj_t* sw = lv_event_get_target(e);
+  cfg.warn_region = lv_obj_has_state(sw, LV_STATE_CHECKED);
+  Preferences prefs; prefs.begin("wcp", false);
+  prefs.putBool("warn_reg", cfg.warn_region);
+  prefs.end();
+  // DWD-Warn-Button auf screen_1 sofort anpassen
+  if (!cfg.warn_region && dwdWarnBtn) {
+    lv_obj_add_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
+    if (dwdBlinker) { lv_timer_del(dwdBlinker); dwdBlinker = nullptr; }
+  }
+}
+
+static void cbMenu(lv_event_t*) {
+  loadScreen(SCREEN_ID_SCREENMENU);
+  // Switch-Zustände und Arc auf aktuelle cfg-Werte setzen
+  if (objects.regenswitch) {
+    if (cfg.regen_warn) lv_obj_add_state(objects.regenswitch, LV_STATE_CHECKED);
+    else                lv_obj_clear_state(objects.regenswitch, LV_STATE_CHECKED);
+  }
+  if (objects.pollenswitch) {
+    if (cfg.pollen_warn) lv_obj_add_state(objects.pollenswitch, LV_STATE_CHECKED);
+    else                 lv_obj_clear_state(objects.pollenswitch, LV_STATE_CHECKED);
+  }
+  if (objects.dwdswitch) {
+    if (cfg.warn_region) lv_obj_add_state(objects.dwdswitch, LV_STATE_CHECKED);
+    else                 lv_obj_clear_state(objects.dwdswitch, LV_STATE_CHECKED);
+  }
+  if (objects.labellightchangevalue)
+    lv_arc_set_value(objects.labellightchangevalue, cfg.brightness);
+}
 static void cbFwd1(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }       // screen_1 >
 static void cbBack1(lv_event_t*) { loadScreen(SCREEN_ID_SCREEN_1); }                   // forecastwetter <
 static void cbFwd2(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }       // forecastwetter >
@@ -2055,8 +2113,13 @@ void setup() {
   REG_CB(objects.labelbuttonscreenhub_1,     cbHubWarn,      LV_EVENT_CLICKED);  // warnkarte1 → warnkarte2
   REG_CB(objects.labelbuttonscreenhubback_1, cbHubWarnBack,  LV_EVENT_CLICKED);  // warnkarte2 → warnkarte1
   // Menu-Button (screen_1 → screenmenu) + Zurück
-  REG_CB(objects.labelbuttonmenu,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
-  REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
+  REG_CB(objects.labelbuttonmenu,        cbMenu,             LV_EVENT_CLICKED);       // screen_1 → screenmenu
+  REG_CB(objects.labelbuttonmenu_2,      cbHome,             LV_EVENT_CLICKED);       // screenmenu → screen_1
+  // Menü-Screen Controls
+  REG_CB(objects.labellightchangevalue,  cbMenuBrightness,   LV_EVENT_VALUE_CHANGED); // Helligkeit Arc
+  REG_CB(objects.regenswitch,            cbMenuRegenSwitch,  LV_EVENT_VALUE_CHANGED); // Regenwarnung Toggle
+  REG_CB(objects.pollenswitch,           cbMenuPollenSwitch, LV_EVENT_VALUE_CHANGED); // Pollenwarnung Toggle
+  REG_CB(objects.dwdswitch,             cbMenuDwdSwitch,    LV_EVENT_VALUE_CHANGED); // DWD Warn Toggle
   // Home-Buttons
   REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);

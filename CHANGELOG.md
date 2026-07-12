@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.6.0-beta (2026-07-12)
+
+### Neu
+- **Menü-Screen: Helligkeitsregler** – Arc-Slider direkt am Gerät, Änderung sofort aktiv und wird gespeichert
+- **Menü-Screen: Regenwarnung an/aus** – Toggle-Switch, Zustand wird persistiert
+- **Menü-Screen: Pollenwarnung an/aus** – Toggle-Switch, Zustand wird persistiert
+- **Menü-Screen: DWD-Warnungen an/aus** – Toggle-Switch; beim Deaktivieren verschwindet der Warn-Indikator auf screen_1 sofort
+
+---
+
 ## v0.5.4-beta (2026-07-12)
 
 ### Neu

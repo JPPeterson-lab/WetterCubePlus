@@ -1,5 +1,23 @@
 # Entwicklungs-Log
 
+## 2026-07-12 – v0.6.0-beta
+
+### Menü-Screen Controls
+
+**Helligkeit (Arc):**
+- `labellightchangevalue` ist ein `lv_arc` (0–100), registriert auf `LV_EVENT_VALUE_CHANGED`
+- Callback `cbMenuBrightness`: setzt `cfg.brightness`, ruft `setBrightness()` sofort auf, schreibt direkt in Preferences
+
+**Switches (lv_switch):**
+- `regenswitch` → `cbMenuRegenSwitch` → `cfg.regen_warn`
+- `pollenswitch` → `cbMenuPollenSwitch` → `cfg.pollen_warn`
+- `dwdswitch` → `cbMenuDwdSwitch` → `cfg.warn_region`; bei Deaktivierung: DWD-Warn-Button auf screen_1 sofort ausblenden + Blinker stoppen
+
+**Initialisierung:**
+- `cbMenu()` setzt vor `loadScreen()` alle Switches und den Arc auf aktuelle `cfg`-Werte – Zustand stimmt immer beim Öffnen
+
+---
+
 ## 2026-07-12 – v0.5.4-beta
 
 ### Menü-Screen + Theme-System (Grundlage)

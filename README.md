@@ -33,6 +33,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
 | 👆 | **Touch-Kalibrierung** | Automatisch beim Erststart, jederzeit neu auslösbar |
 | 🎨 | **Theme-System** *(experimentell)* | Menü-Screen mit Theme-Umschalter – Grundlage für vollständige Farbthemes; wird in kommenden Versionen schrittweise ausgebaut |
+| 🎛️ | **Menü-Screen** | Helligkeit, Regen-/Pollenwarnung und DWD-Warnungen direkt am Gerät ein-/ausschalten – kein WebUI nötig |
 
 ---
 
@@ -268,6 +269,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🔄 | **OTA update** | Firmware update via WebUI over Wi-Fi |
 | 👆 | **Touch calibration** | Automatic on first boot, re-triggerable anytime |
 | 🎨 | **Theme system** *(experimental)* | Menu screen with theme switcher – foundation for full color themes; gradually expanded in future versions |
+| 🎛️ | **Menu screen** | Adjust brightness, toggle rain/pollen warnings and DWD alerts directly on the device – no WebUI needed |
 
 ---
 
