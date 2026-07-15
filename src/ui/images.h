@@ -17,14 +17,18 @@ typedef struct _ext_img_desc_t {
 } ext_img_desc_t;
 #endif
 
-extern const lv_img_dsc_t overcast;
-extern const lv_img_dsc_t thunder;
-extern const lv_img_dsc_t day_clear;
-extern const lv_img_dsc_t snow;
+extern const lv_img_dsc_t day_partial_cloud;
+extern const lv_img_dsc_t fog;
 extern const lv_img_dsc_t alert;
-extern const lv_img_dsc_t rain;
 extern const lv_img_dsc_t night_full_moon_clear;
-extern const ext_img_desc_t images[7];
+extern const lv_img_dsc_t overcast;
+extern const lv_img_dsc_t sleet;
+extern const lv_img_dsc_t rain;
+extern const lv_img_dsc_t day_clear;
+extern const lv_img_dsc_t thunder;
+extern const lv_img_dsc_t snow;
+extern const lv_img_dsc_t night_full_moon_partial_cloud;
+extern const ext_img_desc_t images[11];
 
 
 #ifdef __cplusplus

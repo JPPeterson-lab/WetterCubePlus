@@ -1,5 +1,27 @@
 # Entwicklungs-Log
 
+## 2026-07-15 – v0.6.1-beta
+
+### Neue Wetter-Icons + Tag/Nacht-Logik
+
+**Neue Icons (PicoPixel Lagerscreen):**
+- `day_partial_cloud` – teilweise bewölkt (Tag), WMO 1–2
+- `night_full_moon_partial_cloud` – teilweise bewölkt (Nacht), WMO 1–2
+- `sleet` – Schneeregen/gefrierender Regen, WMO 58–67
+- `fog` – Nebel, WMO 45–48
+
+**Tag/Nacht-Umschaltung:**
+- `is_day` aus Open-Meteo current-Block abgerufen, in `wetter.is_day` gespeichert
+- `wmoZuImage(int wmo, bool day)` nutzt `day`-Parameter für WMO 0–2
+- Forecast-Icons bleiben auf Tag-Variante (`true`), da Forecast-Stunden mehrheitlich tagsüber
+
+**Verfeinerte WMO-Tabelle:**
+- WMO 51–57 → `rain` (Nieselregen, wie bisher)
+- WMO 58–67 → `sleet` (gefrierender Regen / Schneeregen, neu)
+- WMO 45–48 → `fog` (statt `overcast`)
+
+---
+
 ## 2026-07-12 – v0.6.0-beta
 
 ### Menü-Screen Controls

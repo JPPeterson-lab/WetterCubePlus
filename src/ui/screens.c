@@ -351,12 +351,67 @@ void create_screen_lagerscreen() {
     {
         lv_obj_t *parent_obj = obj;
         {
+            // night_full_moon_partial_cloud
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.night_full_moon_partial_cloud = obj;
+            lv_obj_set_pos(obj, 162, 99);
+            lv_obj_set_size(obj, 83, 83);
+            lv_img_set_src(obj, &night_full_moon_partial_cloud);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_zoom(obj, 83);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // sleet
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.sleet = obj;
+            lv_obj_set_pos(obj, 96, 87);
+            lv_obj_set_size(obj, 83, 83);
+            lv_img_set_src(obj, &sleet);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_zoom(obj, 83);
+            lv_img_set_antialias(obj, true);
+        }
+        {
             // image_1
             lv_obj_t *obj = lv_img_create(parent_obj);
             objects.image_1 = obj;
-            lv_obj_set_pos(obj, 112, 17);
+            lv_obj_set_pos(obj, 199, 33);
             lv_obj_set_size(obj, 83, 83);
             lv_img_set_src(obj, &overcast);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_zoom(obj, 83);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // day_partial_cloud
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.day_partial_cloud = obj;
+            lv_obj_set_pos(obj, 181, 140);
+            lv_obj_set_size(obj, 83, 83);
+            lv_img_set_src(obj, &day_partial_cloud);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_zoom(obj, 83);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // snow
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.snow = obj;
+            lv_obj_set_pos(obj, 332, 14);
+            lv_obj_set_size(obj, 83, 83);
+            lv_img_set_src(obj, &snow);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_zoom(obj, 83);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // fog
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.fog = obj;
+            lv_obj_set_pos(obj, 17, 55);
+            lv_obj_set_size(obj, 83, 83);
+            lv_img_set_src(obj, &fog);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
             lv_img_set_zoom(obj, 83);
             lv_img_set_antialias(obj, true);
@@ -2468,7 +2523,12 @@ void delete_screen_lagerscreen() {
         lv_obj_del(objects.lagerscreen);
     }
     objects.lagerscreen = 0;
+    objects.night_full_moon_partial_cloud = 0;
+    objects.sleet = 0;
     objects.image_1 = 0;
+    objects.day_partial_cloud = 0;
+    objects.snow = 0;
+    objects.fog = 0;
 }
 
 void delete_screen_screenforecastpollen() {

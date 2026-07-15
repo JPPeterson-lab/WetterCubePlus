@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.6.0-beta"
+#define FIRMWARE_VERSION "0.6.1-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -216,6 +216,7 @@ struct WetterDaten {
   float  uv_index    = 0.0f;
   float  temp_min    = 0.0f;
   float  temp_max    = 0.0f;
+  bool   is_day      = true;
   String sunrise;
   String sunset;
   float  temp_forecast[4]       = {};
@@ -852,15 +853,17 @@ lv_color_t tempColor(float t) {
   return              lv_color_hex(0xFF3300);   // rot
 }
 
-const lv_img_dsc_t* wmoZuImage(int wmo) {
-  if (wmo <= 1)   return &day_clear;   // Klar
-  if (wmo <= 3)   return &overcast;    // Teilweise / Stark bewölkt
-  if (wmo <= 48)  return &overcast;    // Bewölkung, Nebel, gefrierender Nebel
-  if (wmo <= 67)  return &rain;        // Nieselregen / Regen
-  if (wmo <= 77)  return &snow;        // Schnee
-  if (wmo <= 82)  return &rain;        // Regenschauer
-  if (wmo <= 86)  return &snow;        // Schneeschauer
-  return &thunder;                     // Gewitter
+const lv_img_dsc_t* wmoZuImage(int wmo, bool day) {
+  if (wmo == 0)   return day ? &day_clear             : &night_full_moon_clear;          // Klar
+  if (wmo <= 2)   return day ? &day_partial_cloud     : &night_full_moon_partial_cloud;  // Teilweise bewölkt
+  if (wmo == 3)   return &overcast;                                                      // Bedeckt
+  if (wmo <= 48)  return &fog;                                                           // Nebel
+  if (wmo <= 57)  return &rain;                                                          // Nieselregen
+  if (wmo <= 67)  return &sleet;                                                         // Gefrierender Regen / Schneeregen
+  if (wmo <= 77)  return &snow;                                                          // Schnee
+  if (wmo <= 82)  return &rain;                                                          // Regenschauer
+  if (wmo <= 86)  return &snow;                                                          // Schneeschauer
+  return &thunder;                                                                       // Gewitter
 }
 
 const char* windRichtung(int deg) {
@@ -877,7 +880,7 @@ void fetchWetter() {
   url += "?latitude="  + String(cfg.lat, 4);
   url += "&longitude=" + String(cfg.lon, 4);
   url += "&current=temperature_2m,relative_humidity_2m,apparent_temperature";
-  url += ",wind_speed_10m,wind_direction_10m,surface_pressure,weather_code";
+  url += ",wind_speed_10m,wind_direction_10m,surface_pressure,weather_code,is_day";
   url += "&daily=uv_index_max,sunrise,sunset,temperature_2m_min,temperature_2m_max";
   url += "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m";
   url += "&timezone=auto&forecast_days=2";
@@ -893,6 +896,7 @@ void fetchWetter() {
       wetter.wind_dir   = c["wind_direction_10m"].as<int>();
       wetter.pressure   = c["surface_pressure"].as<float>();
       wetter.wmo_code   = c["weather_code"].as<int>();
+      wetter.is_day     = c["is_day"].as<int>() != 0;
       wetter.uv_index   = doc["daily"]["uv_index_max"][0].as<float>();
       wetter.temp_min   = doc["daily"]["temperature_2m_min"][0].as<float>();
       wetter.temp_max   = doc["daily"]["temperature_2m_max"][0].as<float>();
@@ -1555,7 +1559,7 @@ void aktualisiereUI() {
     snprintf(buf, sizeof(buf), "%.0f °C", wetter.temp);
     setLabelFmt(objects.labeltemp, tempColor(wetter.temp), buf);
   }
-  if (objects.imagewetter) lv_img_set_src(objects.imagewetter, wmoZuImage(wetter.wmo_code));
+  if (objects.imagewetter) lv_img_set_src(objects.imagewetter, wmoZuImage(wetter.wmo_code, wetter.is_day));
 
   // screen_1: Wetter-Details (Feuchte, Wind, Druck)
   if (objects.labelhumidity) {
@@ -1613,7 +1617,7 @@ void aktualisiereUI() {
       lv_label_set_text(hws[i], buf);
     }
     setLabel(hwd[i], windRichtung(wetter.wind_dir_forecast[i]));
-    if (himg[i]) lv_img_set_src(himg[i], wmoZuImage(wetter.wmo_forecast[i]));
+    if (himg[i]) lv_img_set_src(himg[i], wmoZuImage(wetter.wmo_forecast[i], true));
   }
 
   // ── Forecast Pollen (screenforecastpollen) ──────────────────

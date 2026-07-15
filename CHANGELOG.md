@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.6.1-beta (2026-07-15)
+
+### Neu
+- **4 neue Wetter-Icons:** `day_partial_cloud`, `night_full_moon_partial_cloud`, `sleet` (Schneeregen), `fog` (Nebel)
+- **Tag/Nacht-Icons:** Hauptscreen-Icon wechselt automatisch zwischen Tag- und Nacht-Variante (`is_day` aus Open-Meteo)
+- **Verfeinerte WMO-Zuordnung:** Nebel (WMO 45–48) und Schneeregen (WMO 58–67) haben jetzt eigene Icons statt Fallback auf `rain`/`overcast`
+
+---
+
 ## v0.6.0-beta (2026-07-12)
 
 ### Neu

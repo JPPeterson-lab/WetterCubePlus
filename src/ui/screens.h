@@ -32,6 +32,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonbackward;
     lv_obj_t *labelh4zeit;
     lv_obj_t *labelbuttonhome_1;
+    lv_obj_t *night_full_moon_partial_cloud;
     lv_obj_t *labelday1;
     lv_obj_t *labelstatus;
     lv_obj_t *labelpollenwarnart;
@@ -50,6 +51,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbirkehour1;
     lv_obj_t *labelh2zeit;
     lv_obj_t *labelpollenforecast1mainvalue;
+    lv_obj_t *sleet;
     lv_obj_t *labelbuttonscreenhub;
     lv_obj_t *labelhaselday2;
     lv_obj_t *labeluvindex;
@@ -95,11 +97,13 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonforward_2;
     lv_obj_t *regenswitch;
     lv_obj_t *image_2;
+    lv_obj_t *day_partial_cloud;
     lv_obj_t *labelh4windspeed;
     lv_obj_t *labeldwdchange;
     lv_obj_t *labelhour2;
     lv_obj_t *labelwarnhint;
     lv_obj_t *labelwinddirection;
+    lv_obj_t *snow;
     lv_obj_t *pollenswitch;
     lv_obj_t *barwifi;
     lv_obj_t *labelh1windspeed;
@@ -126,6 +130,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbeifussday2;
     lv_obj_t *labelroggenhour2;
     lv_obj_t *imagealert;
+    lv_obj_t *fog;
     lv_obj_t *labeltempmaxvalue;
     lv_obj_t *imageh1;
     lv_obj_t *button_1;

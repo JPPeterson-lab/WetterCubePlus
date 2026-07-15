@@ -20,6 +20,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | | Funktion | Details |
 |---|---|---|
 | 🌡️ | **Wetterdaten** | Temperatur (Ist & gefühlt), Luftfeuchtigkeit, Luftdruck, UV-Index, Sonnenauf-/-untergang |
+| 🌤️ | **Wetter-Icons** | 11 Icons mit Tag/Nacht-Umschaltung – klar, teilweise bewölkt, bedeckt, Nebel, Regen, Schneeregen, Schnee, Gewitter |
 | 💨 | **Wind** | Geschwindigkeit & Richtung |
 | 🕐 | **4-Stunden-Vorhersage** | Icons, Temperatur, Wind pro Slot |
 | 🌿 | **Pollenflug** | Top-3 Allergene stündlich (Open-Meteo), 3-Tage-Forecast für 8 Allergene (DWD) |
@@ -256,6 +257,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | | Feature | Details |
 |---|---|---|
 | 🌡️ | **Weather data** | Temperature (actual & feels-like), humidity, air pressure, UV index, sunrise/sunset |
+| 🌤️ | **Weather icons** | 11 icons with automatic day/night switching – clear, partly cloudy, overcast, fog, rain, sleet, snow, thunderstorm |
 | 💨 | **Wind** | Speed & direction |
 | 🕐 | **4-hour forecast** | Icons, temperature, and wind per time slot |
 | 🌿 | **Pollen** | Top-3 allergens hourly (Open-Meteo), 3-day forecast for 8 allergens (DWD) |
