@@ -1,5 +1,13 @@
 # 🌦️ WetterCubePlus
 
+![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
+![Fortschritt](https://img.shields.io/badge/Fortschritt-70%25-yellow?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v0.6.1--beta-blue?style=flat-square)
+![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
+![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
+![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
+![Plattform](https://img.shields.io/badge/Platform-Arduino%20IDE-teal?style=flat-square&logo=arduino&logoColor=white)
+
 Ein kompaktes WLAN-Wetterdisplay auf Basis des **ESP32-S3 N16R8** mit 3,5"-Touchdisplay, DWD-Wetterwarnungen, Pollenflug und Web-Interface.
 Dieses Projekt ist die Weiterentwicklung des [WetterCube](https://github.com/JPPeterson-lab/wettercube).
 
@@ -249,6 +257,14 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 ---
 
 # 🌦️ WetterCubePlus (English)
+
+![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
+![Progress](https://img.shields.io/badge/Progress-70%25-yellow?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v0.6.1--beta-blue?style=flat-square)
+![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
+![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
+![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
+![Platform](https://img.shields.io/badge/Platform-Arduino%20IDE-teal?style=flat-square&logo=arduino&logoColor=white)
 
 A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touchscreen, DWD weather warnings, pollen data, and a web interface.
 This project is the successor to [WetterCube](https://github.com/JPPeterson-lab/wettercube).
