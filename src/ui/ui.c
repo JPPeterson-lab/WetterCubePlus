@@ -24,7 +24,7 @@ void loadScreen(enum ScreensEnum screenId) {
 
 void ui_init() {
     create_screens();
-    loadScreen(SCREEN_ID_SCREEN_1);
+    loadScreen(SCREEN_ID_SCREENAIRQUALITY);
 }
 
 void ui_tick() {

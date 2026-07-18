@@ -11,8 +11,9 @@
 #include "src/ui/images/day_clear.inc"
 #include "src/ui/images/thunder.inc"
 #include "src/ui/images/snow.inc"
+#include "src/ui/images/pico_dark_logo.inc"
 #include "src/ui/images/night_full_moon_partial_cloud.inc"
-const ext_img_desc_t images[11] = {
+const ext_img_desc_t images[12] = {
     { "day_partial_cloud", &day_partial_cloud },
     { "fog", &fog },
     { "alert", &alert },
@@ -23,5 +24,6 @@ const ext_img_desc_t images[11] = {
     { "day_clear", &day_clear },
     { "thunder", &thunder },
     { "snow", &snow },
+    { "pico_dark_logo", &pico_dark_logo },
     { "night_full_moon_partial_cloud", &night_full_moon_partial_cloud }
 };

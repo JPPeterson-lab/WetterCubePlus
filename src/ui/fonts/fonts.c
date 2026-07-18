@@ -11,10 +11,11 @@
 
 const lv_font_t* ui_get_font_by_name(const char* name) {
     if (name == NULL) return NULL;
-    if (strcmp(name, "font_17e6ca586d88805280082a7bfe21eea4") == 0) return &font_17e6ca586d88805280082a7bfe21eea4;
-    if (strcmp(name, "font_17e6ca586d88805280082a7bfe21eea5") == 0) return &font_17e6ca586d88805280082a7bfe21eea5;
-    if (strcmp(name, "font_17e6ca586d88805280082a7bfe21eea6") == 0) return &font_17e6ca586d88805280082a7bfe21eea6;
-    if (strcmp(name, "font_17e6ca586d88805280082a7bfe21eea7") == 0) return &font_17e6ca586d88805280082a7bfe21eea7;
-    if (strcmp(name, "font_dbb05fdd34e280e180082b1d61d53d7d") == 0) return &font_dbb05fdd34e280e180082b1d61d53d7d;
+    if (strcmp(name, "font_montserrat_12") == 0) return &font_montserrat_12;
+    if (strcmp(name, "font_montserrat_16") == 0) return &font_montserrat_16;
+    if (strcmp(name, "font_montserrat_18") == 0) return &font_montserrat_18;
+    if (strcmp(name, "font_montserrat_22") == 0) return &font_montserrat_22;
+    if (strcmp(name, "font_montserrat_32") == 0) return &font_montserrat_32;
+    if (strcmp(name, "font_montserrat_48") == 0) return &font_montserrat_48;
     return NULL;
 }

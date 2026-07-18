@@ -1,5 +1,32 @@
 # Entwicklungs-Log
 
+## 2026-07-18 – v0.7.0-beta
+
+### Luftqualitäts-Screen (AQI)
+
+**Neuer Screen `screenairquality`:**
+- Europäischer AQI als `lv_arc` (Skala 0–150), Farbe dynamisch aus `aqiColor()` (grün→violett)
+- `labelaqivalue` + `labelaqistatus` zeigen Zahlenwert und Textbewertung
+- Einzelwerte PM2.5, PM10, NO₂, Ozon mit eigenem Label + Balken (bar_1–bar_4)
+- Farbkodierung nach EU-Grenzwerten (z.B. PM2.5 grün ≤10, gelb ≤25, orange ≤50, rot >50 µg/m³)
+
+**Datenquelle:**
+- `fetchOpenMeteoPollen()` bereits auf `air-quality-api.open-meteo.com` → URL um `pm2_5,pm10,nitrogen_dioxide,ozone` erweitert
+- Aktuelle Stunde + nächste Stunde geparst; `PollenDaten`-Struct um AQI-Felder erweitert
+- JSON-Buffer von 6144 auf 10240 erhöht
+
+**Navigation:**
+- Screen nach screensunmoon eingehängt: `cbFwd5` → screenairquality, `cbFwd6` → screen_1
+- `cbBack6` → screensunmoon
+- REG_CB für `labelbuttonhome_6`, `labelbuttonforward_5`, `labelbuttonbackward_3`
+
+**Fixes:**
+- `LV_MEM_SIZE` 64 KB → 128 KB (Out-of-Memory mit neuem AQI-Screen)
+- `mg/m²` (U+00B2) → `ug/m3` in screens.c; deploy_ui.sh patcht künftig automatisch
+- Button-Nummerierung nach Re-Export komplett neu zugeordnet (alle REG_CB-Einträge)
+
+---
+
 ## 2026-07-15 – v0.6.1-beta
 
 ### Neue Wetter-Icons + Tag/Nacht-Logik

@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.7.0-beta (2026-07-18)
+
+### Neu
+- **Luftqualitäts-Screen (AQI):** Neuer Screen mit europäischem AQI als Arc-Anzeige (0–150, farbkodiert), Einzelwerte PM2.5, PM10, NO₂, Ozon mit Balken und EU-Grenzwert-Farbkodierung
+- **AQI in der Navigation:** Screen zwischen Sonne & Mond und Hauptscreen eingehängt (screensunmoon → screenairquality → screen_1)
+- **Open-Meteo Air Quality API** liefert jetzt zusätzlich PM2.5, PM10, NO₂ und Ozon (selber Endpunkt wie Pollen, kein zweiter HTTP-Call)
+
+### Fixes
+- **LVGL-Heap erhöht:** `LV_MEM_SIZE` von 64 KB auf 128 KB angehoben (Out-of-Memory beim Laden des Menü-Screens mit neuem AQI-Screen)
+- **Font-Fix:** `mg/m²` (U+00B2) durch `ug/m3` ersetzt – Montserrat Built-in-Font kennt kein ²-Zeichen; deploy_ui.sh patcht das künftig automatisch
+- **Navigations-Verdrahtung:** Nach UI-Re-Export hatten sich alle Button-Nummern verschoben; REG_CB-Block vollständig neu zugeordnet
+
+---
+
 ## v0.6.1-beta (2026-07-15)
 
 ### Neu

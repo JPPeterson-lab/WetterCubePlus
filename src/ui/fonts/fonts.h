@@ -9,11 +9,12 @@ extern "C" {
 #endif
 
 /* Custom font declarations (externally visible const structs, no init needed) */
-extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea4;
-extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea5;
-extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea6;
-extern const lv_font_t font_17e6ca586d88805280082a7bfe21eea7;
-extern const lv_font_t font_dbb05fdd34e280e180082b1d61d53d7d;
+extern const lv_font_t font_montserrat_12;
+extern const lv_font_t font_montserrat_16;
+extern const lv_font_t font_montserrat_18;
+extern const lv_font_t font_montserrat_22;
+extern const lv_font_t font_montserrat_32;
+extern const lv_font_t font_montserrat_48;
 
 /* Get a custom font by name, returns NULL if not found */
 const lv_font_t* ui_get_font_by_name(const char* name);

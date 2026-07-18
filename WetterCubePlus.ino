@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.6.1-beta"
+#define FIRMWARE_VERSION "0.7.0-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -245,6 +245,13 @@ struct PollenDaten {
   float h_esche[3]    = {-1,-1,-1};
   float h_hasel[3]    = {-1,-1,-1};
   int   h_slot[3]     = {0,0,0};   // Stunde des jeweiligen Slots (0-23)
+  // Luftqualität (Air Quality Index + Einzelwerte) – aktuelle + nächste Stunde
+  int   aqi      = -1;
+  int   aqi_next = -1;
+  float pm25     = -1.0f;  float pm25_next = -1.0f;
+  float pm10     = -1.0f;  float pm10_next = -1.0f;
+  float no2      = -1.0f;  float no2_next  = -1.0f;
+  float o3       = -1.0f;  float o3_next   = -1.0f;
   // DWD Pollenflug – heute / morgen / übermorgen (Stufen 0-3 als Float)
   float dwd_birke    = -1.0f; float dwd_birke_tmr    = -1.0f; float dwd_birke_da    = -1.0f;
   float dwd_hasel    = -1.0f; float dwd_hasel_tmr    = -1.0f; float dwd_hasel_da    = -1.0f;
@@ -1468,11 +1475,11 @@ void fetchOpenMeteoPollen() {
   url += "?latitude="  + String(cfg.lat, 4);
   url += "&longitude=" + String(cfg.lon, 4);
   url += "&hourly=birch_pollen,grass_pollen,alder_pollen,mugwort_pollen,ragweed_pollen";
-  url += ",european_aqi,dust";  // Platzhalter – Open-Meteo hat kein Roggen/Esche/Hasel stündlich
+  url += ",european_aqi,pm2_5,pm10,nitrogen_dioxide,ozone";
   url += "&timezone=auto&forecast_days=1";
   http.begin(sc, url);
   if (http.GET() == 200) {
-    DynamicJsonDocument doc(6144);
+    DynamicJsonDocument doc(10240);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
       struct tm ti; getLocalTime(&ti);
       // Index in das 48h-Array: Stunde 0–23 = heute, 24–47 = morgen
@@ -1484,6 +1491,18 @@ void fetchOpenMeteoPollen() {
       pollen.erle     = doc["hourly"]["alder_pollen"][h].as<float>();
       pollen.beifuss  = doc["hourly"]["mugwort_pollen"][h].as<float>();
       pollen.ambrosia = doc["hourly"]["ragweed_pollen"][h].as<float>();
+      // Luftqualität – aktuelle Stunde (Index ti.tm_hour) + nächste Stunde (h)
+      int hNow = ti.tm_hour;
+      pollen.aqi      = doc["hourly"]["european_aqi"][hNow].as<int>();
+      pollen.aqi_next = doc["hourly"]["european_aqi"][h].as<int>();
+      pollen.pm25     = doc["hourly"]["pm2_5"][hNow].as<float>();
+      pollen.pm25_next= doc["hourly"]["pm2_5"][h].as<float>();
+      pollen.pm10     = doc["hourly"]["pm10"][hNow].as<float>();
+      pollen.pm10_next= doc["hourly"]["pm10"][h].as<float>();
+      pollen.no2      = doc["hourly"]["nitrogen_dioxide"][hNow].as<float>();
+      pollen.no2_next = doc["hourly"]["nitrogen_dioxide"][h].as<float>();
+      pollen.o3       = doc["hourly"]["ozone"][hNow].as<float>();
+      pollen.o3_next  = doc["hourly"]["ozone"][h].as<float>();
       // 3 Stunden-Slots für ScreenForecastPollenHour — Index läuft über Tagesgrenze
       for (int i = 0; i < 3; i++) {
         int slot = min(h + i, 47);
@@ -1537,6 +1556,27 @@ static String schleimsterPollen() {
   };
   for (auto& e : list) { if (e.v > max_v) { max_v = e.v; name = e.n; } }
   return String(name);
+}
+
+// Europäischer AQI: 0–20 gut, 20–40 mittel, 40–60 mäßig, 60–80 schlecht, 80–100 sehr schlecht, >100 extrem
+static lv_color_t aqiColor(int aqi) {
+  if (aqi < 0)   return lv_color_hex(0x888888);
+  if (aqi <= 20)  return lv_color_hex(0x50c878);  // gut – grün
+  if (aqi <= 40)  return lv_color_hex(0xadff2f);  // mittel – gelbgrün
+  if (aqi <= 60)  return lv_color_hex(0xffd700);  // mäßig – gelb
+  if (aqi <= 80)  return lv_color_hex(0xff8c00);  // schlecht – orange
+  if (aqi <= 100) return lv_color_hex(0xff3030);  // sehr schlecht – rot
+  return lv_color_hex(0x8b008b);                  // extrem – violett
+}
+
+static const char* aqiStatusText(int aqi) {
+  if (aqi < 0)    return "--";
+  if (aqi <= 20)  return "Gut";
+  if (aqi <= 40)  return "Mittel";
+  if (aqi <= 60)  return "Maessig";
+  if (aqi <= 80)  return "Schlecht";
+  if (aqi <= 100) return "Sehr schlecht";
+  return "Extrem";
 }
 
 void aktualisiereUI() {
@@ -1725,6 +1765,84 @@ void aktualisiereUI() {
     setLabel(objects.labelpollenwarnart,   schleimsterPollen().c_str());
     setLabel(objects.labelpollenwarnhint,  "Tippen zum Bestätigen");
   }
+
+  // ── Luftqualität (screenairquality) ─────────────────────────
+  {
+    int aqi = pollen.aqi;
+    // AQI-Arc: Skala 0–150, Werte >150 auf 150 kappen
+    if (objects.arcaqi) {
+      lv_arc_set_range(objects.arcaqi, 0, 150);
+      lv_arc_set_value(objects.arcaqi, (aqi >= 0) ? min(aqi, 150) : 0);
+      lv_obj_set_style_arc_color(objects.arcaqi, aqiColor(aqi), LV_PART_INDICATOR);
+    }
+    if (objects.labelaqivalue) {
+      if (aqi >= 0) { snprintf(buf, sizeof(buf), "%d", aqi); }
+      else          { snprintf(buf, sizeof(buf), "--"); }
+      setLabelFmt(objects.labelaqivalue, aqiColor(aqi), buf);
+    }
+    if (objects.labelaqistatus)
+      setLabelFmt(objects.labelaqistatus, aqiColor(aqi), aqiStatusText(aqi));
+
+    // Einzelwerte – aktuelle Stunde mit Farbkodierung nach EU-Grenzwerten
+    // Schwellen analog zum EU AQI: gut / mäßig / schlecht
+    auto pm25Color = [](float v) -> lv_color_t {
+      if (v < 0)   return lv_color_hex(0x888888);
+      if (v <= 10) return lv_color_hex(0x50c878);
+      if (v <= 25) return lv_color_hex(0xffd700);
+      if (v <= 50) return lv_color_hex(0xff8c00);
+      return lv_color_hex(0xff3030);
+    };
+    auto pm10Color = [](float v) -> lv_color_t {
+      if (v < 0)    return lv_color_hex(0x888888);
+      if (v <= 20)  return lv_color_hex(0x50c878);
+      if (v <= 50)  return lv_color_hex(0xffd700);
+      if (v <= 100) return lv_color_hex(0xff8c00);
+      return lv_color_hex(0xff3030);
+    };
+    auto no2Color = [](float v) -> lv_color_t {
+      if (v < 0)    return lv_color_hex(0x888888);
+      if (v <= 40)  return lv_color_hex(0x50c878);
+      if (v <= 100) return lv_color_hex(0xffd700);
+      if (v <= 200) return lv_color_hex(0xff8c00);
+      return lv_color_hex(0xff3030);
+    };
+    auto o3Color = [](float v) -> lv_color_t {
+      if (v < 0)     return lv_color_hex(0x888888);
+      if (v <= 60)   return lv_color_hex(0x50c878);
+      if (v <= 120)  return lv_color_hex(0xffd700);
+      if (v <= 180)  return lv_color_hex(0xff8c00);
+      return lv_color_hex(0xff3030);
+    };
+    auto setAqiBar = [](lv_obj_t* bar, float val, int rangeMax) {
+      if (!bar) return;
+      lv_bar_set_range(bar, 0, rangeMax);
+      lv_bar_set_value(bar, (val >= 0) ? (int)val : 0, LV_ANIM_OFF);
+    };
+
+    if (objects.labelpm25value) {
+      snprintf(buf, sizeof(buf), (pollen.pm25 >= 0) ? "%.1f" : "--", pollen.pm25);
+      setLabelFmt(objects.labelpm25value, pm25Color(pollen.pm25), buf);
+    }
+    setAqiBar(objects.bar_1, pollen.pm25, 75);
+
+    if (objects.labelpm10value) {
+      snprintf(buf, sizeof(buf), (pollen.pm10 >= 0) ? "%.1f" : "--", pollen.pm10);
+      setLabelFmt(objects.labelpm10value, pm10Color(pollen.pm10), buf);
+    }
+    setAqiBar(objects.bar_2, pollen.pm10, 150);
+
+    if (objects.labelno2value) {
+      snprintf(buf, sizeof(buf), (pollen.no2 >= 0) ? "%.0f" : "--", pollen.no2);
+      setLabelFmt(objects.labelno2value, no2Color(pollen.no2), buf);
+    }
+    setAqiBar(objects.bar_3, pollen.no2, 200);
+
+    if (objects.labelo3value) {
+      snprintf(buf, sizeof(buf), (pollen.o3 >= 0) ? "%.0f" : "--", pollen.o3);
+      setLabelFmt(objects.labelo3value, o3Color(pollen.o3), buf);
+    }
+    setAqiBar(objects.bar_4, pollen.o3, 240);
+  }
 }
 
 // ============================================================
@@ -1782,7 +1900,7 @@ void setzeBootFortschritt(int prozent) {
 //  LVGL Event-Callbacks
 // ============================================================
 
-// Hauptnavigation: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
+// Hauptnavigation: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screenairquality → screen_1
 // Untermenüs: forecastpollen ↔ forecastpollenhour | screenwarnkarte1 ↔ screenwarnkarte2
 static void cbHome(lv_event_t*)   { loadScreen(SCREEN_ID_SCREEN_1); }
 
@@ -1851,8 +1969,10 @@ static void cbBack2(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }
 static void cbFwd3(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }           // forecastpollen >
 static void cbBack3(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }       // screenwarnkarte1 <
 static void cbFwd4(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENSUNMOON); }              // screenwarnkarte1 >
-static void cbFwd5(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }                   // screensunmoon >
+static void cbFwd5(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENAIRQUALITY); }            // screensunmoon >
 static void cbBack5(lv_event_t*) { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }           // screensunmoon <
+static void cbFwd6(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }                   // screenairquality >
+static void cbBack6(lv_event_t*) { loadScreen(SCREEN_ID_SCREENSUNMOON); }              // screenairquality <
 // Untermenü-Buttons (Hub)
 static void cbHubPollen(lv_event_t*)     { loadScreen(SCREEN_ID_SCREENFORECASTPOLLENHOUR); } // forecastpollen → stündlich
 static void cbHubPollenBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }     // stündlich → tages
@@ -2099,38 +2219,42 @@ void setup() {
   erstelleWarnkarte2Screen();
 
   // Navigations-Buttons sofort verdrahten (vor WiFi-Check, gilt auch im Portal-Modus)
-  // Navigation Hauptkette: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screen_1
+  // Navigation Hauptkette: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screenairquality → screen_1
   // Untermenüs: forecastpollen ↔ forecastpollenhour | screenwarnkarte1 ↔ screenwarnkarte2
   #define REG_CB(obj, cb, evt) do { if (obj) lv_obj_add_event_cb(obj, cb, evt, nullptr); } while(0)
-  REG_CB(objects.labelbuttonforward,    cbFwd1,    LV_EVENT_CLICKED);  // screen_1 >
-  REG_CB(objects.labelbuttonbackward,   cbBack1,   LV_EVENT_CLICKED);  // forecastwetter <
-  REG_CB(objects.labelbuttonforward_1,  cbFwd2,    LV_EVENT_CLICKED);  // forecastwetter >
-  REG_CB(objects.labelbuttonbackward_2, cbBack2,   LV_EVENT_CLICKED);  // forecastpollen <
-  REG_CB(objects.labelbuttonforward_3,  cbFwd3,    LV_EVENT_CLICKED);  // forecastpollen >
-  REG_CB(objects.labelbuttonbackward_1, cbBack3,   LV_EVENT_CLICKED);  // screenwarnkarte1 <
-  REG_CB(objects.labelbuttonforward_4,  cbFwd4,    LV_EVENT_CLICKED);  // screenwarnkarte1 >
-  REG_CB(objects.labelbuttonforward_2,  cbFwd5,    LV_EVENT_CLICKED);  // screensunmoon >
-  REG_CB(objects.button_1,              cbBack5,   LV_EVENT_CLICKED);  // screensunmoon <
+  // Navigation Hauptkette (Pfeile)
+  REG_CB(objects.labelbuttonforward,    cbFwd1,  LV_EVENT_CLICKED);  // screen_1 >
+  REG_CB(objects.labelbuttonbackward_1, cbBack1, LV_EVENT_CLICKED);  // forecastwetter <
+  REG_CB(objects.labelbuttonforward_2,  cbFwd2,  LV_EVENT_CLICKED);  // forecastwetter >
+  REG_CB(objects.labelbuttonbackward,   cbBack2, LV_EVENT_CLICKED);  // forecastpollen <
+  REG_CB(objects.labelbuttonforward_1,  cbFwd3,  LV_EVENT_CLICKED);  // forecastpollen >
+  REG_CB(objects.labelbuttonbackward_2, cbBack3, LV_EVENT_CLICKED);  // screenwarnkarte1 <
+  REG_CB(objects.labelbuttonforward_3,  cbFwd4,  LV_EVENT_CLICKED);  // screenwarnkarte1 >
+  REG_CB(objects.button_1,              cbBack5, LV_EVENT_CLICKED);  // screensunmoon <
+  REG_CB(objects.labelbuttonforward_4,  cbFwd5,  LV_EVENT_CLICKED);  // screensunmoon >
+  REG_CB(objects.labelbuttonbackward_3, cbBack6, LV_EVENT_CLICKED);  // screenairquality <
+  REG_CB(objects.labelbuttonforward_5,  cbFwd6,  LV_EVENT_CLICKED);  // screenairquality >
   // Untermenü Hub-Buttons
   REG_CB(objects.labelbuttonscreenhub,       cbHubPollen,    LV_EVENT_CLICKED);  // forecastpollen → stündlich
   REG_CB(objects.labelbuttonscreenhubback,   cbHubPollenBack,LV_EVENT_CLICKED);  // stündlich → tages
   REG_CB(objects.labelbuttonscreenhub_1,     cbHubWarn,      LV_EVENT_CLICKED);  // warnkarte1 → warnkarte2
   REG_CB(objects.labelbuttonscreenhubback_1, cbHubWarnBack,  LV_EVENT_CLICKED);  // warnkarte2 → warnkarte1
   // Menu-Button (screen_1 → screenmenu) + Zurück
-  REG_CB(objects.labelbuttonmenu,        cbMenu,             LV_EVENT_CLICKED);       // screen_1 → screenmenu
-  REG_CB(objects.labelbuttonmenu_2,      cbHome,             LV_EVENT_CLICKED);       // screenmenu → screen_1
+  REG_CB(objects.labelbuttonmenu,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
+  REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
   // Menü-Screen Controls
-  REG_CB(objects.labellightchangevalue,  cbMenuBrightness,   LV_EVENT_VALUE_CHANGED); // Helligkeit Arc
-  REG_CB(objects.regenswitch,            cbMenuRegenSwitch,  LV_EVENT_VALUE_CHANGED); // Regenwarnung Toggle
-  REG_CB(objects.pollenswitch,           cbMenuPollenSwitch, LV_EVENT_VALUE_CHANGED); // Pollenwarnung Toggle
-  REG_CB(objects.dwdswitch,             cbMenuDwdSwitch,    LV_EVENT_VALUE_CHANGED); // DWD Warn Toggle
-  // Home-Buttons
-  REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);
-  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte2
-  REG_CB(objects.labelbuttonhome_4, cbHome, LV_EVENT_CLICKED);  // screensunmoon
-  REG_CB(objects.labelbuttonhome_5, cbHome, LV_EVENT_CLICKED);  // screenforecastpollenhour
+  REG_CB(objects.labellightchangevalue, cbMenuBrightness,   LV_EVENT_VALUE_CHANGED);
+  REG_CB(objects.regenswitch,           cbMenuRegenSwitch,  LV_EVENT_VALUE_CHANGED);
+  REG_CB(objects.pollenswitch,          cbMenuPollenSwitch, LV_EVENT_VALUE_CHANGED);
+  REG_CB(objects.dwdswitch,             cbMenuDwdSwitch,    LV_EVENT_VALUE_CHANGED);
+  // Home-Buttons (neue Zuordnung nach UI-Export)
+  REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);   // forecastpollen
+  REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);   // forecastpollenhour
+  REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);   // forecastwetter
+  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);   // screenwarnkarte1
+  REG_CB(objects.labelbuttonhome_4, cbHome, LV_EVENT_CLICKED);   // screenwarnkarte2
+  REG_CB(objects.labelbuttonhome_5, cbHome, LV_EVENT_CLICKED);   // screensunmoon
+  REG_CB(objects.labelbuttonhome_6, cbHome, LV_EVENT_CLICKED);   // screenairquality
   REG_CB(objects.screenwarnung,         cbWarnTap,        LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnungpollen,   cbWarnTap,        LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnkarte2,      cbWarnkarte2Tap,  LV_EVENT_CLICKED);

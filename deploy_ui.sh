@@ -45,18 +45,28 @@ if [ -f "$SRC/ui.c" ]; then
   echo "  ui.c: FADE_IN-Animation → NONE (Crash-Fix)"
 fi
 
+# screens.c: Sonderzeichen ² (U+00B2) → ASCII (LVGL Montserrat-Font hat kein ²)
+if [ -f "$SRC/screens.c" ]; then
+  if grep -q 'mg/m²' "$SRC/screens.c"; then
+    sed -i '' 's|mg/m²|ug/m3|g' "$SRC/screens.c"
+    echo "  screens.c: Sonderzeichen mg/m² → ug/m3 ersetzt (Font-Fix)"
+  fi
+fi
+
 # ── Verifikation: Prüfe ob alle vom .ino verwendeten Objekt-Namen noch vorhanden sind ──
 echo ""
 echo "Verifikation screens.h – erwartete Objekte:"
 EXPECTED=(
   "labelbuttonforward"
-  "labelbuttonbackward"
   "labelbuttonforward_1"
-  "labelbuttonbackward_2"
-  "labelbuttonforward_3"
-  "labelbuttonbackward_1"
-  "labelbuttonforward_4"
   "labelbuttonforward_2"
+  "labelbuttonforward_3"
+  "labelbuttonforward_4"
+  "labelbuttonforward_5"
+  "labelbuttonbackward"
+  "labelbuttonbackward_1"
+  "labelbuttonbackward_2"
+  "labelbuttonbackward_3"
   "button_1"
   "labelbuttonscreenhub"
   "labelbuttonscreenhubback"
@@ -66,6 +76,17 @@ EXPECTED=(
   "labelbuttonhome_1"
   "labelbuttonhome_2"
   "labelbuttonhome_3"
+  "labelbuttonhome_4"
+  "labelbuttonhome_5"
+  "labelbuttonhome_6"
+  "arcaqi"
+  "labelaqivalue"
+  "labelaqistatus"
+  "labelpm25value"
+  "labelpm10value"
+  "labelno2value"
+  "labelo3value"
+  "screenairquality"
   "screenwarnung"
   "screenwarnungpollen"
   "screenwarnkarte1"

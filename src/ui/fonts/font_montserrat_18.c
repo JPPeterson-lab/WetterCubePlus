@@ -6,11 +6,11 @@
 
 #include "../screens.h"
 
-#ifndef FONT_DBB05FDD34E280E180082B1D61D53D7D
-#define FONT_DBB05FDD34E280E180082B1D61D53D7D 1
+#ifndef FONT_MONTSERRAT_18
+#define FONT_MONTSERRAT_18 1
 #endif
 
-#if FONT_DBB05FDD34E280E180082B1D61D53D7D
+#if FONT_MONTSERRAT_18
 
 /*-----------------
  *    BITMAPS
@@ -1198,9 +1198,9 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
 
 /*Initialize a public general font descriptor*/
 #if LVGL_VERSION_MAJOR >= 8
-const lv_font_t font_dbb05fdd34e280e180082b1d61d53d7d = {
+const lv_font_t font_montserrat_18 = {
 #else
-lv_font_t font_dbb05fdd34e280e180082b1d61d53d7d = {
+lv_font_t font_montserrat_18 = {
 #endif
     .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,    /*Function pointer to get glyph's data*/
     .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,    /*Function pointer to get glyph's bitmap*/
@@ -1222,4 +1222,4 @@ lv_font_t font_dbb05fdd34e280e180082b1d61d53d7d = {
 
 
 
-#endif /*#if FONT_DBB05FDD34E280E180082B1D61D53D7D*/
+#endif /*#if FONT_MONTSERRAT_18*/
