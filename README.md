@@ -236,9 +236,14 @@ Weitere Details in [CREDITS.md](CREDITS.md).
 
 ## 📄 Lizenz
 
-MIT License – siehe [LICENSE](LICENSE)
+Dieses Projekt steht unter der **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** Lizenz – siehe [LICENSE](LICENSE).
 
-Die enthaltenen Wetter-Icons unterliegen der **CC BY-SA 4.0**-Lizenz (siehe [CREDITS.md](CREDITS.md)).
+- ✅ Privater und nicht-kommerzieller Einsatz erlaubt
+- ✅ Veränderungen und Weitergabe erlaubt (mit Namensnennung)
+- ❌ Kommerzielle Nutzung durch Dritte **nicht** gestattet
+- Der Urheber (JPPeterson-lab) behält sich das Recht vor, das Projekt jederzeit auch kommerziell zu nutzen.
+
+Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) und unterliegen der **CC BY-SA 4.0**-Lizenz (siehe [CREDITS.md](CREDITS.md)).
 
 ---
 ---
@@ -473,6 +478,11 @@ See [CREDITS.md](CREDITS.md) for details.
 
 ## 📄 License
 
-MIT License – see [LICENSE](LICENSE)
+This project is licensed under **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** – see [LICENSE](LICENSE).
 
-The included weather icons are licensed under **CC BY-SA 4.0** (see [CREDITS.md](CREDITS.md)).
+- ✅ Private and non-commercial use permitted
+- ✅ Modifications and redistribution permitted (with attribution)
+- ❌ Commercial use by third parties **not** permitted
+- The author (JPPeterson-lab) reserves the right to use this project for commercial purposes at their own discretion.
+
+The included weather icons are from [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) and licensed under **CC BY-SA 4.0** (see [CREDITS.md](CREDITS.md)).
