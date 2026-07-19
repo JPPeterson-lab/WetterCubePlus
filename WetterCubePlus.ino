@@ -2,13 +2,13 @@
 //  WetterCubePlus.ino
 //  ESP32-S3 N16R8 | ILI9488 3.5" 480x320 | XPT2046 Touch
 //  LVGL 8.x | LovyanGFX | HTTP-OTA | WebUI | DWD-Warnungen
-//  Version: 0.5.4-beta
+//  Version: 0.8.0-beta
 // ============================================================
 
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.8.0-beta"
+#define FIRMWARE_VERSION "0.8.1-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1603,7 +1603,7 @@ void fetchBioWetter() {
     }
   }
 
-  DynamicJsonDocument doc(16384);
+  DynamicJsonDocument doc(32768);
   DeserializationError err = deserializeJson(doc, body, DeserializationOption::Filter(filter));
   if (err != DeserializationError::Ok) {
     Serial.printf("[Bio] JSON Fehler: %s\n", err.c_str());
@@ -1617,14 +1617,14 @@ void fetchBioWetter() {
     if (id != cfg.bio_zone) continue;
     for (int p = 0; p < 4; p++) {
       JsonArray eff = z[perioden[p]]["effect"];
-      for (int k = 0; k < 7 && k < (int)eff.size(); k++)
-        bio.wert[p][k] = bioWertToInt(eff[k]["value"].as<const char*>());
+      Serial.printf("[Bio] Periode %d (%s): %d Eintraege\n", p, perioden[p], (int)eff.size());
+      for (int k = 0; k < 7 && k < (int)eff.size(); k++) {
+        const char* val = eff[k]["value"].as<const char*>();
+        bio.wert[p][k] = bioWertToInt(val);
+        Serial.printf("  [%d]=%d (%s)\n", k, bio.wert[p][k], val ? val : "null");
+      }
     }
     bio.geladen = true;
-    Serial.printf("[Bio] Zone %s: Bef=%d BP-=%d BP+=%d Rh-e=%d Rh-d=%d Ast=%d Wärm=%d\n",
-      cfg.bio_zone.c_str(),
-      bio.wert[0][0], bio.wert[0][1], bio.wert[0][2],
-      bio.wert[0][3], bio.wert[0][4], bio.wert[0][5], bio.wert[0][6]);
     break;
   }
   if (!bio.geladen) Serial.printf("[Bio] Zone %s nicht gefunden\n", cfg.bio_zone.c_str());
@@ -1983,14 +1983,24 @@ void aktualisiereUI() {
     const int nmPeriod[2] = {1, 3};
 
     for (int s = 0; s < 2; s++) {
+      // Prüfen ob eine Periode komplett leer ist (alle 0 = "kein Einfluss")
+      auto allNull = [&](int p) {
+        for (int k = 0; k < 7; k++) if (bio.wert[p][k] != 0) return false;
+        return true;
+      };
+      bool vmLeer = !bio.geladen || allNull(vmPeriod[s]);
+      bool nmLeer = !bio.geladen || allNull(nmPeriod[s]);
+
       for (int k = 0; k < 7; k++) {
         if (vmLabels[s][k]) {
           int v = bio.geladen ? bio.wert[vmPeriod[s]][k] : 0;
-          setLabelFmt(vmLabels[s][k], bioWertColor(v), bioWertKurz(v));
+          setLabelFmt(vmLabels[s][k], vmLeer ? lv_color_hex(0x444444) : bioWertColor(v),
+                      vmLeer ? "-" : bioWertKurz(v));
         }
         if (nmLabels[s][k]) {
           int v = bio.geladen ? bio.wert[nmPeriod[s]][k] : 0;
-          setLabelFmt(nmLabels[s][k], bioWertColor(v), bioWertKurz(v));
+          setLabelFmt(nmLabels[s][k], nmLeer ? lv_color_hex(0x444444) : bioWertColor(v),
+                      nmLeer ? "-" : bioWertKurz(v));
         }
       }
     }

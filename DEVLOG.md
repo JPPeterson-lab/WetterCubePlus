@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-07-19 – v0.8.1-beta
+
+### Biowetter: Leere Perioden & Debug
+
+**Problem:** DWD liefert für Perioden 1–3 (morgen/übermorgen) oft „kein Einfluss" für alle 7 Kategorien weil die Tagesprognose erst morgens einmal veröffentlicht wird. Das sah wie fehlende Daten aus (sieben graue „kein"-Labels).
+
+**Fix:** Lambda `allNull(p)` prüft ob alle 7 Werte einer Periode = 0 sind. Wenn ja: alle Labels dieser Periode zeigen `–` in `0x444444` (dunkelgrau). Sobald DWD echte Werte liefert, erscheinen die farbigen Texte automatisch.
+
+**JSON-Buffer:** 16 KB → 32 KB zur sichereren Verarbeitung aller 11 Zonen.
+
+**Debug-Output:** Serial gibt jetzt für jede der 4 Perioden Anzahl Einträge + Rohwert + gemappten Integer aus – erleichtert zukünftige Diagnose bei DWD-Änderungen.
+
+---
+
 ## 2026-07-19 – v0.8.0-beta
 
 ### DWD Biowetter

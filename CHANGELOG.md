@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.8.1-beta (2026-07-19)
+
+### Fixes
+- **Biowetter: Leere Perioden als `–` anzeigen** – Wenn DWD für eine Periode ausschließlich „kein Einfluss" liefert (Forecast noch nicht veröffentlicht), wird statt sieben grauer „kein"-Labels ein dunkles `–` gezeigt
+- **Biowetter: JSON-Buffer erhöht** – `DynamicJsonDocument` von 16 KB auf 32 KB erhöht (11 Zonen sicherer gepuffert)
+- **Biowetter: Debug-Output für alle Perioden** – Serial zeigt jetzt Einträge und Rohwerte pro Periode zur Diagnose
+
+---
+
 ## v0.8.0-beta (2026-07-19)
 
 ### Neu

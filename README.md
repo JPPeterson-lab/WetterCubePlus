@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
 ![Fortschritt](https://img.shields.io/badge/Fortschritt-85%25-yellowgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.8.0--beta-blue?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v0.8.1--beta-blue?style=flat-square)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -40,7 +40,6 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌫️ | **Luftqualität (AQI)** | Europäischer AQI (Arc-Anzeige), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten (Open-Meteo Air Quality API) |
 | 🩺 | **DWD Biowetter** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Allg. Befinden, Blutdruck niedrig/hoch, Rheuma entzündl./degenerativ, Asthma, Wärmebelastung) – 4 Perioden auf 2 Screens, alle 3 Stunden aktualisiert |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
-
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
 | 👆 | **Touch-Kalibrierung** | Automatisch beim Erststart, jederzeit neu auslösbar |
@@ -266,7 +265,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 
 ![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
 ![Progress](https://img.shields.io/badge/Progress-85%25-yellowgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.8.0--beta-blue?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v0.8.1--beta-blue?style=flat-square)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
