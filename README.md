@@ -1,8 +1,8 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
-![Fortschritt](https://img.shields.io/badge/Fortschritt-80%25-yellowgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.7.0--beta-blue?style=flat-square)
+![Fortschritt](https://img.shields.io/badge/Fortschritt-85%25-yellowgreen?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v0.8.0--beta-blue?style=flat-square)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -38,6 +38,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert, mit Standort-Marker |
 | ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang, Tages-Min/Max-Temperatur |
 | 🌫️ | **Luftqualität (AQI)** | Europäischer AQI (Arc-Anzeige), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten (Open-Meteo Air Quality API) |
+| 🩺 | **DWD Biowetter** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Allg. Befinden, Blutdruck niedrig/hoch, Rheuma entzündl./degenerativ, Asthma, Wärmebelastung) – 4 Perioden auf 2 Screens, alle 3 Stunden aktualisiert |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
@@ -58,8 +59,10 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 5 | **Niederschlagsradar** | Bundesland-Ausschnitt, DWD WMS, 10-Min.-Aktualisierung |
 | 6 | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang, Min/Max-Tagestemperatur |
 | 7 | **Luftqualität** | Europäischer AQI (Arc), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten |
-| 8 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung (Antippen für Details) |
-| 9 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
+| 8 | **DWD Biowetter (Heute)** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Befinden, Blutdruck, Rheuma, Asthma, Wärme) – Heute Vm./Nm. |
+| 9 | **DWD Biowetter (Morgen)** | Wie Screen 8, für Morgen Vm./Nm. und Übermorgen Vm. |
+| 10 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung (Antippen für Details) |
+| 11 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
 
 ---
 
@@ -262,7 +265,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 
 ![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
 ![Progress](https://img.shields.io/badge/Progress-70%25-yellow?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.7.0--beta-blue?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v0.8.0--beta-blue?style=flat-square)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)

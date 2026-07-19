@@ -12,6 +12,7 @@
 const lv_font_t* ui_get_font_by_name(const char* name) {
     if (name == NULL) return NULL;
     if (strcmp(name, "font_montserrat_12") == 0) return &font_montserrat_12;
+    if (strcmp(name, "font_montserrat_14") == 0) return &font_montserrat_14;
     if (strcmp(name, "font_montserrat_16") == 0) return &font_montserrat_16;
     if (strcmp(name, "font_montserrat_18") == 0) return &font_montserrat_18;
     if (strcmp(name, "font_montserrat_22") == 0) return &font_montserrat_22;

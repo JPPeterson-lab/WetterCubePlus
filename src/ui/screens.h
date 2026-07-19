@@ -9,6 +9,8 @@ extern "C" {
 #endif
 
 typedef struct _objects_t {
+    lv_obj_t *screenbiowetter2;
+    lv_obj_t *screenbiowetter;
     lv_obj_t *screenairquality;
     lv_obj_t *screenmenu;
     lv_obj_t *screensunmoon;
@@ -29,7 +31,7 @@ typedef struct _objects_t {
     lv_obj_t *barwifi;
     lv_obj_t *labelpico;
     lv_obj_t *pico_dark_logo;
-    lv_obj_t *labelbuttonmenu;
+    lv_obj_t *labelbuttonbackward;
     lv_obj_t *labeltime;
     lv_obj_t *imagewetter;
     lv_obj_t *labeltemp;
@@ -47,6 +49,7 @@ typedef struct _objects_t {
     lv_obj_t *labelhumidity;
     lv_obj_t *labelairpressur;
     lv_obj_t *label_1;
+    lv_obj_t *fc_settings;
     lv_obj_t *imagealert;
     lv_obj_t *labelpollenwarntitel;
     lv_obj_t *labelpollenwarnart;
@@ -56,7 +59,7 @@ typedef struct _objects_t {
     lv_obj_t *labelwarndetail;
     lv_obj_t *labelwarndetail2;
     lv_obj_t *labelwarnhint;
-    lv_obj_t *labelbuttonbackward;
+    lv_obj_t *labelbuttonbackward_1;
     lv_obj_t *labelnamebirke;
     lv_obj_t *labelnamegraeser;
     lv_obj_t *labelnameerle;
@@ -133,7 +136,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonhome_1;
     lv_obj_t *labelbuttonscreenhubback;
     lv_obj_t *labelbuttonhome_2;
-    lv_obj_t *labelbuttonbackward_1;
+    lv_obj_t *labelbuttonbackward_2;
     lv_obj_t *labelbuttonforward_2;
     lv_obj_t *labelh1zeit;
     lv_obj_t *labelh3zeit;
@@ -155,7 +158,7 @@ typedef struct _objects_t {
     lv_obj_t *labelh2windspeed;
     lv_obj_t *labelh3windspeed;
     lv_obj_t *labelh4windspeed;
-    lv_obj_t *labelbuttonbackward_2;
+    lv_obj_t *labelbuttonbackward_3;
     lv_obj_t *labelbuttonforward_3;
     lv_obj_t *labelbuttonhome_3;
     lv_obj_t *labelbuttonscreenhub_1;
@@ -171,7 +174,7 @@ typedef struct _objects_t {
     lv_obj_t *labeltempmax;
     lv_obj_t *labeltempminvalue;
     lv_obj_t *labeltempmin;
-    lv_obj_t *button_1;
+    lv_obj_t *labelbuttonbackward_4;
     lv_obj_t *image_2;
     lv_obj_t *labelbuttonhome_5;
     lv_obj_t *labelbuttonforward_4;
@@ -204,7 +207,7 @@ typedef struct _objects_t {
     lv_obj_t *bar_2;
     lv_obj_t *label_12_1;
     lv_obj_t *labelbuttonforward_5;
-    lv_obj_t *labelbuttonbackward_3;
+    lv_obj_t *labelbuttonbackward_5;
     lv_obj_t *labelbuttonhome_6;
     lv_obj_t *arcaqi;
     lv_obj_t *labelaqivalue;
@@ -221,51 +224,119 @@ typedef struct _objects_t {
     lv_obj_t *label_11;
     lv_obj_t *bar_4;
     lv_obj_t *label_11_1;
-    lv_obj_t *labelbuttonmenu_label;
-    lv_obj_t *labelbuttonforward_label;
+    lv_obj_t *labelbuttonhome_7;
+    lv_obj_t *labelbuttonbackward_4_1;
+    lv_obj_t *labelbuttonscreenhub_2;
+    lv_obj_t *labelbuttonforward_6;
+    lv_obj_t *labelbioapsthmvm;
+    lv_obj_t *labelbiow_rmevm;
+    lv_obj_t *labelbiow_rmenm;
+    lv_obj_t *labelbioapsthmam;
+    lv_obj_t *labelbioreumdegenm;
+    lv_obj_t *labelbioreumdegenvm;
+    lv_obj_t *labelbioreumentznm;
+    lv_obj_t *labelbiobpniedrigvm;
+    lv_obj_t *labelbioreumentzvm;
+    lv_obj_t *labelbiobpniedrignm;
+    lv_obj_t *label_13;
+    lv_obj_t *label_14;
+    lv_obj_t *label_7;
+    lv_obj_t *label_6;
+    lv_obj_t *labelbiobphochnm;
+    lv_obj_t *labelbiobphochvm;
+    lv_obj_t *labelbiobewindennm;
+    lv_obj_t *bluthochdruck;
+    lv_obj_t *label_5;
+    lv_obj_t *labelbiovmttg;
+    lv_obj_t *labelbionmttg;
+    lv_obj_t *label_2;
+    lv_obj_t *labelbiobevindenvm;
+    lv_obj_t *label_15;
+    lv_obj_t *labelbuttonhome_8;
+    lv_obj_t *labelbuttonscreenhubback_2;
+    lv_obj_t *labelbioapsthmvm2;
+    lv_obj_t *labelbiow_rmevm2;
+    lv_obj_t *labelbiow_rmenm2;
+    lv_obj_t *labelbioapsthmam2;
+    lv_obj_t *labelbioreumdegenm2;
+    lv_obj_t *labelbioreumdegenvm2;
+    lv_obj_t *labelbioreumentznm2;
+    lv_obj_t *labelbiobpniedrigvm2;
+    lv_obj_t *labelbioreumentzvm2;
+    lv_obj_t *labelbiobpniedrignm2;
+    lv_obj_t *label_25;
+    lv_obj_t *label_25_1;
+    lv_obj_t *label_25_2;
+    lv_obj_t *label_25_3;
+    lv_obj_t *labelbiobphochnm2;
+    lv_obj_t *labelbiobphochvm2;
+    lv_obj_t *labelbiobewindennm2;
+    lv_obj_t *label_25_4;
+    lv_obj_t *label_25_5;
+    lv_obj_t *labelbiomorgenvm;
+    lv_obj_t *labelbiomorgennm;
+    lv_obj_t *label_25_6;
+    lv_obj_t *labelbiobevindenvm2;
+    lv_obj_t *label_16;
     lv_obj_t *labelbuttonbackward_label;
+    lv_obj_t *labelbuttonforward_label;
+    lv_obj_t *labelbuttonbackward_1_label;
     lv_obj_t *labelbuttonforward_1_label;
     lv_obj_t *labelbuttonhome_label;
     lv_obj_t *labelbuttonscreenhub_label;
     lv_obj_t *labelbuttonhome_1_label;
     lv_obj_t *labelbuttonscreenhubback_label;
     lv_obj_t *labelbuttonhome_2_label;
-    lv_obj_t *labelbuttonbackward_1_label;
-    lv_obj_t *labelbuttonforward_2_label;
     lv_obj_t *labelbuttonbackward_2_label;
+    lv_obj_t *labelbuttonforward_2_label;
+    lv_obj_t *labelbuttonbackward_3_label;
     lv_obj_t *labelbuttonforward_3_label;
     lv_obj_t *labelbuttonhome_3_label;
     lv_obj_t *labelbuttonscreenhub_1_label;
     lv_obj_t *labelbuttonhome_4_label;
     lv_obj_t *labelbuttonscreenhubback_1_label;
-    lv_obj_t *button_1_label;
+    lv_obj_t *labelbuttonbackward_4_label;
     lv_obj_t *labelbuttonhome_5_label;
     lv_obj_t *labelbuttonforward_4_label;
     lv_obj_t *labelbuttonmenu_2_label;
     lv_obj_t *labelswitchtheme_label;
     lv_obj_t *labelbuttonforward_5_label;
-    lv_obj_t *labelbuttonbackward_3_label;
+    lv_obj_t *labelbuttonbackward_5_label;
     lv_obj_t *labelbuttonhome_6_label;
+    lv_obj_t *labelbuttonhome_7_label;
+    lv_obj_t *labelbuttonbackward_4_1_label;
+    lv_obj_t *labelbuttonscreenhub_2_label;
+    lv_obj_t *labelbuttonforward_6_label;
+    lv_obj_t *labelbuttonhome_8_label;
+    lv_obj_t *labelbuttonscreenhubback_2_label;
 } objects_t;
 
 extern objects_t objects;
 
 enum ScreensEnum {
-    SCREEN_ID_SCREENAIRQUALITY = 1,
-    SCREEN_ID_SCREENMENU = 2,
-    SCREEN_ID_SCREENSUNMOON = 3,
-    SCREEN_ID_LAGERSCREEN = 4,
-    SCREEN_ID_SCREENWARNKARTE2 = 5,
-    SCREEN_ID_SCREENWARNKARTE1 = 6,
-    SCREEN_ID_SCREENFORECASTWETTER = 7,
-    SCREEN_ID_SCREENFORECASTPOLLENHOUR = 8,
-    SCREEN_ID_SCREENFORECASTPOLLEN = 9,
-    SCREEN_ID_SCREENWARNUNG = 10,
-    SCREEN_ID_SCREENWARNUNGPOLLEN = 11,
-    SCREEN_ID_SCREEN_1 = 12,
-    SCREEN_ID_SCREENBOOT = 13,
+    SCREEN_ID_SCREENBIOWETTER2 = 1,
+    SCREEN_ID_SCREENBIOWETTER = 2,
+    SCREEN_ID_SCREENAIRQUALITY = 3,
+    SCREEN_ID_SCREENMENU = 4,
+    SCREEN_ID_SCREENSUNMOON = 5,
+    SCREEN_ID_LAGERSCREEN = 6,
+    SCREEN_ID_SCREENWARNKARTE2 = 7,
+    SCREEN_ID_SCREENWARNKARTE1 = 8,
+    SCREEN_ID_SCREENFORECASTWETTER = 9,
+    SCREEN_ID_SCREENFORECASTPOLLENHOUR = 10,
+    SCREEN_ID_SCREENFORECASTPOLLEN = 11,
+    SCREEN_ID_SCREENWARNUNG = 12,
+    SCREEN_ID_SCREENWARNUNGPOLLEN = 13,
+    SCREEN_ID_SCREEN_1 = 14,
+    SCREEN_ID_SCREENBOOT = 15,
 };
 
+void create_screen_screenbiowetter2();
+void tick_screen_screenbiowetter2();
+void delete_screen_screenbiowetter2();
+void create_screen_screenbiowetter();
+void tick_screen_screenbiowetter();
+void delete_screen_screenbiowetter();
 void create_screen_screenairquality();
 void tick_screen_screenairquality();
 void delete_screen_screenairquality();

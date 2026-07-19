@@ -2,6 +2,7 @@
 #include "images.h"
 
 #include "src/ui/images/day_partial_cloud.inc"
+#include "src/ui/images/fc_settings.inc"
 #include "src/ui/images/fog.inc"
 #include "src/ui/images/alert.inc"
 #include "src/ui/images/night_full_moon_clear.inc"
@@ -13,8 +14,9 @@
 #include "src/ui/images/snow.inc"
 #include "src/ui/images/pico_dark_logo.inc"
 #include "src/ui/images/night_full_moon_partial_cloud.inc"
-const ext_img_desc_t images[12] = {
+const ext_img_desc_t images[13] = {
     { "day_partial_cloud", &day_partial_cloud },
+    { "fc_settings", &fc_settings },
     { "fog", &fog },
     { "alert", &alert },
     { "night_full_moon_clear", &night_full_moon_clear },

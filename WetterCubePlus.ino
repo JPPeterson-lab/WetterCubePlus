@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.7.0-beta"
+#define FIRMWARE_VERSION "0.8.0-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -147,6 +147,7 @@ struct Config {
   int    ampel_gelb_max   = 24;
   int    ampel_rot_min    = 25;
   int    ampel_rot_max    = 99;
+  String bio_zone = "A";        // DWD Biowetter-Zone A–J
 };
 Config cfg;
 
@@ -272,9 +273,20 @@ struct WarnDaten {
   String region;
 };
 
-WetterDaten wetter;
-PollenDaten pollen;
-WarnDaten   warnungen[5];
+// Biowetter – 4 Zeitperioden × 7 Kategorien
+// Perioden: 0=heute Nmttg, 1=morgen Vmttg, 2=morgen Nmttg, 3=übermorgen Vmttg
+// Kategorien: 0=Befinden 1=BP-niedrig 2=BP-hoch 3=Rheuma-entz 4=Rheuma-degen 5=Asthma 6=Wärme
+// Werte: 0=kein 1=positiv 2=gering 3=hoch/stark
+struct BioWetterDaten {
+  int wert[4][7];
+  bool geladen = false;
+  BioWetterDaten() { memset(wert, 0, sizeof(wert)); }
+};
+
+WetterDaten    wetter;
+PollenDaten    pollen;
+BioWetterDaten bio;
+WarnDaten      warnungen[5];
 int         anzahl_warnungen = 0;
 
 // ── DWD Warnkarte ────────────────────────────────────────────
@@ -305,6 +317,7 @@ static lv_timer_t* dwdBlinker   = nullptr;
 unsigned long letztesDatenUpdate  = 0;
 unsigned long letztesPollenUpdate = 0;
 unsigned long letztesWarnUpdate   = 0;
+unsigned long letztesBioUpdate    = 0;
 unsigned long letztesTouchZeit    = 0;
 unsigned long letzteUhrzeit       = 0;
 bool          dimmed              = false;
@@ -1523,6 +1536,101 @@ void fetchOpenMeteoPollen() {
 }
 
 // ============================================================
+//  DWD Biowetter
+// ============================================================
+
+// 0=kein 1=positiv 2=gering 3=hoch/stark
+static int bioWertToInt(const char* v) {
+  if (!v)                             return 0;
+  if (strstr(v, "positiver"))         return 1;
+  if (strstr(v, "geringe"))           return 2;
+  if (strstr(v, "hohe"))              return 3;
+  if (strstr(v, "schwache"))          return 2;  // Wärmebelastung schwach
+  if (strstr(v, "mäßige"))            return 3;  // Wärmebelastung mäßig/stark
+  return 0;
+}
+
+static lv_color_t bioWertColor(int v) {
+  switch (v) {
+    case 1:  return lv_color_hex(0x50c878);  // positiv – grün
+    case 2:  return lv_color_hex(0xffd700);  // geringe Gefährdung – gelb
+    case 3:  return lv_color_hex(0xff3030);  // hohe Gefährdung – rot
+    default: return lv_color_hex(0x666666);  // kein Einfluss – grau
+  }
+}
+
+static const char* bioWertKurz(int v) {
+  switch (v) {
+    case 1:  return "positiv";
+    case 2:  return "gering";
+    case 3:  return "hoch";
+    default: return "kein";
+  }
+}
+
+void fetchBioWetter() {
+  if (WiFi.status() != WL_CONNECTED) { Serial.println("[Bio] Kein WiFi"); return; }
+  Serial.printf("[Bio] Lade Zone %s...\n", cfg.bio_zone.c_str());
+  WiFiClientSecure sc; sc.setInsecure();
+  HTTPClient http;
+  http.begin(sc, "https://opendata.dwd.de/climate_environment/health/alerts/biowetter.json");
+  http.setTimeout(15000);
+  int code = http.GET();
+  if (code != 200) {
+    Serial.printf("[Bio] HTTP %d\n", code);
+    http.end(); return;
+  }
+  int contentLen = http.getSize();
+  Serial.printf("[Bio] HTTP 200, %d Bytes\n", contentLen);
+
+  // Ganzen Body lesen (110KB liegt im PSRAM)
+  String body = http.getString();
+  http.end();
+  Serial.printf("[Bio] Body geladen: %d Bytes\n", body.length());
+  if (body.length() < 1000) { Serial.println("[Bio] Body zu kurz"); return; }
+
+  const char* perioden[] = {"today_afternoon","tomorrow_morning","tomorrow_afternoon","dayafter_to_morning"};
+  DynamicJsonDocument filter(1024);
+  {
+    JsonArray zf = filter.createNestedArray("zone");
+    JsonObject zfe = zf.createNestedObject();
+    zfe["id"] = true;
+    for (auto p : perioden) {
+      JsonObject pf = zfe.createNestedObject(p);
+      JsonArray ef = pf.createNestedArray("effect");
+      JsonObject efe = ef.createNestedObject();
+      efe["value"] = true;
+    }
+  }
+
+  DynamicJsonDocument doc(16384);
+  DeserializationError err = deserializeJson(doc, body, DeserializationOption::Filter(filter));
+  if (err != DeserializationError::Ok) {
+    Serial.printf("[Bio] JSON Fehler: %s\n", err.c_str());
+    return;
+  }
+
+  JsonArray zones = doc["zone"];
+  Serial.printf("[Bio] %d Zonen geparst\n", (int)zones.size());
+  for (JsonObject z : zones) {
+    String id = z["id"].as<String>();
+    if (id != cfg.bio_zone) continue;
+    for (int p = 0; p < 4; p++) {
+      JsonArray eff = z[perioden[p]]["effect"];
+      for (int k = 0; k < 7 && k < (int)eff.size(); k++)
+        bio.wert[p][k] = bioWertToInt(eff[k]["value"].as<const char*>());
+    }
+    bio.geladen = true;
+    Serial.printf("[Bio] Zone %s: Bef=%d BP-=%d BP+=%d Rh-e=%d Rh-d=%d Ast=%d Wärm=%d\n",
+      cfg.bio_zone.c_str(),
+      bio.wert[0][0], bio.wert[0][1], bio.wert[0][2],
+      bio.wert[0][3], bio.wert[0][4], bio.wert[0][5], bio.wert[0][6]);
+    break;
+  }
+  if (!bio.geladen) Serial.printf("[Bio] Zone %s nicht gefunden\n", cfg.bio_zone.c_str());
+}
+
+// ============================================================
 //  UI-Update (PicoPixel-Widgets befüllen)
 // ============================================================
 
@@ -1843,6 +1951,50 @@ void aktualisiereUI() {
     }
     setAqiBar(objects.bar_4, pollen.o3, 240);
   }
+
+  // ── Biowetter (screenbiowetter + screenbiowetter2) ──────────
+  // Periode 0 = heute Nmttg, 1 = morgen Vmttg → Screen 1
+  // Periode 2 = morgen Nmttg, 3 = übermorgen Vmttg → Screen 2
+  // Kategorien: 0=Befinden 1=BP-niedrig 2=BP-hoch 3=Rheuma-entz 4=Rheuma-degen 5=Asthma 6=Wärme
+  {
+    // Label-Arrays für beide Screens: [screen][periode_in_screen][kategorie]
+    lv_obj_t* vmLabels[2][7] = {
+      // Screen 1 – Periode 0 (Vmttg-Spalte = heute Nmttg)
+      { objects.labelbiobevindenvm,   objects.labelbiobpniedrigvm,  objects.labelbiobphochvm,
+        objects.labelbioreumentzvm,   objects.labelbioreumdegenvm,  objects.labelbioapsthmvm,
+        objects.labelbiow_rmevm },
+      // Screen 2 – Periode 2 (Vmttg-Spalte = morgen Vmttg)
+      { objects.labelbiobevindenvm2,  objects.labelbiobpniedrigvm2, objects.labelbiobphochvm2,
+        objects.labelbioreumentzvm2,  objects.labelbioreumdegenvm2, objects.labelbioapsthmvm2,
+        objects.labelbiow_rmevm2 }
+    };
+    lv_obj_t* nmLabels[2][7] = {
+      // Screen 1 – Periode 1 (Nmttg-Spalte = morgen Vmttg)
+      { objects.labelbiobewindennm,   objects.labelbiobpniedrignm,  objects.labelbiobphochnm,
+        objects.labelbioreumentznm,   objects.labelbioreumdegenm,   objects.labelbioapsthmam,
+        objects.labelbiow_rmenm },
+      // Screen 2 – Periode 3 (Nmttg-Spalte = übermorgen Vmttg)
+      { objects.labelbiobewindennm2,  objects.labelbiobpniedrignm2, objects.labelbiobphochnm2,
+        objects.labelbioreumentznm2,  objects.labelbioreumdegenm2,  objects.labelbioapsthmam2,
+        objects.labelbiow_rmenm2 }
+    };
+    // Perioden-Indices im bio.wert[p][k] Array
+    const int vmPeriod[2] = {0, 2};
+    const int nmPeriod[2] = {1, 3};
+
+    for (int s = 0; s < 2; s++) {
+      for (int k = 0; k < 7; k++) {
+        if (vmLabels[s][k]) {
+          int v = bio.geladen ? bio.wert[vmPeriod[s]][k] : 0;
+          setLabelFmt(vmLabels[s][k], bioWertColor(v), bioWertKurz(v));
+        }
+        if (nmLabels[s][k]) {
+          int v = bio.geladen ? bio.wert[nmPeriod[s]][k] : 0;
+          setLabelFmt(nmLabels[s][k], bioWertColor(v), bioWertKurz(v));
+        }
+      }
+    }
+  }
 }
 
 // ============================================================
@@ -1971,8 +2123,13 @@ static void cbBack3(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }
 static void cbFwd4(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENSUNMOON); }              // screenwarnkarte1 >
 static void cbFwd5(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENAIRQUALITY); }            // screensunmoon >
 static void cbBack5(lv_event_t*) { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }           // screensunmoon <
-static void cbFwd6(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }                   // screenairquality >
+static void cbFwd6(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENBIOWETTER); }            // screenairquality > → biowetter
 static void cbBack6(lv_event_t*) { loadScreen(SCREEN_ID_SCREENSUNMOON); }              // screenairquality <
+static void cbBio(lv_event_t*)   { loadScreen(SCREEN_ID_SCREENBIOWETTER); }            // screen_1 < → biowetter
+static void cbBack7(lv_event_t*) { loadScreen(SCREEN_ID_SCREENAIRQUALITY); }           // biowetter < → screenairquality
+static void cbFwd7(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }                   // biowetter > → screen_1
+static void cbHubBio(lv_event_t*)     { loadScreen(SCREEN_ID_SCREENBIOWETTER2); }      // biowetter → biowetter2
+static void cbHubBioBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENBIOWETTER); }       // biowetter2 → biowetter
 // Untermenü-Buttons (Hub)
 static void cbHubPollen(lv_event_t*)     { loadScreen(SCREEN_ID_SCREENFORECASTPOLLENHOUR); } // forecastpollen → stündlich
 static void cbHubPollenBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }     // stündlich → tages
@@ -2219,45 +2376,55 @@ void setup() {
   erstelleWarnkarte2Screen();
 
   // Navigations-Buttons sofort verdrahten (vor WiFi-Check, gilt auch im Portal-Modus)
-  // Navigation Hauptkette: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screenairquality → screen_1
-  // Untermenüs: forecastpollen ↔ forecastpollenhour | screenwarnkarte1 ↔ screenwarnkarte2
+  // Hauptkette: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screenairquality → screen_1
+  // Seitenpfad: screen_1 ← (back) → screenbiowetter ↔ screenbiowetter2
   #define REG_CB(obj, cb, evt) do { if (obj) lv_obj_add_event_cb(obj, cb, evt, nullptr); } while(0)
-  // Navigation Hauptkette (Pfeile)
+  // Hauptkette Pfeile
   REG_CB(objects.labelbuttonforward,    cbFwd1,  LV_EVENT_CLICKED);  // screen_1 >
-  REG_CB(objects.labelbuttonbackward_1, cbBack1, LV_EVENT_CLICKED);  // forecastwetter <
+  REG_CB(objects.labelbuttonbackward_2, cbBack1, LV_EVENT_CLICKED);  // forecastwetter <
   REG_CB(objects.labelbuttonforward_2,  cbFwd2,  LV_EVENT_CLICKED);  // forecastwetter >
-  REG_CB(objects.labelbuttonbackward,   cbBack2, LV_EVENT_CLICKED);  // forecastpollen <
+  REG_CB(objects.labelbuttonbackward_1, cbBack2, LV_EVENT_CLICKED);  // forecastpollen <
   REG_CB(objects.labelbuttonforward_1,  cbFwd3,  LV_EVENT_CLICKED);  // forecastpollen >
-  REG_CB(objects.labelbuttonbackward_2, cbBack3, LV_EVENT_CLICKED);  // screenwarnkarte1 <
+  REG_CB(objects.labelbuttonbackward_3, cbBack3, LV_EVENT_CLICKED);  // screenwarnkarte1 <
   REG_CB(objects.labelbuttonforward_3,  cbFwd4,  LV_EVENT_CLICKED);  // screenwarnkarte1 >
-  REG_CB(objects.button_1,              cbBack5, LV_EVENT_CLICKED);  // screensunmoon <
+  REG_CB(objects.labelbuttonbackward_4, cbBack5, LV_EVENT_CLICKED);  // screensunmoon < (war button_1)
   REG_CB(objects.labelbuttonforward_4,  cbFwd5,  LV_EVENT_CLICKED);  // screensunmoon >
-  REG_CB(objects.labelbuttonbackward_3, cbBack6, LV_EVENT_CLICKED);  // screenairquality <
+  REG_CB(objects.labelbuttonbackward_5, cbBack6, LV_EVENT_CLICKED);  // screenairquality <
   REG_CB(objects.labelbuttonforward_5,  cbFwd6,  LV_EVENT_CLICKED);  // screenairquality >
+  // Seitenpfad Biowetter
+  REG_CB(objects.labelbuttonbackward,      cbBio,       LV_EVENT_CLICKED);  // screen_1 < → biowetter
+  REG_CB(objects.labelbuttonbackward_4_1,  cbBack7,     LV_EVENT_CLICKED);  // biowetter < → screen_1
+  REG_CB(objects.labelbuttonforward_6,     cbFwd7,      LV_EVENT_CLICKED);  // biowetter > → screen_1
+  REG_CB(objects.labelbuttonscreenhub_2,   cbHubBio,    LV_EVENT_CLICKED);  // biowetter M → biowetter2
+  REG_CB(objects.labelbuttonscreenhubback_2, cbHubBioBack, LV_EVENT_CLICKED); // biowetter2 → biowetter
   // Untermenü Hub-Buttons
-  REG_CB(objects.labelbuttonscreenhub,       cbHubPollen,    LV_EVENT_CLICKED);  // forecastpollen → stündlich
-  REG_CB(objects.labelbuttonscreenhubback,   cbHubPollenBack,LV_EVENT_CLICKED);  // stündlich → tages
-  REG_CB(objects.labelbuttonscreenhub_1,     cbHubWarn,      LV_EVENT_CLICKED);  // warnkarte1 → warnkarte2
-  REG_CB(objects.labelbuttonscreenhubback_1, cbHubWarnBack,  LV_EVENT_CLICKED);  // warnkarte2 → warnkarte1
-  // Menu-Button (screen_1 → screenmenu) + Zurück
-  REG_CB(objects.labelbuttonmenu,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
+  REG_CB(objects.labelbuttonscreenhub,       cbHubPollen,    LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonscreenhubback,   cbHubPollenBack,LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonscreenhub_1,     cbHubWarn,      LV_EVENT_CLICKED);
+  REG_CB(objects.labelbuttonscreenhubback_1, cbHubWarnBack,  LV_EVENT_CLICKED);
+  // Menü-Icon auf screen_1 (fc_settings Bild) + Zurück-Button
+  if (objects.fc_settings) lv_obj_add_flag(objects.fc_settings, LV_OBJ_FLAG_CLICKABLE);
+  REG_CB(objects.fc_settings,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
   REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
   // Menü-Screen Controls
   REG_CB(objects.labellightchangevalue, cbMenuBrightness,   LV_EVENT_VALUE_CHANGED);
   REG_CB(objects.regenswitch,           cbMenuRegenSwitch,  LV_EVENT_VALUE_CHANGED);
   REG_CB(objects.pollenswitch,          cbMenuPollenSwitch, LV_EVENT_VALUE_CHANGED);
   REG_CB(objects.dwdswitch,             cbMenuDwdSwitch,    LV_EVENT_VALUE_CHANGED);
-  // Home-Buttons (neue Zuordnung nach UI-Export)
-  REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);   // forecastpollen
-  REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);   // forecastpollenhour
-  REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);   // forecastwetter
-  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);   // screenwarnkarte1
-  REG_CB(objects.labelbuttonhome_4, cbHome, LV_EVENT_CLICKED);   // screenwarnkarte2
-  REG_CB(objects.labelbuttonhome_5, cbHome, LV_EVENT_CLICKED);   // screensunmoon
-  REG_CB(objects.labelbuttonhome_6, cbHome, LV_EVENT_CLICKED);   // screenairquality
-  REG_CB(objects.screenwarnung,         cbWarnTap,        LV_EVENT_CLICKED);
-  REG_CB(objects.screenwarnungpollen,   cbWarnTap,        LV_EVENT_CLICKED);
-  REG_CB(objects.screenwarnkarte2,      cbWarnkarte2Tap,  LV_EVENT_CLICKED);
+  // Home-Buttons
+  REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);  // forecastpollen
+  REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);  // forecastpollenhour
+  REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);  // forecastwetter
+  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte1
+  REG_CB(objects.labelbuttonhome_4, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte2
+  REG_CB(objects.labelbuttonhome_5, cbHome, LV_EVENT_CLICKED);  // screensunmoon
+  REG_CB(objects.labelbuttonhome_6, cbHome, LV_EVENT_CLICKED);  // screenairquality
+  REG_CB(objects.labelbuttonhome_7, cbHome, LV_EVENT_CLICKED);  // screenbiowetter
+  REG_CB(objects.labelbuttonhome_8, cbHome, LV_EVENT_CLICKED);  // screenbiowetter2
+  // Warn-Screens
+  REG_CB(objects.screenwarnung,       cbWarnTap,       LV_EVENT_CLICKED);
+  REG_CB(objects.screenwarnungpollen, cbWarnTap,       LV_EVENT_CLICKED);
+  REG_CB(objects.screenwarnkarte2,    cbWarnkarte2Tap, LV_EVENT_CLICKED);
   #undef REG_CB
   // Warnliste-Screen ist clickbar für Popup (registriert via REG_CB auf screenwarnkarte2)
 
@@ -2320,6 +2487,9 @@ void setup() {
   setzeBootFortschritt(90);
   zeigeBootScreen("Lade Warnungen...");
   fetchDwdWarnungen();
+  setzeBootFortschritt(92);
+  zeigeBootScreen("Lade Biowetter...");
+  fetchBioWetter();
   setzeBootFortschritt(95);
   zeigeBootScreen("Lade Radarkarte...");
   fetchWmsRadar();
@@ -2396,6 +2566,13 @@ void loop() {
     // Warnung nach jedem stündlichen Update zurücksetzen damit neue Belastung erneut warnt
     pollenWarnGezeigt    = false;
     pollenWarnBestaetigt = false;
+  }
+
+  // Biowetter alle 3 Stunden (DWD aktualisiert 2× täglich)
+  if (letztesBioUpdate == 0 || millis() - letztesBioUpdate >= 10800000UL) {
+    letztesBioUpdate = millis();
+    fetchBioWetter();
+    aktualisiereUI();
   }
 
   // Warnbildschirme einmalig anzeigen wenn neue Warnung

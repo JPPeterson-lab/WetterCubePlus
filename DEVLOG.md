@@ -1,5 +1,37 @@
 # Entwicklungs-Log
 
+## 2026-07-19 – v0.8.0-beta
+
+### DWD Biowetter
+
+**Datenquelle:** `opendata.dwd.de/climate_environment/health/alerts/biowetter.json`
+- 110 KB JSON, 10 Zonen (A–J), 5 Zeitperioden, 7 Gesundheitskategorien
+- Parsing per `ArduinoJson`-Filter (nur `id` + 4 Perioden × 7 `value`-Felder pro Zone)
+- Problem: `getStream()` → `IncompleteInput` weil TCP-Stream mid-parse abbrach; Fix: `http.getString()` puffert Body komplett in PSRAM vor dem Parsen
+- `DynamicJsonDocument` 16 KB, Filter-Doc 1 KB
+- Refresh alle 3 Stunden (Loop-Timer), erster Fetch beim Boot
+
+**Struct & Mapping:**
+- `BioWetterDaten bio` mit `int wert[4][7]` (0=kein/1=positiv/2=gering/3=hoch)
+- `bioWertToInt()` mappt DWD-Textstrings auf 0–3; Wärmekategorien „schwache"/„mäßige" → 2/3
+- Farben: grau/grün/gelb/rot; Kurztext: „kein"/„positiv"/„gering"/„hoch"
+
+**2 Screens (screenbiowetter, screenbiowetter2):**
+- Screen 1: Heute Nmttg. (Periode 0) + Morgen Vmttg. (Periode 1) als Vm./Nm.-Spalten
+- Screen 2: Morgen Nmttg. (Periode 2) + Übermorgen Vmttg. (Periode 3)
+- Labels per `setLabelFmt()` mit bioWertColor + bioWertKurz befüllt
+
+**Navigation:**
+- `cbFwd6`: screenairquality → screenbiowetter (war screen_1)
+- `cbBack7`: screenbiowetter → screenairquality (war screen_1)
+- `cbHubBio`/`cbHubBioBack`: biowetter ↔ biowetter2 per M-Button
+- `labelbuttonbackward` auf screen_1 → cbBio (Side-Access)
+
+**Menü-Icon:**
+- `fc_settings` (`lv_img_create`) braucht `LV_OBJ_FLAG_CLICKABLE` – ohne Flag ignoriert LVGL Touch-Events auf Image-Widgets
+
+---
+
 ## 2026-07-18 – v0.7.0-beta
 
 ### Luftqualitäts-Screen (AQI)

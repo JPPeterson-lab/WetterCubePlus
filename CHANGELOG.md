@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.8.0-beta (2026-07-19)
+
+### Neu
+- **DWD Biowetter (2 Screens):** Gesundheitliche Wettereinflüsse für 7 Kategorien (Allg. Befinden, Blutdruck niedrig/hoch, Rheuma entzündlich/degenerativ, Asthma, Wärmebelastung) – direkt von `opendata.dwd.de/climate_environment/health/alerts/biowetter.json`, Zone A–J konfigurierbar
+- **Biowetter-Navigation:** screenairquality `>` → screenbiowetter → `M`-Button für screenbiowetter2 (Morgen/Übermorgen); zurück via `<` → screenairquality
+- **Menü-Icon auf Screen 1:** `fc_settings`-Bild öffnet den Menü-Screen (ersetzt labelbuttonmenu)
+
+### Fixes
+- **HTTPS-Stream-Abbruch (IncompleteInput):** 110 KB `biowetter.json` wurde per `getStream()` direkt in ArduinoJson gestreamt und brach ab; fix: erst `getString()` in PSRAM puffern, dann parsen
+- **fc_settings nicht klickbar:** `lv_img_create()` ist standardmäßig nicht clickable; fix: `LV_OBJ_FLAG_CLICKABLE` gesetzt in `registriereCallbacks()`
+- **Biowetter-JSON-Buffer:** `DynamicJsonDocument` von 8 KB auf 16 KB erhöht, Filter-Doc von 512 auf 1024 Byte
+
+---
+
 ## v0.7.0-beta (2026-07-18)
 
 ### Neu
