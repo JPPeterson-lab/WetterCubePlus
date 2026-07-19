@@ -40,6 +40,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌫️ | **Luftqualität (AQI)** | Europäischer AQI (Arc-Anzeige), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten (Open-Meteo Air Quality API) |
 | 🩺 | **DWD Biowetter** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Allg. Befinden, Blutdruck niedrig/hoch, Rheuma entzündl./degenerativ, Asthma, Wärmebelastung) – 4 Perioden auf 2 Screens, alle 3 Stunden aktualisiert |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
+
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
 | 👆 | **Touch-Kalibrierung** | Automatisch beim Erststart, jederzeit neu auslösbar |
@@ -122,8 +123,8 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 
 | Quelle | Daten | Intervall |
 |---|---|---|
-| [Open-Meteo](https://open-meteo.com) | Wetter, Pollen stündlich | 60 Min. |
-| [DWD Opendata](https://opendata.dwd.de) | Pollenflug-Tagesvorhersage, Wetterwarnungen | 60 Min. |
+| [Open-Meteo](https://open-meteo.com) | Wetter, Pollen stündlich, Luftqualität (AQI) | 60 Min. |
+| [DWD Opendata](https://opendata.dwd.de) | Pollenflug-Tagesvorhersage, Wetterwarnungen, Biowetter | 60 Min. / 3 Std. |
 | [DWD WMS](https://maps.dwd.de) | Niederschlagsradar (bundeslandbezogen) | 10 Min. |
 
 ---
@@ -264,7 +265,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
-![Progress](https://img.shields.io/badge/Progress-70%25-yellow?style=flat-square)
+![Progress](https://img.shields.io/badge/Progress-85%25-yellowgreen?style=flat-square)
 ![Version](https://img.shields.io/badge/Version-v0.8.0--beta-blue?style=flat-square)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
@@ -292,6 +293,8 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🚦 | **Traffic light addon API** | HTTP JSON endpoint `/api/ampel` for ESP32-C3 hardware addon: temperature, active color, DWD warning status, configurable thresholds |
 | 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min, with location marker |
 | ☀️ | **Sun & Moon** | UV index (daily max), sunrise & sunset times, daily min/max temperature |
+| 🌫️ | **Air Quality (AQI)** | European AQI (arc display), PM2.5, PM10, NO₂, ozone – color-coded by EU thresholds (Open-Meteo Air Quality API) |
+| 🩺 | **DWD Health Weather** | Health impact forecast for 7 categories (general wellbeing, blood pressure low/high, rheumatism inflammatory/degenerative, asthma, heat stress) – 4 time periods across 2 screens, updated every 3 hours |
 | 🖥️ | **WebUI** | All settings at `wettercubeplus.local` – no reflashing needed |
 | 📡 | **Captive Portal** | Wi-Fi setup without an app |
 | 🔄 | **OTA update** | Firmware update via WebUI over Wi-Fi |
@@ -311,8 +314,11 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 4 | **Pollen forecast (daily)** | 8 allergens (DWD), levels today/tomorrow/day after |
 | 5 | **Precipitation radar** | Federal-state map view, DWD WMS, updated every 10 min |
 | 6 | **Sun & Moon** | UV index (daily max), sunrise & sunset times, daily min/max temperature |
-| 7 | **Warning screen** | Flashing alert for rain or pollen warnings (tap for details) |
-| 8 | **DWD warning list** | Location-based DWD warnings as color-coded cards by severity level |
+| 7 | **Air Quality** | European AQI (arc), PM2.5, PM10, NO₂, ozone – color-coded by EU thresholds |
+| 8 | **DWD Health Weather (Today)** | Health impact for 7 categories (wellbeing, blood pressure, rheumatism, asthma, heat) – Today am/pm |
+| 9 | **DWD Health Weather (Tomorrow)** | Same as screen 8, for tomorrow am/pm and day-after am |
+| 10 | **Warning screen** | Flashing alert for rain or pollen warnings (tap for details) |
+| 11 | **DWD warning list** | Location-based DWD warnings as color-coded cards by severity level |
 
 ---
 
@@ -372,8 +378,8 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 
 | Source | Data | Interval |
 |---|---|---|
-| [Open-Meteo](https://open-meteo.com) | Weather, hourly pollen | 60 min |
-| [DWD Opendata](https://opendata.dwd.de) | Daily pollen forecast, weather warnings | 60 min |
+| [Open-Meteo](https://open-meteo.com) | Weather, hourly pollen, air quality (AQI) | 60 min |
+| [DWD Opendata](https://opendata.dwd.de) | Daily pollen forecast, weather warnings, health weather (Biowetter) | 60 min / 3 h |
 | [DWD WMS](https://maps.dwd.de) | Precipitation radar (federal state) | 10 min |
 
 ---
