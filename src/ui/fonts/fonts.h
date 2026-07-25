@@ -10,9 +10,9 @@ extern "C" {
 
 /* Custom font declarations (externally visible const structs, no init needed) */
 extern const lv_font_t font_montserrat_12;
-extern const lv_font_t font_montserrat_14;
 extern const lv_font_t font_montserrat_16;
 extern const lv_font_t font_montserrat_18;
+extern const lv_font_t font_montserrat_20;
 extern const lv_font_t font_montserrat_22;
 extern const lv_font_t font_montserrat_32;
 extern const lv_font_t font_montserrat_48;

@@ -15,12 +15,13 @@ enum ThemesEnum {
 };
 
 enum ThemeColorsEnum {
+    THEME_COLOR_BACKGR_CONT,
     THEME_COLOR_BACKGROUND,
     THEME_COLOR_TEXT,
 };
 
 extern const char *theme_names[3];
-extern uint32_t theme_colors[3][2];
+extern uint32_t theme_colors[3][3];
 extern uint32_t active_theme_index;
 void change_color_theme(uint32_t theme_index);
 
