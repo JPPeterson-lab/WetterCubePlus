@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.1-beta"
+#define FIRMWARE_VERSION "0.9.2-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -2006,6 +2006,12 @@ void aktualisiereUI() {
       strftime(buf, sizeof(buf), "%H:%M", &ti);
       lv_label_set_text(objects.labelwstime, buf);
     }
+    if (objects.labeldatum_1 && hasTime) {
+      const char* wt[] = {"So","Mo","Di","Mi","Do","Fr","Sa"};
+      snprintf(buf, sizeof(buf), "%s. %02d.%02d.%04d",
+        wt[ti.tm_wday], ti.tm_mday, ti.tm_mon + 1, ti.tm_year + 1900);
+      lv_label_set_text(objects.labeldatum_1, buf);
+    }
     if (objects.labelwstemp) {
       snprintf(buf, sizeof(buf), "%.0f°C", wetter.temp);
       setLabelFmt(objects.labelwstemp, tempColor(wetter.temp), buf);
@@ -2069,36 +2075,19 @@ void aktualisiereUI() {
       if (v < 55)  return lv_color_hex(0xff8c00);
       return lv_color_hex(0xff3030);
     };
-    if (objects.labelwsaqi) {
-      if (pollen.aqi < 0) lv_label_set_text(objects.labelwsaqi, "--");
-      else {
-        snprintf(buf, sizeof(buf), "%d", pollen.aqi);
-        setLabelFmt(objects.labelwsaqi, aqiColor(pollen.aqi), buf);
-      }
-    }
-    if (objects.labelwso3) {
-      if (pollen.pm25 < 0) lv_label_set_text(objects.labelwso3, "--");
-      else {
-        snprintf(buf, sizeof(buf), "%.0f", pollen.pm25);
-        setLabelFmt(objects.labelwso3, wsPm25Color(pollen.pm25), buf);
-      }
-    }
-    if (objects.labelwso3_1) {
-      if (pollen.pm25_next < 0) lv_label_set_text(objects.labelwso3_1, "--");
-      else {
-        snprintf(buf, sizeof(buf), "%.0f", pollen.pm25_next);
-        setLabelFmt(objects.labelwso3_1, wsPm25Color(pollen.pm25_next), buf);
-      }
-    }
+    auto setDot = [](lv_obj_t* obj, lv_color_t col) {
+      if (!obj) return;
+      lv_obj_set_style_bg_color(obj, col, 0);
+    };
+    setDot(objects.labelwsaqi,  pollen.aqi       < 0 ? lv_color_hex(0x555555) : aqiColor(pollen.aqi));
+    setDot(objects.labelwspm25, pollen.pm25      < 0 ? lv_color_hex(0x555555) : wsPm25Color(pollen.pm25));
+    setDot(objects.labelwso3,   pollen.pm25_next < 0 ? lv_color_hex(0x555555) : wsPm25Color(pollen.pm25_next));
     if (objects.labelwsuv) {
-      if (wetter.uv_index < 0) lv_label_set_text(objects.labelwsuv, "--");
-      else {
-        snprintf(buf, sizeof(buf), "%.0f", wetter.uv_index);
-        lv_color_t uvc = (wetter.uv_index >= 8) ? lv_color_hex(0xff3030) :
-                         (wetter.uv_index >= 6) ? lv_color_hex(0xff8c00) :
-                         (wetter.uv_index >= 3) ? lv_color_hex(0xffd700) : lv_color_hex(0x50c878);
-        setLabelFmt(objects.labelwsuv, uvc, buf);
-      }
+      lv_color_t uvc = (wetter.uv_index < 0) ? lv_color_hex(0x555555) :
+                       (wetter.uv_index >= 8) ? lv_color_hex(0xff3030) :
+                       (wetter.uv_index >= 6) ? lv_color_hex(0xff8c00) :
+                       (wetter.uv_index >= 3) ? lv_color_hex(0xffd700) : lv_color_hex(0x50c878);
+      setDot(objects.labelwsuv, uvc);
     }
   }
 
@@ -2570,6 +2559,9 @@ void setup() {
   if (objects.fc_settings) lv_obj_add_flag(objects.fc_settings, LV_OBJ_FLAG_CLICKABLE);
   REG_CB(objects.fc_settings,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
   REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
+  // Nach Theme-Wechsel Farbkodierungen wiederherstellen
+  if (objects.labelswitchtheme)
+    lv_obj_add_event_cb(objects.labelswitchtheme, [](lv_event_t*) { aktualisiereUI(); }, LV_EVENT_CLICKED, nullptr);
   // Menü-Screen Controls
   REG_CB(objects.labellightchangevalue, cbMenuBrightness,   LV_EVENT_VALUE_CHANGED);
   REG_CB(objects.regenswitch,           cbMenuRegenSwitch,  LV_EVENT_VALUE_CHANGED);
@@ -2599,6 +2591,22 @@ void setup() {
   REG_CB(objects.screenwarnungpollen, cbWarnTap,       LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnkarte2,    cbWarnkarte2Tap, LV_EVENT_CLICKED);
   #undef REG_CB
+
+  // Screenhealth Footer-Labels als farbige Pill-Badges initialisieren
+  auto initDot = [](lv_obj_t* obj) {
+    if (!obj) return;
+    lv_obj_set_size(obj, 20, 20);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0);
+    lv_obj_set_style_bg_color(obj, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_radius(obj, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_pad_all(obj, 0, 0);
+    lv_label_set_text(obj, "");
+  };
+  initDot(objects.labelwsaqi);
+  initDot(objects.labelwspm25);
+  initDot(objects.labelwso3);
+  initDot(objects.labelwsuv);
+
   // Warnliste-Screen ist clickbar für Popup (registriert via REG_CB auf screenwarnkarte2)
 
   // WiFi verbinden oder Portal starten
@@ -2713,13 +2721,14 @@ void loop() {
     if (getLocalTime(&ti)) {
       char buf[6];
       strftime(buf, sizeof(buf), "%H:%M", &ti);
-      if (objects.labeltime) lv_label_set_text(objects.labeltime, buf);
-      // Datum mitführen
+      if (objects.labeltime)   lv_label_set_text(objects.labeltime,   buf);
+      if (objects.labelwstime) lv_label_set_text(objects.labelwstime, buf);
       const char* wt[] = {"So","Mo","Di","Mi","Do","Fr","Sa"};
       char dbuf[24];
       snprintf(dbuf, sizeof(dbuf), "%s. %02d.%02d.%04d",
         wt[ti.tm_wday], ti.tm_mday, ti.tm_mon + 1, ti.tm_year + 1900);
-      if (objects.labeldatum) lv_label_set_text(objects.labeldatum, dbuf);
+      if (objects.labeldatum)   lv_label_set_text(objects.labeldatum,   dbuf);
+      if (objects.labeldatum_1) lv_label_set_text(objects.labeldatum_1, dbuf);
     }
   }
 

@@ -1,5 +1,21 @@
 # Entwicklungs-Log
 
+## 2026-07-25 – v0.9.2-beta
+
+### Gesundheitsscreen: Bugfixes & Ampel-Punkte
+
+**Theme-Wechsel überschreibt Farbkodierung**
+`change_color_theme()` (PicoPixel-generiert, `actions.c`) setzt alle Text-Styles zurück – auch die per `aktualisiereUI()` gesetzten Pollen- und Biowetter-Farben auf screenhealth. Dots (labelwsaqi etc.) behielten ihre Farbe, weil sie als `bg_color` gesetzt sind und vom Theme nicht angefasst werden.
+Fix: in `registriereCallbacks()` zweiten Event-Handler auf `labelswitchtheme` gesetzt, der nach `labelswitchtheme_clicked_cb` (Theme-Wechsel) sofort `aktualisiereUI()` aufruft.
+
+**Ampel-Punkte statt Zahlen im Footer**
+AQI, PM2.5, PM2.5-nächste-Stunde und UV-Index werden nicht mehr als Zahltext angezeigt – die Labels `labelwsaqi`, `labelwspm25`, `labelwso3`, `labelwsuv` sind nun kreisförmige Farbindikatoren (20×20 px, `LV_RADIUS_CIRCLE`, leerer Text). `initDot()` setzt Radius und Basis-Grau in `registriereCallbacks()`; `setDot()` in `aktualisiereUI()` übergibt die jeweilige Statusfarbe (AQI → `aqiColor()`, PM2.5 → `wsPm25Color()`, UV → Grün/Gelb/Orange/Rot-Skala).
+
+**Uhr auf screenhealth bleibt stehen**
+`labelwstime` und `labeldatum_1` wurden nur bei `aktualisiereUI()` (10-Minuten-Takt) geschrieben. Fix: beide in den 60-Sekunden-Timer-Block in `loop()` aufgenommen.
+
+---
+
 ## 2026-07-25 – v0.9.0-beta
 
 ### Gesundheitsscreen

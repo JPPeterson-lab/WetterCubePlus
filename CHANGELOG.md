@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.2-beta (2026-07-25)
+
+### Fixes
+- **Theme-Wechsel zerstört Farbkodierung:** `change_color_theme()` in `actions.c` überschreibt alle Texte inklusive pollen- und biowetter-farbkodierte Labels auf screenhealth. Fix: zweiter Event-Handler auf `labelswitchtheme` ruft nach dem Theme-Wechsel `aktualisiereUI()` auf – Farben werden sofort neu gesetzt
+- **Ampel-Punkte statt Zahlen:** AQI, PM2.5, nächste-Stunde-PM2.5 und UV-Index im Gesundheitsscreen-Footer werden als farbige Kreise (20×20 px) angezeigt statt als Zahlenwerte – spart Platz und transportiert den Status auf einen Blick
+- **Uhr auf screenhealth hängt:** `labelwstime` und `labeldatum_1` wurden nur beim 10-Minuten-Datenabruf (`aktualisiereUI()`) gesetzt, nicht im 60-Sekunden-Loop. Fix: beide Labels in den minütlichen Timer-Block aufgenommen
+
+---
+
 ## v0.9.0-beta (2026-07-25)
 
 ### Neu

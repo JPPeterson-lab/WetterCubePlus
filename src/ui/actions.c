@@ -11,7 +11,7 @@ void pp_anim_stop_timelines_for_deleted_tree(lv_obj_t * root) {
 
 
 // Cycle theme helpers
-static const uint32_t cycle_themes_0[] = { THEME_SUMMER, THEME_LIGHT };
+static const uint32_t cycle_themes_0[] = { THEME_DARK, THEME_LIGHT };
 void do_cycle_theme_0(void) {
     uint32_t n = sizeof(cycle_themes_0) / sizeof(uint32_t);
     uint32_t cur = 0;

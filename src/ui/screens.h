@@ -312,8 +312,8 @@ typedef struct _objects_t {
     lv_obj_t *label_21;
     lv_obj_t *label_18;
     lv_obj_t *label_19;
+    lv_obj_t *labelwspm25;
     lv_obj_t *labelwso3;
-    lv_obj_t *labelwso3_1;
     lv_obj_t *uv_index;
     lv_obj_t *labelwsuv;
     lv_obj_t *labelbuttonbackward_label;
