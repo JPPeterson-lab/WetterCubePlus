@@ -1,5 +1,22 @@
 # Entwicklungs-Log
 
+## 2026-07-25 – v0.9.3-beta
+
+### Gesundheitsscreen: 3h-Vorschau im Footer + Biowetter-Zone Klartexte
+
+**Footer-Dots: Max nächste 3 Stunden**
+Die vier Punkte (AQI, PM2.5, O3, UV) zeigen jetzt den schlechtesten Wert der nächsten 3 Stunden (h+1 … h+3) statt Ist- oder Tageswerten. Damit ist auf einen Blick erkennbar ob die Belastung kurzfristig ansteigt.
+
+- Neue Struct-Felder: `aqi_3h`, `pm25_3h`, `o3_3h` in `PollenDaten`; `uv_next3h` in `WetterDaten`
+- `fetchOpenMeteoPollen()`: Max-Schleife über 3 Stunden für AQI, PM2.5, Ozon
+- `fetchWetter()`: `uv_index` zu `&hourly=…` ergänzt; Max-Schleife über 3 Stunden → `wetter.uv_next3h`; JSON-Buffer 8 KB → 10 KB
+- O3-Dot war buggy: verwendete `pollen.pm25_next` statt Ozon; fix: `pollen.o3_3h` mit eigener `o3Color()`-Skala (< 60 grün, 60–120 gelb, 120–180 orange, ≥ 180 rot)
+
+**Biowetter-Zone: Klartexte**
+`baueBioZoneOptions()` zeigt jetzt vollständige Regionsbeschreibungen aus der DWD-Dokumentation. Zone K (Schwaben/Oberbayern) war bisher nicht im Dropdown — ergänzt; Array auf 11 Einträge erweitert.
+
+---
+
 ## 2026-07-25 – v0.9.2-beta
 
 ### Gesundheitsscreen: Bugfixes & Ampel-Punkte

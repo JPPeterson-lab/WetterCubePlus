@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.2-beta"
+#define FIRMWARE_VERSION "0.9.3-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -220,6 +220,7 @@ struct WetterDaten {
   float  pressure    = 0.0f;
   int    wmo_code    = 0;
   float  uv_index    = 0.0f;
+  float  uv_next3h   = 0.0f;  // Max UV der nächsten 3 Stunden
   float  temp_min    = 0.0f;
   float  temp_max    = 0.0f;
   bool   is_day      = true;
@@ -254,10 +255,11 @@ struct PollenDaten {
   // Luftqualität (Air Quality Index + Einzelwerte) – aktuelle + nächste Stunde
   int   aqi      = -1;
   int   aqi_next = -1;
-  float pm25     = -1.0f;  float pm25_next = -1.0f;
+  int   aqi_3h   = -1;    // Max AQI nächste 3 Stunden
+  float pm25     = -1.0f;  float pm25_next = -1.0f;  float pm25_3h = -1.0f;
   float pm10     = -1.0f;  float pm10_next = -1.0f;
   float no2      = -1.0f;  float no2_next  = -1.0f;
-  float o3       = -1.0f;  float o3_next   = -1.0f;
+  float o3       = -1.0f;  float o3_next   = -1.0f;  float o3_3h   = -1.0f;
   // DWD Pollenflug – heute / morgen / übermorgen (Stufen 0-3 als Float)
   float dwd_birke    = -1.0f; float dwd_birke_tmr    = -1.0f; float dwd_birke_da    = -1.0f;
   float dwd_hasel    = -1.0f; float dwd_hasel_tmr    = -1.0f; float dwd_hasel_da    = -1.0f;
@@ -654,10 +656,22 @@ static String baueWsCatOptions(int selected) {
 }
 
 static String baueBioZoneOptions(const String& sel) {
+  static const struct { const char* id; const char* label; } zones[] = {
+    {"A", "A – Schleswig-Holstein, Hamburg, nördl. Niedersachsen, Bremen"},
+    {"B", "B – Mecklenburg-Vorpommern"},
+    {"C", "C – SW-Niedersachsen, Nordrhein-Westfalen"},
+    {"D", "D – Östl. und südl. Niedersachsen"},
+    {"E", "E – Berlin, Brandenburg, nördl. Sachsen-Anhalt"},
+    {"F", "F – Hessen, Rheinland-Pfalz, Saarland"},
+    {"G", "G – Südl. Sachsen-Anhalt, Thüringen, Sachsen"},
+    {"H", "H – Baden"},
+    {"I", "I – Württemberg, Franken (ohne östl. Oberfranken)"},
+    {"J", "J – Niederbayern, Oberpfalz, östl. Oberfranken"},
+    {"K", "K – Schwaben, Oberbayern"},
+  };
   String out;
-  const char* zones[] = {"A","B","C","D","E","F","G","H","I","J"};
-  for (int i = 0; i < 10; i++) {
-    out += "<option value='" + String(zones[i]) + "'" + (sel == zones[i] ? " selected" : "") + ">Zone " + zones[i] + "</option>";
+  for (int i = 0; i < 11; i++) {
+    out += "<option value='" + String(zones[i].id) + "'" + (sel == zones[i].id ? " selected" : "") + ">" + zones[i].label + "</option>";
   }
   return out;
 }
@@ -949,11 +963,11 @@ void fetchWetter() {
   url += "&current=temperature_2m,relative_humidity_2m,apparent_temperature";
   url += ",wind_speed_10m,wind_direction_10m,surface_pressure,weather_code,is_day";
   url += "&daily=uv_index_max,sunrise,sunset,temperature_2m_min,temperature_2m_max";
-  url += "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m";
+  url += "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index";
   url += "&timezone=auto&forecast_days=2";
   http.begin(sc, url);
   if (http.GET() == 200) {
-    DynamicJsonDocument doc(8192);
+    DynamicJsonDocument doc(10240);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
       auto c = doc["current"];
       wetter.temp       = c["temperature_2m"].as<float>();
@@ -984,6 +998,13 @@ void fetchWetter() {
         String t_str = doc["hourly"]["time"][idx].as<String>();
         wetter.time_forecast[i] = t_str.length() >= 16 ? t_str.substring(11, 16) : t_str;
       }
+      // UV Max der nächsten 3 Stunden
+      float uvMax = 0.0f;
+      for (int i = 1; i <= 3; i++) {
+        float v = doc["hourly"]["uv_index"][min(h + i, 47)].as<float>();
+        if (v > uvMax) uvMax = v;
+      }
+      wetter.uv_next3h = uvMax;
       // Regenwarnung: WMO >= 51 in aktueller oder nächster Stunde
       bool regen = false;
       for (int i = 0; i < 2; i++) {
@@ -1563,6 +1584,22 @@ void fetchOpenMeteoPollen() {
       pollen.no2_next = doc["hourly"]["nitrogen_dioxide"][h].as<float>();
       pollen.o3       = doc["hourly"]["ozone"][hNow].as<float>();
       pollen.o3_next  = doc["hourly"]["ozone"][h].as<float>();
+      // Max der nächsten 3 Stunden (h = nächste Stunde)
+      {
+        int aqiM = -1; float pm25M = -1.0f; float o3M = -1.0f;
+        for (int i = 0; i < 3; i++) {
+          int s = min(h + i, 47);
+          int a = doc["hourly"]["european_aqi"][s].as<int>();
+          float p = doc["hourly"]["pm2_5"][s].as<float>();
+          float o = doc["hourly"]["ozone"][s].as<float>();
+          if (a  > aqiM)  aqiM  = a;
+          if (p  > pm25M) pm25M = p;
+          if (o  > o3M)   o3M   = o;
+        }
+        pollen.aqi_3h  = aqiM;
+        pollen.pm25_3h = pm25M;
+        pollen.o3_3h   = o3M;
+      }
       // 3 Stunden-Slots für ScreenForecastPollenHour — Index läuft über Tagesgrenze
       for (int i = 0; i < 3; i++) {
         int slot = min(h + i, 47);
@@ -2079,14 +2116,23 @@ void aktualisiereUI() {
       if (!obj) return;
       lv_obj_set_style_bg_color(obj, col, 0);
     };
-    setDot(objects.labelwsaqi,  pollen.aqi       < 0 ? lv_color_hex(0x555555) : aqiColor(pollen.aqi));
-    setDot(objects.labelwspm25, pollen.pm25      < 0 ? lv_color_hex(0x555555) : wsPm25Color(pollen.pm25));
-    setDot(objects.labelwso3,   pollen.pm25_next < 0 ? lv_color_hex(0x555555) : wsPm25Color(pollen.pm25_next));
+    // Dots: Max der nächsten 3 Stunden
+    auto o3Color = [](float v) -> lv_color_t {
+      if (v < 0)    return lv_color_hex(0x888888);
+      if (v < 60)   return lv_color_hex(0x50c878);
+      if (v < 120)  return lv_color_hex(0xffd700);
+      if (v < 180)  return lv_color_hex(0xff8c00);
+      return lv_color_hex(0xff3030);
+    };
+    setDot(objects.labelwsaqi,  pollen.aqi_3h  < 0 ? lv_color_hex(0x555555) : aqiColor(pollen.aqi_3h));
+    setDot(objects.labelwspm25, pollen.pm25_3h < 0 ? lv_color_hex(0x555555) : wsPm25Color(pollen.pm25_3h));
+    setDot(objects.labelwso3,   pollen.o3_3h   < 0 ? lv_color_hex(0x555555) : o3Color(pollen.o3_3h));
     if (objects.labelwsuv) {
-      lv_color_t uvc = (wetter.uv_index < 0) ? lv_color_hex(0x555555) :
-                       (wetter.uv_index >= 8) ? lv_color_hex(0xff3030) :
-                       (wetter.uv_index >= 6) ? lv_color_hex(0xff8c00) :
-                       (wetter.uv_index >= 3) ? lv_color_hex(0xffd700) : lv_color_hex(0x50c878);
+      float uv = wetter.uv_next3h;
+      lv_color_t uvc = (uv <= 0) ? lv_color_hex(0x555555) :
+                       (uv >= 8) ? lv_color_hex(0xff3030) :
+                       (uv >= 6) ? lv_color_hex(0xff8c00) :
+                       (uv >= 3) ? lv_color_hex(0xffd700) : lv_color_hex(0x50c878);
       setDot(objects.labelwsuv, uvc);
     }
   }

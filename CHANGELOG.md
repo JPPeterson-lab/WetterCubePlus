@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.9.3-beta (2026-07-25)
+
+### Neu
+- **Gesundheitsscreen Footer: Vorschau nächste 3 Stunden** – AQI, PM2.5, Ozon und UV-Index zeigen jetzt den **Max-Wert der nächsten 3 Stunden** statt aktueller/täglicher Werte; UV-Index wird stündlich von Open-Meteo geladen (war vorher Tages-Maximum)
+- **Biowetter-Zone: Klartextbeschriftung** – Dropdown zeigt jetzt z.B. „A – Schleswig-Holstein, Hamburg, nördl. Niedersachsen, Bremen" statt „Zone A"; Zone K (Schwaben, Oberbayern) ergänzt (war bisher fehlend)
+
+### Fixes
+- **O3-Dot zeigte PM2.5-Wert** – `labelwso3` verwendete fälschlicherweise `pollen.pm25_next`; fix: `pollen.o3_3h` (Ozon-Max 3h)
+
+---
+
 ## v0.9.2-beta (2026-07-25)
 
 ### Fixes
