@@ -16,6 +16,7 @@ extern const lv_font_t font_montserrat_18;
 extern const lv_font_t font_montserrat_22;
 extern const lv_font_t font_montserrat_32;
 extern const lv_font_t font_montserrat_48;
+extern const lv_font_t font_montserrat_52;
 
 /* Get a custom font by name, returns NULL if not found */
 const lv_font_t* ui_get_font_by_name(const char* name);

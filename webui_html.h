@@ -143,6 +143,21 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
     oninput="document.getElementById('nbv').textContent=this.value">
 </div>
 
+<div class="card">
+  <h2>Biowetter</h2>
+  <label>DWD Biowetter-Zone</label>
+  <select name="bio_zone">%BIO_ZONE_OPTIONS%</select>
+  <hr style="margin:14px 0;border-color:#ddd">
+  <h3 style="margin:0 0 6px">Wetterfühligkeit – angezeigte Kategorien</h3>
+  <p class="hint">Wähle die 4 Kategorien für den Gesundheitsscreen.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+    <div><label>Zeile 1</label><select name="ws_cat0">%WS_CAT_OPTIONS0%</select></div>
+    <div><label>Zeile 2</label><select name="ws_cat1">%WS_CAT_OPTIONS1%</select></div>
+    <div><label>Zeile 3</label><select name="ws_cat2">%WS_CAT_OPTIONS2%</select></div>
+    <div><label>Zeile 4</label><select name="ws_cat3">%WS_CAT_OPTIONS3%</select></div>
+  </div>
+</div>
+
 <button type="submit" class="btn btn-gruen">Einstellungen speichern</button>
 </form>
 

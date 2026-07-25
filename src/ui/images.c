@@ -2,6 +2,7 @@
 #include "images.h"
 
 #include "src/ui/images/day_partial_cloud.inc"
+#include "src/ui/images/fc_home.inc"
 #include "src/ui/images/fc_settings.inc"
 #include "src/ui/images/fog.inc"
 #include "src/ui/images/alert.inc"
@@ -10,12 +11,14 @@
 #include "src/ui/images/sleet.inc"
 #include "src/ui/images/rain.inc"
 #include "src/ui/images/day_clear.inc"
+#include "src/ui/images/fc_plus_38_ffffff.inc"
 #include "src/ui/images/thunder.inc"
 #include "src/ui/images/snow.inc"
-#include "src/ui/images/pico_dark_logo.inc"
 #include "src/ui/images/night_full_moon_partial_cloud.inc"
-const ext_img_desc_t images[13] = {
+#include "src/ui/images/pico_dark_logo_132.inc"
+const ext_img_desc_t images[15] = {
     { "day_partial_cloud", &day_partial_cloud },
+    { "fc_home", &fc_home },
     { "fc_settings", &fc_settings },
     { "fog", &fog },
     { "alert", &alert },
@@ -24,8 +27,9 @@ const ext_img_desc_t images[13] = {
     { "sleet", &sleet },
     { "rain", &rain },
     { "day_clear", &day_clear },
+    { "fc_plus_38_ffffff", &fc_plus_38_ffffff },
     { "thunder", &thunder },
     { "snow", &snow },
-    { "pico_dark_logo", &pico_dark_logo },
-    { "night_full_moon_partial_cloud", &night_full_moon_partial_cloud }
+    { "night_full_moon_partial_cloud", &night_full_moon_partial_cloud },
+    { "pico_dark_logo_132", &pico_dark_logo_132 }
 };

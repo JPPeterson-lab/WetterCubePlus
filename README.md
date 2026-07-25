@@ -1,8 +1,8 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
-![Fortschritt](https://img.shields.io/badge/Fortschritt-85%25-yellowgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.8.1--beta-blue?style=flat-square&cacheSeconds=1)
+![Fortschritt](https://img.shields.io/badge/Fortschritt-95%25-green?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v0.9.0--beta-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -39,6 +39,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang, Tages-Min/Max-Temperatur |
 | 🌫️ | **Luftqualität (AQI)** | Europäischer AQI (Arc-Anzeige), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten (Open-Meteo Air Quality API) |
 | 🩺 | **DWD Biowetter** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Allg. Befinden, Blutdruck niedrig/hoch, Rheuma entzündl./degenerativ, Asthma, Wärmebelastung) – 4 Perioden auf 2 Screens, alle 3 Stunden aktualisiert |
+| 💚 | **Gesundheitsscreen** | Kompaktübersicht für wetterfühlige Personen: Top-4 Pollen nach Tagesbelastung, 4 konfigurierbare Biowetter-Kategorien, AQI + UV-Index; Kategorien per WebUI wählbar |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
@@ -61,8 +62,9 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 7 | **Luftqualität** | Europäischer AQI (Arc), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten |
 | 8 | **DWD Biowetter (Heute)** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Befinden, Blutdruck, Rheuma, Asthma, Wärme) – Heute Vm./Nm. |
 | 9 | **DWD Biowetter (Morgen)** | Wie Screen 8, für Morgen Vm./Nm. und Übermorgen Vm. |
-| 10 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung (Antippen für Details) |
-| 11 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
+| 10 | **Gesundheitsscreen** | Top-4 Pollen (Tageswert), 4 wählbare Biowetter-Kategorien, AQI & UV-Index |
+| 11 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung (Antippen für Details) |
+| 12 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
 
 ---
 
@@ -104,6 +106,8 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 | | Pollenwarnung ein/aus |
 | | Pollen-Schwellwert: Gering / Mittel / Hoch / Sehr hoch |
 | **DWD-Region** | Bundesland-Auswahl für Wetterwarnungen & Radarkarte |
+| **Biowetter** | DWD-Zone (A–J) für Biowetter-Daten |
+| | Wetterfühligkeit: 4 Kategorien für den Gesundheitsscreen frei wählbar (Herz/Kreislauf, Atemwege, Rheuma, Migräne, Psyche, Erkältungsrisiko, UV/Licht) |
 | **Firmware** | OTA-Update: neue Version per WLAN – kein USB nötig |
 
 ---
@@ -265,7 +269,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 
 ![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
 ![Progress](https://img.shields.io/badge/Progress-85%25-yellowgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.8.1--beta-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.9.0--beta-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)

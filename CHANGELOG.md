@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.9.0-beta (2026-07-25)
+
+### Neu
+- **Gesundheitsscreen (screenhealth):** Kompaktübersicht für wetterfühlige Personen – Top-4 Pollen nach aktuellem DWD-Tageswert (sortiert), 4 konfigurierbare Biowetter-Kategorien (Periode heute Nachmittag), AQI und UV-Index im Footer
+- **Wetterfühligkeit konfigurierbar:** 4 Kategorien für den Gesundheitsscreen per WebUI wählbar (Herz/Kreislauf, Atemwege, Rheuma, Migräne, Psyche, Erkältungsrisiko, UV/Licht)
+- **Biowetter-Zone in WebUI:** DWD-Zone (A–J) jetzt direkt im Web-Interface einstellbar (war vorher nur im Code änderbar)
+- **fc_plus-Button auf Screen 1:** Neues Icon öffnet direkt den Gesundheitsscreen
+- **Navigation Gesundheitsscreen:** `<` → Biowetter, `>` → Wettervorhersage, Home-Icon → Screen 1, Menü-Icon → Menü-Screen
+
+### Fixes
+- **WebUI-Einstellungen sofort sichtbar:** Nach dem Speichern in der WebUI wird `aktualisiereUI()` aufgerufen – Änderungen (z.B. Biowetter-Kategorien) erscheinen sofort auf dem Display
+- **AQI auf Gesundheitsscreen:** `labelwsaqi` zeigte PM2.5-Wert statt European AQI; fix: `pollen.aqi` verwenden
+
+---
+
 ## v0.8.1-beta (2026-07-19)
 
 ### Fixes

@@ -1,5 +1,36 @@
 # Entwicklungs-Log
 
+## 2026-07-25 – v0.9.0-beta
+
+### Gesundheitsscreen
+
+Neuer zweiter Hauptscreen für wetterfühlige Nutzer. Erreichbar über `fc_plus`-Button auf Screen 1.
+
+**Inhalt:**
+- Uhrzeit + aktuelle Temperatur
+- Top-4 Pollen nach DWD-Tageswert (heute), absteigend sortiert – zeigt automatisch die aktuell stärksten Allergene
+- 4 konfigurierbare Biowetter-Kategorien (Periode 0 = heute Nachmittag): Wert und Farbe analog zu screenbiowetter; zeigt `–` wenn DWD noch keine Daten geliefert hat
+- Footer: European AQI + PM2.5 aktuell/nächste Stunde + UV-Index
+
+**Konfiguration:**
+- 4 Wetterfühligkeit-Kategorien frei wählbar per WebUI (ws_cat0..3, je Index 0–6)
+- DWD Biowetter-Zone (A–J) ebenfalls in WebUI einstellbar (bio_zone), war vorher nur hardcodiert
+
+**Navigation:**
+- `labelbuttonbackward_6` → screenbiowetter
+- `labelbuttonforward_7` → screenforecastwetter
+- `fc_home` (CLICKABLE) → screen_1
+- `fc_settings2` (CLICKABLE) → screenmenu
+- `fc_plus_38_ffffff` auf screen_1 (CLICKABLE, Lambda-CB) → screenhealth
+
+**Bug: AQI vs. PM2.5**
+`labelwsaqi` zeigte `pollen.pm25` (ca. 7) statt `pollen.aqi` (European AQI, ca. 34). Fix: direkt `pollen.aqi` mit `aqiColor()` verwenden.
+
+**Bug: WebUI-Änderungen nicht sofort sichtbar**
+`handleWebSave()` speicherte zwar die neuen ws_cat-Werte, rief aber `aktualisiereUI()` nicht auf. Screen zeigte erst beim nächsten 60s-Timer-Tick die neue Kategorie. Fix: `aktualisiereUI()` direkt nach `speichereCfg()` aufrufen.
+
+---
+
 ## 2026-07-19 – v0.8.1-beta
 
 ### Biowetter: Leere Perioden & Debug

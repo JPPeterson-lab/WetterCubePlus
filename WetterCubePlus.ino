@@ -2,13 +2,13 @@
 //  WetterCubePlus.ino
 //  ESP32-S3 N16R8 | ILI9488 3.5" 480x320 | XPT2046 Touch
 //  LVGL 8.x | LovyanGFX | HTTP-OTA | WebUI | DWD-Warnungen
-//  Version: 0.8.0-beta
+//  Version: 0.9.0-beta
 // ============================================================
 
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.8.1-beta"
+#define FIRMWARE_VERSION "0.9.0-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -148,6 +148,11 @@ struct Config {
   int    ampel_rot_min    = 25;
   int    ampel_rot_max    = 99;
   String bio_zone = "A";        // DWD Biowetter-Zone A–J
+  // Wetterfühligkeits-Kategorien (Index 0–6): 0=Herz/Kreislauf, 1=Atemwege, 2=Rheumatismus, 3=Migräne, 4=Psyche, 5=Erkältungsrisiko, 6=UV/Strahlung
+  int ws_cat0 = 0;
+  int ws_cat1 = 1;
+  int ws_cat2 = 2;
+  int ws_cat3 = 5;
 };
 Config cfg;
 
@@ -497,6 +502,11 @@ void ladeCfg() {
   cfg.ampel_gelb_max    = prefs.getInt   ("amp_ge_max",  24);
   cfg.ampel_rot_min     = prefs.getInt   ("amp_ro_min",  25);
   cfg.ampel_rot_max     = prefs.getInt   ("amp_ro_max",  99);
+  cfg.bio_zone          = prefs.getString("bio_zone",    "A");
+  cfg.ws_cat0           = prefs.getInt   ("ws_cat0",     0);
+  cfg.ws_cat1           = prefs.getInt   ("ws_cat1",     1);
+  cfg.ws_cat2           = prefs.getInt   ("ws_cat2",     2);
+  cfg.ws_cat3           = prefs.getInt   ("ws_cat3",     5);
   prefs.end();
 }
 
@@ -524,6 +534,11 @@ void speichereCfg() {
   prefs.putInt   ("amp_ge_max",  cfg.ampel_gelb_max);
   prefs.putInt   ("amp_ro_min",  cfg.ampel_rot_min);
   prefs.putInt   ("amp_ro_max",  cfg.ampel_rot_max);
+  prefs.putString("bio_zone",    cfg.bio_zone);
+  prefs.putInt   ("ws_cat0",     cfg.ws_cat0);
+  prefs.putInt   ("ws_cat1",     cfg.ws_cat1);
+  prefs.putInt   ("ws_cat2",     cfg.ws_cat2);
+  prefs.putInt   ("ws_cat3",     cfg.ws_cat3);
   prefs.end();
 }
 
@@ -626,6 +641,27 @@ void handleWebOtaDoUpdate();
 void handleWebWlanAendern();
 void handleWebWlanSave();
 
+static const char* WS_CAT_NAMEN[] = {
+  "Herz/Kreislauf", "Atemwege", "Rheumatismus", "Migraene", "Psyche", "Erkaeltungsrisiko", "UV/Strahlung"
+};
+
+static String baueWsCatOptions(int selected) {
+  String out;
+  for (int i = 0; i < 7; i++) {
+    out += "<option value='" + String(i) + "'" + (i == selected ? " selected" : "") + ">" + WS_CAT_NAMEN[i] + "</option>";
+  }
+  return out;
+}
+
+static String baueBioZoneOptions(const String& sel) {
+  String out;
+  const char* zones[] = {"A","B","C","D","E","F","G","H","I","J"};
+  for (int i = 0; i < 10; i++) {
+    out += "<option value='" + String(zones[i]) + "'" + (sel == zones[i] ? " selected" : "") + ">Zone " + zones[i] + "</option>";
+  }
+  return out;
+}
+
 void handleWebRoot() {
   String html = FPSTR(WEBUI_HTML);
   html.replace("%VERSION%",     FIRMWARE_VERSION);
@@ -667,6 +703,11 @@ void handleWebRoot() {
   html.replace("%AMP_GE_MAX%", String(cfg.ampel_gelb_max));
   html.replace("%AMP_RO_MIN%", String(cfg.ampel_rot_min));
   html.replace("%AMP_RO_MAX%", String(cfg.ampel_rot_max));
+  html.replace("%BIO_ZONE_OPTIONS%",  baueBioZoneOptions(cfg.bio_zone));
+  html.replace("%WS_CAT_OPTIONS0%",   baueWsCatOptions(cfg.ws_cat0));
+  html.replace("%WS_CAT_OPTIONS1%",   baueWsCatOptions(cfg.ws_cat1));
+  html.replace("%WS_CAT_OPTIONS2%",   baueWsCatOptions(cfg.ws_cat2));
+  html.replace("%WS_CAT_OPTIONS3%",   baueWsCatOptions(cfg.ws_cat3));
   server.send(200, "text/html", html);
 }
 
@@ -684,10 +725,16 @@ void handleWebSave() {
   if (server.hasArg("pol_schw"))   cfg.pollen_schwelle = server.arg("pol_schw").toInt();
   if (server.hasArg("brightness")) cfg.brightness      = server.arg("brightness").toInt();
   if (server.hasArg("dim_time"))   cfg.dim_timeout     = server.arg("dim_time").toInt();
+  if (server.hasArg("bio_zone"))   cfg.bio_zone        = server.arg("bio_zone");
+  if (server.hasArg("ws_cat0"))    cfg.ws_cat0         = server.arg("ws_cat0").toInt();
+  if (server.hasArg("ws_cat1"))    cfg.ws_cat1         = server.arg("ws_cat1").toInt();
+  if (server.hasArg("ws_cat2"))    cfg.ws_cat2         = server.arg("ws_cat2").toInt();
+  if (server.hasArg("ws_cat3"))    cfg.ws_cat3         = server.arg("ws_cat3").toInt();
   // Geocoding nur neu anstoßen wenn Location tatsächlich geändert
   if (cfg.location != prevLocation) { cfg.lat = 0.0f; cfg.lon = 0.0f; }
   speichereCfg();
   setBrightness(cfg.brightness);
+  aktualisiereUI();
   server.sendHeader("Location", "/"); server.send(302);
 }
 
@@ -1952,6 +1999,109 @@ void aktualisiereUI() {
     setAqiBar(objects.bar_4, pollen.o3, 240);
   }
 
+  // ── Screenhealth ─────────────────────────────────────────────
+  {
+    // Uhrzeit + Temperatur
+    if (objects.labelwstime && hasTime) {
+      strftime(buf, sizeof(buf), "%H:%M", &ti);
+      lv_label_set_text(objects.labelwstime, buf);
+    }
+    if (objects.labelwstemp) {
+      snprintf(buf, sizeof(buf), "%.0f°C", wetter.temp);
+      setLabelFmt(objects.labelwstemp, tempColor(wetter.temp), buf);
+    }
+
+    // Pollen: Top-4 nach DWD-Tageswert (heute)
+    struct PolEntry { float val; const char* name; };
+    PolEntry polAll[] = {
+      {pollen.dwd_birke,    "Birke"},
+      {pollen.dwd_erle,     "Erle"},
+      {pollen.dwd_esche,    "Esche"},
+      {pollen.dwd_hasel,    "Hasel"},
+      {pollen.dwd_graeser,  "Graeser"},
+      {pollen.dwd_roggen,   "Roggen"},
+      {pollen.dwd_beifuss,  "Beifuss"},
+      {pollen.dwd_ambrosia, "Ambrosia"},
+    };
+    // Sortiere absteigend nach Wert (einfaches Selection-Sort, nur 8 Einträge)
+    for (int i = 0; i < 7; i++)
+      for (int j = i + 1; j < 8; j++)
+        if (polAll[j].val > polAll[i].val) { PolEntry tmp = polAll[i]; polAll[i] = polAll[j]; polAll[j] = tmp; }
+
+    lv_obj_t* polNameLabels[4] = {objects.labelwspol1name, objects.labelwspol2name, objects.labelwspol3name, objects.labelwspol4name};
+    lv_obj_t* polValLabels[4]  = {objects.labelwspol1val,  objects.labelwspol2val,  objects.labelwspol3val,  objects.labelwspol4val};
+    for (int i = 0; i < 4; i++) {
+      float v = polAll[i].val;
+      if (polNameLabels[i]) lv_label_set_text(polNameLabels[i], polAll[i].name);
+      if (polValLabels[i])  setPollenLabel(polValLabels[i], v);
+    }
+
+    // Wetterfühligkeit: 4 konfigurierbare Kategorien (Periode heute_nachmittag = 0)
+    static const char* BIO_NAMEN[] = {"Herz/Kreislauf","Atemwege","Rheuma","Migraene","Psyche","Erkaeltung","UV/Licht"};
+    int wsCats[4] = {cfg.ws_cat0, cfg.ws_cat1, cfg.ws_cat2, cfg.ws_cat3};
+    lv_obj_t* catNameLabels[4] = {objects.labelwscat1name, objects.labelwscat2name, objects.labelwscat3name, objects.labelwscat4name};
+    lv_obj_t* catValLabels[4]  = {objects.labelwscat1val,  objects.labelwscat2val,  objects.labelwscat3val,  objects.labelwscat4val};
+    bool bioVerfuegbar = bio.geladen;
+    // Prüfe ob Periode 0 (today_afternoon) alle Nullen hat
+    bool bioLeer = true;
+    if (bioVerfuegbar) {
+      for (int k = 0; k < 7; k++) if (bio.wert[0][k] != 0) { bioLeer = false; break; }
+    }
+    for (int i = 0; i < 4; i++) {
+      int cat = wsCats[i];
+      if (cat < 0 || cat > 6) cat = 0;
+      if (catNameLabels[i]) lv_label_set_text(catNameLabels[i], BIO_NAMEN[cat]);
+      if (catValLabels[i]) {
+        if (!bioVerfuegbar || bioLeer) {
+          setLabelFmt(catValLabels[i], lv_color_hex(0x444444), "-");
+        } else {
+          int v = bio.wert[0][cat];
+          setLabelFmt(catValLabels[i], bioWertColor(v), bioWertKurz(v));
+        }
+      }
+    }
+
+    // Footer: AQI + O3 + UV
+    auto wsPm25Color = [](float v) -> lv_color_t {
+      if (v < 0)   return lv_color_hex(0x888888);
+      if (v < 12)  return lv_color_hex(0x50c878);
+      if (v < 35)  return lv_color_hex(0xffd700);
+      if (v < 55)  return lv_color_hex(0xff8c00);
+      return lv_color_hex(0xff3030);
+    };
+    if (objects.labelwsaqi) {
+      if (pollen.aqi < 0) lv_label_set_text(objects.labelwsaqi, "--");
+      else {
+        snprintf(buf, sizeof(buf), "%d", pollen.aqi);
+        setLabelFmt(objects.labelwsaqi, aqiColor(pollen.aqi), buf);
+      }
+    }
+    if (objects.labelwso3) {
+      if (pollen.pm25 < 0) lv_label_set_text(objects.labelwso3, "--");
+      else {
+        snprintf(buf, sizeof(buf), "%.0f", pollen.pm25);
+        setLabelFmt(objects.labelwso3, wsPm25Color(pollen.pm25), buf);
+      }
+    }
+    if (objects.labelwso3_1) {
+      if (pollen.pm25_next < 0) lv_label_set_text(objects.labelwso3_1, "--");
+      else {
+        snprintf(buf, sizeof(buf), "%.0f", pollen.pm25_next);
+        setLabelFmt(objects.labelwso3_1, wsPm25Color(pollen.pm25_next), buf);
+      }
+    }
+    if (objects.labelwsuv) {
+      if (wetter.uv_index < 0) lv_label_set_text(objects.labelwsuv, "--");
+      else {
+        snprintf(buf, sizeof(buf), "%.0f", wetter.uv_index);
+        lv_color_t uvc = (wetter.uv_index >= 8) ? lv_color_hex(0xff3030) :
+                         (wetter.uv_index >= 6) ? lv_color_hex(0xff8c00) :
+                         (wetter.uv_index >= 3) ? lv_color_hex(0xffd700) : lv_color_hex(0x50c878);
+        setLabelFmt(objects.labelwsuv, uvc, buf);
+      }
+    }
+  }
+
   // ── Biowetter (screenbiowetter + screenbiowetter2) ──────────
   // Periode 0 = heute Nmttg, 1 = morgen Vmttg → Screen 1
   // Periode 2 = morgen Nmttg, 3 = übermorgen Vmttg → Screen 2
@@ -2140,6 +2290,10 @@ static void cbBack7(lv_event_t*) { loadScreen(SCREEN_ID_SCREENAIRQUALITY); }    
 static void cbFwd7(lv_event_t*)  { loadScreen(SCREEN_ID_SCREEN_1); }                   // biowetter > → screen_1
 static void cbHubBio(lv_event_t*)     { loadScreen(SCREEN_ID_SCREENBIOWETTER2); }      // biowetter → biowetter2
 static void cbHubBioBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENBIOWETTER); }       // biowetter2 → biowetter
+static void cbBack8(lv_event_t*)      { loadScreen(SCREEN_ID_SCREENBIOWETTER); }       // screenhealth < → biowetter
+static void cbFwd8(lv_event_t*)       { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }  // screenhealth > → forecastwetter
+static void cbHealthHome(lv_event_t*) { loadScreen(SCREEN_ID_SCREEN_1); }              // screenhealth fc_home → screen_1
+static void cbHealthMenu(lv_event_t*) { loadScreen(SCREEN_ID_SCREENMENU); }            // screenhealth fc_settings2 → screenmenu
 // Untermenü-Buttons (Hub)
 static void cbHubPollen(lv_event_t*)     { loadScreen(SCREEN_ID_SCREENFORECASTPOLLENHOUR); } // forecastpollen → stündlich
 static void cbHubPollenBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }     // stündlich → tages
@@ -2431,6 +2585,15 @@ void setup() {
   REG_CB(objects.labelbuttonhome_6, cbHome, LV_EVENT_CLICKED);  // screenairquality
   REG_CB(objects.labelbuttonhome_7, cbHome, LV_EVENT_CLICKED);  // screenbiowetter
   REG_CB(objects.labelbuttonhome_8, cbHome, LV_EVENT_CLICKED);  // screenbiowetter2
+  // screenhealth navigation
+  REG_CB(objects.labelbuttonbackward_6, cbBack8,      LV_EVENT_CLICKED);  // < → biowetter
+  REG_CB(objects.labelbuttonforward_7,  cbFwd8,       LV_EVENT_CLICKED);  // > → forecastwetter
+  if (objects.fc_home)           lv_obj_add_flag(objects.fc_home,           LV_OBJ_FLAG_CLICKABLE);
+  if (objects.fc_settings2)      lv_obj_add_flag(objects.fc_settings2,      LV_OBJ_FLAG_CLICKABLE);
+  if (objects.fc_plus_38_ffffff) lv_obj_add_flag(objects.fc_plus_38_ffffff, LV_OBJ_FLAG_CLICKABLE);
+  REG_CB(objects.fc_home,           cbHealthHome,                LV_EVENT_CLICKED);  // fc_home → screen_1
+  REG_CB(objects.fc_settings2,      cbHealthMenu,                LV_EVENT_CLICKED);  // fc_settings2 → screenmenu
+  REG_CB(objects.fc_plus_38_ffffff, [](lv_event_t*) { loadScreen(SCREEN_ID_SCREENHEALTH); }, LV_EVENT_CLICKED);  // screen_1 → screenhealth
   // Warn-Screens
   REG_CB(objects.screenwarnung,       cbWarnTap,       LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnungpollen, cbWarnTap,       LV_EVENT_CLICKED);
