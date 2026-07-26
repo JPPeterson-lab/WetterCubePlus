@@ -188,8 +188,8 @@ typedef struct _objects_t {
     lv_obj_t *labelsunrisetime;
     lv_obj_t *labelsundowntime;
     lv_obj_t *labellightchange;
+    lv_obj_t *container_8;
     lv_obj_t *labeldwdchange;
-    lv_obj_t *labelbuttonmenu_2;
     lv_obj_t *labeltheme;
     lv_obj_t *labelregenchange;
     lv_obj_t *labelpollenchange;
@@ -198,6 +198,8 @@ typedef struct _objects_t {
     lv_obj_t *pollenswitch;
     lv_obj_t *dwdswitch;
     lv_obj_t *labellightchangevalue;
+    lv_obj_t *labelversion;
+    lv_obj_t *labelbuttonmenu_2;
     lv_obj_t *container_3;
     lv_obj_t *labelno2value;
     lv_obj_t *label_9;
@@ -336,8 +338,8 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonbackward_4_label;
     lv_obj_t *labelbuttonhome_5_label;
     lv_obj_t *labelbuttonforward_4_label;
-    lv_obj_t *labelbuttonmenu_2_label;
     lv_obj_t *labelswitchtheme_label;
+    lv_obj_t *labelbuttonmenu_2_label;
     lv_obj_t *labelbuttonforward_5_label;
     lv_obj_t *labelbuttonbackward_5_label;
     lv_obj_t *labelbuttonhome_6_label;

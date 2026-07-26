@@ -14,7 +14,7 @@ enum ThemesEnum {
 };
 
 enum ThemeColorsEnum {
-    THEME_COLOR_BACKGROUND,
+    THEME_COLOR_BACKGR_CONT,
     THEME_COLOR_TEXT,
 };
 
@@ -25,7 +25,9 @@ void change_color_theme(uint32_t theme_index);
 
 // Common colors
 extern const uint32_t common_000000;
+extern const uint32_t common_7a4c93;
 extern const uint32_t common_87ceeb;
+extern const uint32_t common_c80d4f;
 extern const uint32_t common_cc0000;
 extern const uint32_t common_d63939;
 extern const uint32_t common_d67a28;

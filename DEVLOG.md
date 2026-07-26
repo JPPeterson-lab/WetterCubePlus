@@ -1,5 +1,23 @@
 # Entwicklungs-Log
 
+## 2026-07-26 – v0.9.4-beta
+
+### Menü-Screen Versionsanzeige + Biowetter Periodenlogik
+
+**Firmware-Version auf Menü-Screen**
+`labelversion` in `aktualisiereUI()` mit `FIRMWARE_VERSION` befüllt. Wird bei jedem 10-Minuten-Update gesetzt — bleibt damit immer aktuell nach OTA.
+
+**Biowetter Periode zeitabhängig (screenhealth)**
+Bisher zeigte screenhealth immer `bio.wert[0][cat]` (Periode 0 = heute Nachmittag), auch um 8 Uhr morgens. Das führte dazu dass z.B. UV/Licht bereits am Morgen „hoch" anzeigte weil DWD für den Nachmittag hohe UV-Belastung prognostiziert.
+
+Fix: `bioPeriode` wird per Uhrzeit bestimmt:
+- `tiNow.tm_hour < 18` → Periode 0 (heute Nachmittag)
+- `tiNow.tm_hour >= 18` → Periode 1 (morgen Vormittag)
+
+`bioLeer`-Check ebenfalls auf `bioPeriode` umgestellt.
+
+---
+
 ## 2026-07-25 – v0.9.3-beta
 
 ### Gesundheitsscreen: 3h-Vorschau im Footer + Biowetter-Zone Klartexte

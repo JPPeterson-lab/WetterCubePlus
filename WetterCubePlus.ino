@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.3-beta"
+#define FIRMWARE_VERSION "0.9.4-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1792,6 +1792,7 @@ void aktualisiereUI() {
     setLabelFmt(objects.labeltemp, tempColor(wetter.temp), buf);
   }
   if (objects.imagewetter) lv_img_set_src(objects.imagewetter, wmoZuImage(wetter.wmo_code, wetter.is_day));
+  if (objects.labelversion) lv_label_set_text(objects.labelversion, FIRMWARE_VERSION);
 
   // screen_1: Wetter-Details (Feuchte, Wind, Druck)
   if (objects.labelhumidity) {
@@ -2079,16 +2080,18 @@ void aktualisiereUI() {
       if (polValLabels[i])  setPollenLabel(polValLabels[i], v);
     }
 
-    // Wetterfühligkeit: 4 konfigurierbare Kategorien (Periode heute_nachmittag = 0)
+    // Wetterfühligkeit: 4 konfigurierbare Kategorien
+    // Periode zeitabhängig: < 18 Uhr → heute Nachmittag (0), ab 18 Uhr → morgen Vormittag (1)
     static const char* BIO_NAMEN[] = {"Herz/Kreislauf","Atemwege","Rheuma","Migraene","Psyche","Erkaeltung","UV/Licht"};
     int wsCats[4] = {cfg.ws_cat0, cfg.ws_cat1, cfg.ws_cat2, cfg.ws_cat3};
     lv_obj_t* catNameLabels[4] = {objects.labelwscat1name, objects.labelwscat2name, objects.labelwscat3name, objects.labelwscat4name};
     lv_obj_t* catValLabels[4]  = {objects.labelwscat1val,  objects.labelwscat2val,  objects.labelwscat3val,  objects.labelwscat4val};
+    struct tm tiNow; getLocalTime(&tiNow);
+    int bioPeriode = (tiNow.tm_hour >= 18) ? 1 : 0;
     bool bioVerfuegbar = bio.geladen;
-    // Prüfe ob Periode 0 (today_afternoon) alle Nullen hat
     bool bioLeer = true;
     if (bioVerfuegbar) {
-      for (int k = 0; k < 7; k++) if (bio.wert[0][k] != 0) { bioLeer = false; break; }
+      for (int k = 0; k < 7; k++) if (bio.wert[bioPeriode][k] != 0) { bioLeer = false; break; }
     }
     for (int i = 0; i < 4; i++) {
       int cat = wsCats[i];
@@ -2098,7 +2101,7 @@ void aktualisiereUI() {
         if (!bioVerfuegbar || bioLeer) {
           setLabelFmt(catValLabels[i], lv_color_hex(0x444444), "-");
         } else {
-          int v = bio.wert[0][cat];
+          int v = bio.wert[bioPeriode][cat];
           setLabelFmt(catValLabels[i], bioWertColor(v), bioWertKurz(v));
         }
       }

@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.9.4-beta (2026-07-26)
+
+### Neu
+- **Firmware-Version auf Menü-Screen:** `labelversion` zeigt die aktuelle Firmware-Version an
+- **Biowetter Periode zeitabhängig:** Screenhealth zeigt vor 18 Uhr „heute Nachmittag", ab 18 Uhr „morgen Vormittag" – damit immer der nächste relevante Zeitraum angezeigt wird (statt immer Periode 0)
+
+### Fixes
+- **UV/Licht-Kategorie zeigte nachmittäglichen Forecast am Morgen:** Durch feste Periode 0 (heute Nachmittag) konnte UV-Belastung „hoch" erscheinen obwohl aktueller UV-Index niedrig war; fix: zeitbasierte Periodenauswahl
+
+---
+
 ## v0.9.3-beta (2026-07-25)
 
 ### Neu
