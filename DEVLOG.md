@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-08-01 – v0.9.5.1-beta
+
+### UI-Korrekturen
+
+Verschiedene Layoutfehler nach dem v0.9.5-Export manuell korrigiert und neu exportiert. `font_montserrat_12.c` aus dem Fontset entfernt.
+
+---
+
 ## 2026-08-01 – v0.9.5-beta
 
 ### Icon-Navigation + Biowetter-Kategorie-Vereinheitlichung
