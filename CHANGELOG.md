@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.9.6-rc (2026-08-01)
+
+### Status
+- **Release Candidate:** Funktionsumfang abgeschlossen, letzte UI-Korrekturen und Stabilitätstests
+
+### Änderungen
+- UI-Überarbeitungen und Layout-Korrekturen (PicoPixel-Re-Export)
+
+---
+
 ## v0.9.5.2-beta (2026-08-01)
 
 ### Fixes

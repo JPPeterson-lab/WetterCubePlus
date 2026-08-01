@@ -10,7 +10,7 @@ const char *theme_names[2] = {
 };
 
 uint32_t theme_colors[2][3] = {
-    { 0x4087cdeb, 0xff4561d4, 0xff000000 },
+    { 0xff87ceeb, 0xffce4b11, 0xff000000 },
     { 0xff184a7e, 0xff0cf836, 0xffffffff }
 };
 
@@ -453,11 +453,11 @@ void change_color_theme(uint32_t theme_index) {
 
 // Common colors
 const uint32_t common_000000 = 0x000000;
-const uint32_t common_4fe918 = 0x4fe918;
 const uint32_t common_7a4c93 = 0x7a4c93;
 const uint32_t common_87ceeb = 0x87ceeb;
 const uint32_t common_c80d4f = 0xc80d4f;
 const uint32_t common_cc0000 = 0xcc0000;
 const uint32_t common_d67a28 = 0xd67a28;
+const uint32_t common_e9b117 = 0xe9b117;
 const uint32_t common_ffffff = 0xffffff;
 

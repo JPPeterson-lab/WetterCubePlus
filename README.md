@@ -1,8 +1,8 @@
 # 🌦️ WetterCubePlus
 
-![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Release%20Candidate-brightgreen?style=flat-square)
 ![Fortschritt](https://img.shields.io/badge/Fortschritt-95%25-green?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.9.5.2--beta-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.9.6--rc-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -13,7 +13,7 @@ Dieses Projekt ist die Weiterentwicklung des [WetterCube](https://github.com/JPP
 
 Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [Deutschen Wetterdienst (DWD)](https://www.dwd.de) – kein API-Key nötig.
 
-> **⚠️ Beta-Version:** Dieses Projekt befindet sich noch in aktiver Entwicklung. Fehler und Breaking Changes sind möglich. / This project is still in active development. Bugs and breaking changes may occur.
+> **🟢 Release Candidate:** Funktionsumfang abgeschlossen – letzte Tests vor dem stabilen Release. / Feature-complete — final testing before stable release.
 
 ---
 
@@ -267,9 +267,9 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 
 # 🌦️ WetterCubePlus (English)
 
-![Status](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Release%20Candidate-brightgreen?style=flat-square)
 ![Progress](https://img.shields.io/badge/Progress-95%25-green?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.9.5.2--beta-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.9.6--rc-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)

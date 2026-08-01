@@ -1449,7 +1449,7 @@ void create_screen_screenairquality() {
                     lv_obj_set_size(obj, 110, 7);
                     lv_bar_set_range(obj, 0, 100);
                     lv_bar_set_value(obj, 50, LV_ANIM_OFF);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(common_4fe918), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+                    lv_obj_set_style_bg_color(obj, lv_color_hex(common_e9b117), LV_PART_INDICATOR | LV_STATE_DEFAULT);
                     lv_obj_set_style_radius(obj, 5, LV_PART_INDICATOR | LV_STATE_DEFAULT);
                     lv_obj_set_style_bg_opa(obj, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
                 }
@@ -1514,7 +1514,7 @@ void create_screen_screenairquality() {
                     lv_obj_set_size(obj, 110, 7);
                     lv_bar_set_range(obj, 0, 100);
                     lv_bar_set_value(obj, 50, LV_ANIM_OFF);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(common_4fe918), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+                    lv_obj_set_style_bg_color(obj, lv_color_hex(common_e9b117), LV_PART_INDICATOR | LV_STATE_DEFAULT);
                     lv_obj_set_style_radius(obj, 5, LV_PART_INDICATOR | LV_STATE_DEFAULT);
                     lv_obj_set_style_bg_opa(obj, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
                 }
@@ -1670,7 +1670,7 @@ void create_screen_screenairquality() {
                     lv_bar_set_range(obj, 0, 100);
                     lv_bar_set_value(obj, 50, LV_ANIM_OFF);
                     lv_obj_set_style_radius(obj, 5, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(common_4fe918), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+                    lv_obj_set_style_bg_color(obj, lv_color_hex(common_e9b117), LV_PART_INDICATOR | LV_STATE_DEFAULT);
                     lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_bg_opa(obj, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
                 }
@@ -1735,7 +1735,7 @@ void create_screen_screenairquality() {
                     lv_obj_set_size(obj, 110, 7);
                     lv_bar_set_range(obj, 0, 100);
                     lv_bar_set_value(obj, 50, LV_ANIM_OFF);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(common_4fe918), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+                    lv_obj_set_style_bg_color(obj, lv_color_hex(common_e9b117), LV_PART_INDICATOR | LV_STATE_DEFAULT);
                     lv_obj_set_style_radius(obj, 5, LV_PART_INDICATOR | LV_STATE_DEFAULT);
                     lv_obj_set_style_bg_opa(obj, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
                 }
@@ -4533,10 +4533,10 @@ void create_screen_screen_1() {
                     // labelpollenforecast2mainvalue
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelpollenforecast2mainvalue = obj;
-                    lv_obj_set_pos(obj, 26, 184);
-                    lv_obj_set_size(obj, 101, 19);
+                    lv_obj_set_pos(obj, 15, 184);
+                    lv_obj_set_size(obj, 121, 26);
                     lv_obj_set_style_text_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_font(obj, &font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_obj_set_style_text_font(obj, &font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_align(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, "gering");
@@ -4545,10 +4545,10 @@ void create_screen_screen_1() {
                     // labelpollenforecast1main
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelpollenforecast1main = obj;
-                    lv_obj_set_pos(obj, 26, 98);
-                    lv_obj_set_size(obj, 101, 19);
+                    lv_obj_set_pos(obj, 15, 92);
+                    lv_obj_set_size(obj, 121, 26);
                     lv_obj_set_style_text_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_font(obj, &font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_obj_set_style_text_font(obj, &font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_align(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, "Ambrosia");
@@ -4557,10 +4557,10 @@ void create_screen_screen_1() {
                     // labelpollenforecast2main
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelpollenforecast2main = obj;
-                    lv_obj_set_pos(obj, 26, 156);
-                    lv_obj_set_size(obj, 101, 19);
+                    lv_obj_set_pos(obj, 15, 156);
+                    lv_obj_set_size(obj, 121, 26);
                     lv_obj_set_style_text_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_font(obj, &font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_obj_set_style_text_font(obj, &font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_align(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, "Ambrosia");
@@ -4569,10 +4569,10 @@ void create_screen_screen_1() {
                     // labelpollenforecast1mainvalue
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labelpollenforecast1mainvalue = obj;
-                    lv_obj_set_pos(obj, 26, 126);
-                    lv_obj_set_size(obj, 101, 19);
+                    lv_obj_set_pos(obj, 15, 121);
+                    lv_obj_set_size(obj, 121, 26);
                     lv_obj_set_style_text_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_font(obj, &font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_obj_set_style_text_font(obj, &font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_align(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_label_set_text(obj, "gering");

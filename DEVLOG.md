@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-08-01 – v0.9.6-rc
+
+### Release Candidate
+
+Übergang von Beta zu RC. Funktionsumfang abgeschlossen. UI-Layoutkorrekturen eingearbeitet. Status-Badge und README-Hinweistext auf Release Candidate aktualisiert.
+
+---
+
 ## 2026-08-01 – v0.9.5.2-beta
 
 ### UI-Korrekturen
