@@ -2,13 +2,13 @@
 //  WetterCubePlus.ino
 //  ESP32-S3 N16R8 | ILI9488 3.5" 480x320 | XPT2046 Touch
 //  LVGL 8.x | LovyanGFX | HTTP-OTA | WebUI | DWD-Warnungen
-//  Version: 0.9.5-beta
+//  
 // ============================================================
 
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.6-rc"
+#define FIRMWARE_VERSION "0.9.6-rc1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1971,10 +1971,10 @@ void aktualisiereUI() {
     if (objects.labelaqivalue) {
       if (aqi >= 0) { snprintf(buf, sizeof(buf), "%d", aqi); }
       else          { snprintf(buf, sizeof(buf), "--"); }
-      setLabelFmt(objects.labelaqivalue, aqiColor(aqi), buf);
+      lv_label_set_text(objects.labelaqivalue, buf);
     }
     if (objects.labelaqistatus)
-      setLabelFmt(objects.labelaqistatus, aqiColor(aqi), aqiStatusText(aqi));
+      lv_label_set_text(objects.labelaqistatus, aqiStatusText(aqi));
 
     // Einzelwerte – aktuelle Stunde mit Farbkodierung nach EU-Grenzwerten
     // Schwellen analog zum EU AQI: gut / mäßig / schlecht
@@ -2006,35 +2006,36 @@ void aktualisiereUI() {
       if (v <= 180)  return lv_color_hex(0xff8c00);
       return lv_color_hex(0xff3030);
     };
-    auto setAqiBar = [](lv_obj_t* bar, float val, int rangeMax) {
+    auto setAqiBar = [](lv_obj_t* bar, float val, int rangeMax, lv_color_t col) {
       if (!bar) return;
       lv_bar_set_range(bar, 0, rangeMax);
       lv_bar_set_value(bar, (val >= 0) ? (int)val : 0, LV_ANIM_OFF);
+      lv_obj_set_style_bg_color(bar, col, LV_PART_INDICATOR);
     };
 
     if (objects.labelpm25value) {
       snprintf(buf, sizeof(buf), (pollen.pm25 >= 0) ? "%.1f" : "--", pollen.pm25);
       setLabelFmt(objects.labelpm25value, pm25Color(pollen.pm25), buf);
     }
-    setAqiBar(objects.bar_1, pollen.pm25, 75);
+    setAqiBar(objects.barlabelpm25value, pollen.pm25, 75, pm25Color(pollen.pm25));
 
     if (objects.labelpm10value) {
       snprintf(buf, sizeof(buf), (pollen.pm10 >= 0) ? "%.1f" : "--", pollen.pm10);
       setLabelFmt(objects.labelpm10value, pm10Color(pollen.pm10), buf);
     }
-    setAqiBar(objects.bar_2, pollen.pm10, 150);
+    setAqiBar(objects.barpm10value, pollen.pm10, 150, pm10Color(pollen.pm10));
 
     if (objects.labelno2value) {
       snprintf(buf, sizeof(buf), (pollen.no2 >= 0) ? "%.0f" : "--", pollen.no2);
       setLabelFmt(objects.labelno2value, no2Color(pollen.no2), buf);
     }
-    setAqiBar(objects.bar_3, pollen.no2, 200);
+    setAqiBar(objects.barlabelno2value, pollen.no2, 200, no2Color(pollen.no2));
 
     if (objects.labelo3value) {
       snprintf(buf, sizeof(buf), (pollen.o3 >= 0) ? "%.0f" : "--", pollen.o3);
       setLabelFmt(objects.labelo3value, o3Color(pollen.o3), buf);
     }
-    setAqiBar(objects.bar_4, pollen.o3, 240);
+    setAqiBar(objects.barlabelo3value, pollen.o3, 240, o3Color(pollen.o3));
   }
 
   // ── Screenhealth ─────────────────────────────────────────────

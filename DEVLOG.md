@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-08-01 – v0.9.6-rc1
+
+### Luftqualitäts-Screen: Farbkodierung überarbeitet
+
+`labelaqivalue` und `labelaqistatus` zeigen jetzt Theme-Schriftfarbe statt AQI-Statusfarbe — die Farbinformation wird allein über `arcaqi` transportiert. Dafür werden Bars und Zahlenlabels der Einzelwerte (PM2.5, PM10, NO₂, Ozon) nun beide eingefärbt: `setAqiBar()` setzt `LV_PART_INDICATOR` bg_color, `setLabelFmt()` färbt das Zahlenlabel. Objekte korrekt nach screens.h benannt: `barlabelpm25value`, `barpm10value`, `barlabelno2value`, `barlabelo3value`.
+
+---
+
 ## 2026-08-01 – v0.9.6-rc
 
 ### Release Candidate

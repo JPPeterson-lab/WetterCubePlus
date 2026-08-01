@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.6-rc1 (2026-08-01)
+
+### Änderungen
+- **Luftqualitäts-Screen:** ArcAQI bleibt farbkodiert; `labelaqivalue` und `labelaqistatus` verwenden Theme-Schriftfarbe
+- **Bars + Zahlenwerte farbkodiert:** PM2.5, PM10, NO₂ und Ozon – sowohl Balken als auch Zahlenlabel werden nach EU-Grenzwerten eingefärbt
+
+---
+
 ## v0.9.6-rc (2026-08-01)
 
 ### Status
