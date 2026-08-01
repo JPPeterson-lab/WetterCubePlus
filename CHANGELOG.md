@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.9.5-beta (2026-08-01)
+
+### Neu
+- **Icon-Navigation:** Pfeil-Icons (`fc_left_60`, `fc_right_60`) ersetzen Text-Labels als Navigations-Buttons; zusätzliche Icons `fc_right_up2_38` / `fc_left_down2_38` für Sub-Screen-Navigation vorbereitet
+- **Biowetter-Kategorien vereinheitlicht:** screenhealth und WebUI verwenden jetzt exakt die gleichen DWD-Bezeichnungen wie screenbiowetter (Allg. Befinden, Hypotonie, Bluthochdruck, Rheuma entz., Rheuma deg., Asthma, Wärmebelast.)
+
+### Fixes
+- **Icon-Buttons nicht klickbar:** `labelbuttonforward` / `labelbuttonbackward` nach Umbau auf `lv_img` nicht mehr per Touch auslösbar; fix: `LV_OBJ_FLAG_CLICKABLE` in `registriereCallbacks()` gesetzt
+- **Pollen screen_1:** drittes Pollen-Label entfernt (nur noch 2 Slots), Code angepasst
+
+---
+
 ## v0.9.4-beta (2026-07-26)
 
 ### Neu

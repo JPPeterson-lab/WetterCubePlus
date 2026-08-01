@@ -1,5 +1,20 @@
 # Entwicklungs-Log
 
+## 2026-08-01 – v0.9.5-beta
+
+### Icon-Navigation + Biowetter-Kategorie-Vereinheitlichung
+
+**Icon-Buttons auf screen_1**
+`labelbuttonbackward` und `labelbuttonforward` wurden in PicoPixel von Label- auf Image-Objekte umgestellt (`fc_left_60`, `fc_right_60`). Da `lv_img_create()` standardmäßig nicht klickbar ist, wurden `LV_OBJ_FLAG_CLICKABLE`-Calls in `registriereCallbacks()` ergänzt (gleiche Lösung wie zuvor bei fc_settings, fc_home etc.). Neues Icon-Set enthält zusätzlich `fc_right_up2_38` / `fc_left_down2_38` für zukünftige Sub-Navigation.
+
+**Biowetter-Kategorien vereinheitlicht**
+`WS_CAT_NAMEN[]` (WebUI-Dropdown) und `BIO_NAMEN[]` (screenhealth-Anzeige) verwenden jetzt die exakten DWD-Bezeichnungen: Allg. Befinden, Hypotonie, Bluthochdruck, Rheuma entz., Rheuma deg., Asthma, Wärmebelast. — identisch mit screenbiowetter. Bestehende ws_cat-Einstellungen in NVS müssen nach Update neu gesetzt werden.
+
+**Pollen screen_1 auf 2 Slots reduziert**
+drittes Pollen-Label vom User in PicoPixel entfernt; Code-Array von 3 auf 2 Einträge angepasst.
+
+---
+
 ## 2026-07-26 – v0.9.4-beta
 
 ### Menü-Screen Versionsanzeige + Biowetter Periodenlogik

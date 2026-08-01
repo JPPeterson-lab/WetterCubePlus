@@ -8,15 +8,19 @@
 #include "src/ui/images/alert.inc"
 #include "src/ui/images/night_full_moon_clear.inc"
 #include "src/ui/images/overcast.inc"
+#include "src/ui/images/fc_left_60.inc"
 #include "src/ui/images/sleet.inc"
 #include "src/ui/images/rain.inc"
 #include "src/ui/images/day_clear.inc"
 #include "src/ui/images/fc_plus_38_ffffff.inc"
+#include "src/ui/images/fc_right_60.inc"
 #include "src/ui/images/thunder.inc"
 #include "src/ui/images/snow.inc"
+#include "src/ui/images/fc_right_up2_38.inc"
+#include "src/ui/images/fc_left_down2_38.inc"
 #include "src/ui/images/night_full_moon_partial_cloud.inc"
 #include "src/ui/images/pico_dark_logo_132.inc"
-const ext_img_desc_t images[15] = {
+const ext_img_desc_t images[19] = {
     { "day_partial_cloud", &day_partial_cloud },
     { "fc_home", &fc_home },
     { "fc_settings", &fc_settings },
@@ -24,12 +28,16 @@ const ext_img_desc_t images[15] = {
     { "alert", &alert },
     { "night_full_moon_clear", &night_full_moon_clear },
     { "overcast", &overcast },
+    { "fc_left_60", &fc_left_60 },
     { "sleet", &sleet },
     { "rain", &rain },
     { "day_clear", &day_clear },
     { "fc_plus_38_ffffff", &fc_plus_38_ffffff },
+    { "fc_right_60", &fc_right_60 },
     { "thunder", &thunder },
     { "snow", &snow },
+    { "fc_right_up2_38", &fc_right_up2_38 },
+    { "fc_left_down2_38", &fc_left_down2_38 },
     { "night_full_moon_partial_cloud", &night_full_moon_partial_cloud },
     { "pico_dark_logo_132", &pico_dark_logo_132 }
 };

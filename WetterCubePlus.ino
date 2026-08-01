@@ -2,13 +2,13 @@
 //  WetterCubePlus.ino
 //  ESP32-S3 N16R8 | ILI9488 3.5" 480x320 | XPT2046 Touch
 //  LVGL 8.x | LovyanGFX | HTTP-OTA | WebUI | DWD-Warnungen
-//  Version: 0.9.0-beta
+//  Version: 0.9.5-beta
 // ============================================================
 
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.4-beta"
+#define FIRMWARE_VERSION "0.9.5-beta"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -148,7 +148,7 @@ struct Config {
   int    ampel_rot_min    = 25;
   int    ampel_rot_max    = 99;
   String bio_zone = "A";        // DWD Biowetter-Zone A–J
-  // Wetterfühligkeits-Kategorien (Index 0–6): 0=Herz/Kreislauf, 1=Atemwege, 2=Rheumatismus, 3=Migräne, 4=Psyche, 5=Erkältungsrisiko, 6=UV/Strahlung
+  // Biowetter-Kategorien (Index 0–6): 0=Allg.Befinden, 1=Hypotonie, 2=Bluthochdruck, 3=Rheuma entz., 4=Rheuma deg., 5=Asthma, 6=Wärmebelast.
   int ws_cat0 = 0;
   int ws_cat1 = 1;
   int ws_cat2 = 2;
@@ -644,7 +644,7 @@ void handleWebWlanAendern();
 void handleWebWlanSave();
 
 static const char* WS_CAT_NAMEN[] = {
-  "Herz/Kreislauf", "Atemwege", "Rheumatismus", "Migraene", "Psyche", "Erkaeltungsrisiko", "UV/Strahlung"
+  "Allg. Befinden", "Hypotonie", "Bluthochdruck", "Rheuma entz.", "Rheuma deg.", "Asthma", "Waermebelast."
 };
 
 static String baueWsCatOptions(int selected) {
@@ -1824,9 +1824,9 @@ void aktualisiereUI() {
     for (int i = 0; i < 4; i++)
       for (int j = i+1; j < 5; j++)
         if (pe[j].v > pe[i].v) { PE tmp = pe[i]; pe[i] = pe[j]; pe[j] = tmp; }
-    lv_obj_t* pn[] = {objects.labelpollenforecast1main,      objects.labelpollenforecast2main,      objects.labelpollenforecast3main};
-    lv_obj_t* pv[] = {objects.labelpollenforecast1mainvalue, objects.labelpollenforecast2mainvalue, objects.labelpollenforecast3mainvalue};
-    for (int i = 0; i < 3; i++) {
+    lv_obj_t* pn[] = {objects.labelpollenforecast1main,      objects.labelpollenforecast2main};
+    lv_obj_t* pv[] = {objects.labelpollenforecast1mainvalue, objects.labelpollenforecast2mainvalue};
+    for (int i = 0; i < 2; i++) {
       setLabel(pn[i], pe[i].v >= 0 ? pe[i].n : "--");
       setPollenLabel(pv[i], pe[i].v);
     }
@@ -2082,7 +2082,7 @@ void aktualisiereUI() {
 
     // Wetterfühligkeit: 4 konfigurierbare Kategorien
     // Periode zeitabhängig: < 18 Uhr → heute Nachmittag (0), ab 18 Uhr → morgen Vormittag (1)
-    static const char* BIO_NAMEN[] = {"Herz/Kreislauf","Atemwege","Rheuma","Migraene","Psyche","Erkaeltung","UV/Licht"};
+    static const char* BIO_NAMEN[] = {"Allg. Befinden","Hypotonie","Bluthochdruck","Rheuma entz.","Rheuma deg.","Asthma","Waermebelast."};
     int wsCats[4] = {cfg.ws_cat0, cfg.ws_cat1, cfg.ws_cat2, cfg.ws_cat3};
     lv_obj_t* catNameLabels[4] = {objects.labelwscat1name, objects.labelwscat2name, objects.labelwscat3name, objects.labelwscat4name};
     lv_obj_t* catValLabels[4]  = {objects.labelwscat1val,  objects.labelwscat2val,  objects.labelwscat3val,  objects.labelwscat4val};
@@ -2605,7 +2605,9 @@ void setup() {
   REG_CB(objects.labelbuttonscreenhub_1,     cbHubWarn,      LV_EVENT_CLICKED);
   REG_CB(objects.labelbuttonscreenhubback_1, cbHubWarnBack,  LV_EVENT_CLICKED);
   // Menü-Icon auf screen_1 (fc_settings Bild) + Zurück-Button
-  if (objects.fc_settings) lv_obj_add_flag(objects.fc_settings, LV_OBJ_FLAG_CLICKABLE);
+  if (objects.fc_settings)        lv_obj_add_flag(objects.fc_settings,        LV_OBJ_FLAG_CLICKABLE);
+  if (objects.labelbuttonforward) lv_obj_add_flag(objects.labelbuttonforward, LV_OBJ_FLAG_CLICKABLE);
+  if (objects.labelbuttonbackward)lv_obj_add_flag(objects.labelbuttonbackward,LV_OBJ_FLAG_CLICKABLE);
   REG_CB(objects.fc_settings,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
   REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
   // Nach Theme-Wechsel Farbkodierungen wiederherstellen
