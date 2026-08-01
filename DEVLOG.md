@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-08-01 – v0.9.5.2-beta
+
+### UI-Korrekturen
+
+Weitere Layoutfehler nach v0.9.5.1-Export korrigiert und neu exportiert.
+
+---
+
 ## 2026-08-01 – v0.9.5.1-beta
 
 ### UI-Korrekturen

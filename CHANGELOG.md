@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.5.2-beta (2026-08-01)
+
+### Fixes
+- **UI-Korrekturen:** Weitere Layoutfehler behoben (PicoPixel-Re-Export)
+
+---
+
 ## v0.9.5.1-beta (2026-08-01)
 
 ### Fixes
