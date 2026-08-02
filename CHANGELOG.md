@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.6-rc2 (2026-08-02)
+
+### Fixes
+- **UI-Korrekturen:** Layoutfehler auf mehreren Screens behoben (PicoPixel-Re-Export)
+
+---
+
 ## v0.9.6-rc1 (2026-08-01)
 
 ### Änderungen

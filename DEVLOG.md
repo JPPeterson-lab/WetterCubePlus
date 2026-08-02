@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-08-02 – v0.9.6-rc2
+
+### UI-Korrekturen
+
+Layoutfehler auf mehreren Screens korrigiert, PicoPixel neu exportiert.
+
+---
+
 ## 2026-08-01 – v0.9.6-rc1
 
 ### Luftqualitäts-Screen: Farbkodierung überarbeitet
