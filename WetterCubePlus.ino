@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.6-rc2"
+#define FIRMWARE_VERSION "0.9.7-rc1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -44,6 +44,7 @@
 #include <lvgl.h>
 #include "src/ui/ui.h"
 #include "src/ui/images.h"
+#include "src/ui/fonts/fonts.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
@@ -2197,6 +2198,475 @@ void aktualisiereUI() {
 }
 
 // ============================================================
+//  Breakout-Minispiel (programmatisch, screenmenu → buttongame)
+// ============================================================
+struct GameDifficulty { const char* name; lv_coord_t paddleW; float ballSpeed; uint8_t brickRows; };
+static const GameDifficulty GAME_DIFFICULTIES[5] = {
+  { "Anfaenger", 90, 3.0f,  3 },
+  { "Leicht",    80, 3.5f,  4 },
+  { "Mittel",    70, 4.0f,  5 },
+  { "Schwer",    60, 4.75f, 6 },
+  { "Extrem",    50, 5.5f,  6 },   // Reihen bei 6 gedeckelt (Objekt-Budget)
+};
+
+struct HighscoreEntry { int32_t score; uint8_t diff; };
+static HighscoreEntry gHighscores[5];
+static uint8_t        gHighscoreCount = 0;
+
+enum GameState { GAME_IDLE, GAME_RUNNING, GAME_OVER };
+static GameState gGameState = GAME_IDLE;
+
+static lv_obj_t* gameSelectScreen = nullptr;
+static lv_obj_t* gamePlayScreen   = nullptr;
+static lv_obj_t* hsRows[5];
+static lv_obj_t* diffBtns[5];
+static uint8_t   gAusgewaehlteSchwierigkeit = 2;   // Default "Mittel"
+
+static lv_obj_t* lblScore = nullptr;
+static lv_obj_t* lblLeben = nullptr;
+static lv_obj_t* gameExitBtn  = nullptr;
+static lv_obj_t* leftBtn  = nullptr;
+static lv_obj_t* rightBtn = nullptr;
+static lv_obj_t* paddle   = nullptr;
+static lv_obj_t* ball     = nullptr;
+static lv_obj_t* gameOverPanel     = nullptr;
+static lv_obj_t* lblGameOverTitel  = nullptr;
+static lv_obj_t* lblGameOverScore  = nullptr;
+
+#define GAME_BRICK_COLS      8
+#define GAME_MAX_BRICK_ROWS  6
+#define GAME_MAX_BRICKS      (GAME_MAX_BRICK_ROWS * GAME_BRICK_COLS)  // 48
+static lv_obj_t* bricks[GAME_MAX_BRICKS];
+static bool      brickAlive[GAME_MAX_BRICKS];
+static uint8_t   brickRow[GAME_MAX_BRICKS];
+
+static lv_timer_t* gameTimer = nullptr;
+static float   ballX, ballY, ballVX, ballVY, ballSpeedMag;
+static int     gScore = 0, gLeben = 0, gAktiveBricks = 0;
+static uint8_t gAktiveSchwierigkeit = 0;
+
+#define PADDLE_Y 270
+#define PADDLE_H 10
+#define PADDLE_STEP 8
+#define BALL_SIZE 14
+
+// ── Highscore-Persistenz (NVS, eigener Namespace) ────────────────────────────
+static void ladeHighscores() {
+  Preferences prefs; prefs.begin("wcp_game", true);
+  gHighscoreCount = prefs.getUChar("cnt", 0);
+  char key[4];
+  for (int i = 0; i < 5; i++) {
+    snprintf(key, sizeof(key), "s%d", i); gHighscores[i].score = prefs.getInt(key, 0);
+    snprintf(key, sizeof(key), "d%d", i); gHighscores[i].diff  = prefs.getUChar(key, 0);
+  }
+  prefs.end();
+}
+
+static void speichereHighscores() {
+  Preferences prefs; prefs.begin("wcp_game", false);
+  prefs.putUChar("cnt", gHighscoreCount);
+  char key[4];
+  for (int i = 0; i < 5; i++) {
+    snprintf(key, sizeof(key), "s%d", i); prefs.putInt(key, gHighscores[i].score);
+    snprintf(key, sizeof(key), "d%d", i); prefs.putUChar(key, gHighscores[i].diff);
+  }
+  prefs.end();
+}
+
+static bool fuegeHighscoreEin(int32_t score, uint8_t diff) {
+  if (gHighscoreCount < 5) {
+    gHighscores[gHighscoreCount++] = { score, diff };
+  } else if (score > gHighscores[4].score) {
+    gHighscores[4] = { score, diff };
+  } else {
+    return false;
+  }
+  for (int i = gHighscoreCount - 1; i > 0 && gHighscores[i].score > gHighscores[i-1].score; i--) {
+    HighscoreEntry tmp = gHighscores[i]; gHighscores[i] = gHighscores[i-1]; gHighscores[i-1] = tmp;
+  }
+  speichereHighscores();
+  return true;
+}
+
+static void aktualisiereHighscoreAnzeige() {
+  for (int i = 0; i < 5; i++) {
+    if (i < gHighscoreCount)
+      lv_label_set_text_fmt(hsRows[i], "%d. %ld  (%s)", i + 1, (long)gHighscores[i].score, GAME_DIFFICULTIES[gHighscores[i].diff].name);
+    else
+      lv_label_set_text_fmt(hsRows[i], "%d. --", i + 1);
+  }
+}
+
+static void aktualisiereSchwierigkeitButtons() {
+  for (int i = 0; i < 5; i++) {
+    if (!diffBtns[i]) continue;
+    bool sel = (i == gAusgewaehlteSchwierigkeit);
+    lv_obj_set_style_bg_color(diffBtns[i], sel ? lv_color_hex(0x2c3e50) : lv_color_hex(0xbdc3c7), 0);
+  }
+}
+
+static void cbDifficultySelect(lv_event_t* e) {
+  int idx = (int)(intptr_t)lv_event_get_user_data(e);
+  gAusgewaehlteSchwierigkeit = (uint8_t)idx;
+  aktualisiereSchwierigkeitButtons();
+}
+
+// ── Ziegel-Layout ─────────────────────────────────────────────────────────────
+#define BRICK_W 52
+#define BRICK_H 16
+#define BRICK_GAP 4
+#define BRICK_TOP 40
+#define BRICK_SIDE 18
+static const uint32_t BRICK_ROW_COLORS[GAME_MAX_BRICK_ROWS] = {
+  0xff4d4d, 0xff9d4d, 0xffe14d, 0x4dff88, 0x4dc9ff, 0x9d4dff
+};
+
+static void startNeueRunde(uint8_t rows) {
+  int aktiv = rows * GAME_BRICK_COLS;
+  for (int i = 0; i < GAME_MAX_BRICKS; i++) {
+    if (!bricks[i]) continue;
+    if (i < aktiv) {
+      int row = i / GAME_BRICK_COLS;
+      int col = i % GAME_BRICK_COLS;
+      brickRow[i] = row;
+      lv_obj_set_pos(bricks[i], BRICK_SIDE + col * (BRICK_W + BRICK_GAP), BRICK_TOP + row * (BRICK_H + BRICK_GAP));
+      lv_obj_set_style_bg_color(bricks[i], lv_color_hex(BRICK_ROW_COLORS[row]), 0);
+      lv_obj_clear_flag(bricks[i], LV_OBJ_FLAG_HIDDEN);
+      brickAlive[i] = true;
+    } else {
+      lv_obj_add_flag(bricks[i], LV_OBJ_FLAG_HIDDEN);
+      brickAlive[i] = false;
+    }
+  }
+  gAktiveBricks = aktiv;
+}
+
+// ── Pfeiltasten-Steuerung Paddle (Finger bleibt am Rand, verdeckt Paddle nicht) ─
+static void bewegePaddle() {
+  lv_coord_t paddleW = GAME_DIFFICULTIES[gAktiveSchwierigkeit].paddleW;
+  lv_coord_t x = lv_obj_get_x(paddle);
+  if (lv_obj_has_state(leftBtn, LV_STATE_PRESSED)) {
+    x -= PADDLE_STEP;
+    if (x < 0) x = 0;
+    lv_obj_set_x(paddle, x);
+  } else if (lv_obj_has_state(rightBtn, LV_STATE_PRESSED)) {
+    x += PADDLE_STEP;
+    if (x > 480 - paddleW) x = 480 - paddleW;
+    lv_obj_set_x(paddle, x);
+  }
+}
+
+// ── Spielende ─────────────────────────────────────────────────────────────────
+static void gameUeber() {
+  if (gameTimer) { lv_timer_del(gameTimer); gameTimer = nullptr; }
+  gGameState = GAME_OVER;
+  bool neuerHighscore = fuegeHighscoreEin(gScore, gAktiveSchwierigkeit);
+  lv_label_set_text(lblGameOverTitel, "Game Over");
+  lv_label_set_text_fmt(lblGameOverScore, "Score: %d%s", gScore, neuerHighscore ? "  (Highscore!)" : "");
+  lv_obj_clear_flag(gameOverPanel, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_move_foreground(gameOverPanel);
+}
+
+// ── Physik-Tick ───────────────────────────────────────────────────────────────
+static void cbGameTick(lv_timer_t*) {
+  if (gGameState != GAME_RUNNING) return;
+
+  bewegePaddle();
+
+  ballX += ballVX;
+  ballY += ballVY;
+
+  // Wände
+  if (ballX <= 0) { ballX = 0; ballVX = -ballVX; }
+  if (ballX + BALL_SIZE >= 480) { ballX = 480 - BALL_SIZE; ballVX = -ballVX; }
+  if (ballY <= 34) { ballY = 34; ballVY = -ballVY; }
+
+  // Paddle-Kollision
+  lv_coord_t paddleW = GAME_DIFFICULTIES[gAktiveSchwierigkeit].paddleW;
+  lv_coord_t paddleX = lv_obj_get_x(paddle);
+  if (ballVY > 0 &&
+      ballY + BALL_SIZE >= PADDLE_Y && ballY + BALL_SIZE <= PADDLE_Y + PADDLE_H + 6 &&
+      ballX + BALL_SIZE >= paddleX && ballX <= paddleX + paddleW) {
+    float hit = ((ballX + BALL_SIZE / 2.0f) - (paddleX + paddleW / 2.0f)) / (paddleW / 2.0f);
+    if (hit < -1.0f) hit = -1.0f;
+    if (hit >  1.0f) hit =  1.0f;
+    ballVX = hit * ballSpeedMag;
+    ballVY = -fabsf(ballVY);
+    ballY = PADDLE_Y - BALL_SIZE;
+  }
+
+  // Brick-Kollision (ein Treffer pro Tick)
+  for (int i = 0; i < GAME_MAX_BRICKS; i++) {
+    if (!brickAlive[i]) continue;
+    lv_coord_t bx = lv_obj_get_x(bricks[i]);
+    lv_coord_t by = lv_obj_get_y(bricks[i]);
+    if (ballX + BALL_SIZE >= bx && ballX <= bx + BRICK_W &&
+        ballY + BALL_SIZE >= by && ballY <= by + BRICK_H) {
+      brickAlive[i] = false;
+      lv_obj_add_flag(bricks[i], LV_OBJ_FLAG_HIDDEN);
+      ballVY = -ballVY;
+      gScore += (brickRow[i] + 1) * 10;
+      gAktiveBricks--;
+      lv_label_set_text_fmt(lblScore, "Score: %d", gScore);
+      break;
+    }
+  }
+
+  // Boden – Leben verloren
+  if (ballY + BALL_SIZE > 320) {
+    gLeben--;
+    lv_label_set_text_fmt(lblLeben, "Leben: %d", gLeben);
+    if (gLeben <= 0) {
+      gameUeber();
+      return;
+    }
+    paddleX = lv_obj_get_x(paddle);
+    ballX = paddleX + paddleW / 2.0f - BALL_SIZE / 2.0f;
+    ballY = PADDLE_Y - BALL_SIZE - 4;
+    ballVX = ballSpeedMag * 0.3f;
+    ballVY = -ballSpeedMag;
+  }
+
+  // Welle geschafft
+  if (gAktiveBricks == 0) {
+    ballSpeedMag *= 1.1f;
+    float vxSign = (ballVX >= 0) ? 1.0f : -1.0f;
+    ballVX = vxSign * ballSpeedMag * 0.3f;
+    ballVY = -ballSpeedMag;
+    startNeueRunde(GAME_DIFFICULTIES[gAktiveSchwierigkeit].brickRows);
+  }
+
+  lv_obj_set_pos(ball, (lv_coord_t)ballX, (lv_coord_t)ballY);
+}
+
+// ── Spielstart ────────────────────────────────────────────────────────────────
+static void zeigeGamePlayScreen(uint8_t diff) {
+  if (gGameState == GAME_RUNNING) return;
+  if (gameTimer) { lv_timer_del(gameTimer); gameTimer = nullptr; }
+
+  gAktiveSchwierigkeit = diff;
+  const GameDifficulty& d = GAME_DIFFICULTIES[diff];
+
+  lv_obj_set_size(paddle, d.paddleW, PADDLE_H);
+  lv_coord_t paddleX = (480 - d.paddleW) / 2;
+  lv_obj_set_pos(paddle, paddleX, PADDLE_Y);
+
+  ballSpeedMag = d.ballSpeed;
+  ballX = paddleX + d.paddleW / 2.0f - BALL_SIZE / 2.0f;
+  ballY = PADDLE_Y - BALL_SIZE - 4;
+  ballVX = ballSpeedMag * 0.3f;
+  ballVY = -ballSpeedMag;
+  lv_obj_set_pos(ball, (lv_coord_t)ballX, (lv_coord_t)ballY);
+
+  gScore = 0;
+  gLeben = 3;
+  lv_label_set_text(lblScore, "Score: 0");
+  lv_label_set_text_fmt(lblLeben, "Leben: %d", gLeben);
+  lv_obj_add_flag(gameOverPanel, LV_OBJ_FLAG_HIDDEN);
+
+  startNeueRunde(d.brickRows);
+
+  gGameState = GAME_RUNNING;
+  gameTimer = lv_timer_create(cbGameTick, 20, nullptr);
+  lv_scr_load(gamePlayScreen);
+}
+
+static void cbGameExitTap(lv_event_t*) {
+  if (gameTimer) { lv_timer_del(gameTimer); gameTimer = nullptr; }
+  gGameState = GAME_IDLE;
+  loadScreen(SCREEN_ID_SCREEN_1);
+}
+
+static void cbGameStartTap(lv_event_t*) { zeigeGamePlayScreen(gAusgewaehlteSchwierigkeit); }
+static void cbGameNochmalTap(lv_event_t*) { zeigeGamePlayScreen(gAktiveSchwierigkeit); }
+static void cbGameZurueckMenuTap(lv_event_t*) {
+  if (gameTimer) { lv_timer_del(gameTimer); gameTimer = nullptr; }
+  gGameState = GAME_IDLE;
+  loadScreen(SCREEN_ID_SCREENMENU);
+}
+
+static void cbButtonGameTap(lv_event_t*) {
+  ladeHighscores();
+  aktualisiereHighscoreAnzeige();
+  aktualisiereSchwierigkeitButtons();
+  lv_scr_load(gameSelectScreen);
+}
+
+// ── Screen-Aufbau ─────────────────────────────────────────────────────────────
+static lv_obj_t* erstelleTextButton(lv_obj_t* parent, lv_coord_t x, lv_coord_t y, lv_coord_t w, lv_coord_t h,
+                                     uint32_t bgColor, const char* text, uint32_t textColor = 0xffffff) {
+  lv_obj_t* btn = lv_btn_create(parent);
+  lv_obj_set_pos(btn, x, y);
+  lv_obj_set_size(btn, w, h);
+  lv_obj_set_style_bg_color(btn, lv_color_hex(bgColor), 0);
+  lv_obj_set_style_radius(btn, 8, 0);
+  lv_obj_t* lbl = lv_label_create(btn);
+  lv_label_set_text(lbl, text);
+  lv_obj_set_style_text_color(lbl, lv_color_hex(textColor), 0);
+  lv_obj_center(lbl);
+  return btn;
+}
+
+static void erstelleGameSelectScreen() {
+  gameSelectScreen = lv_obj_create(nullptr);
+  lv_obj_set_size(gameSelectScreen, 480, 320);
+  lv_obj_set_style_bg_color(gameSelectScreen, lv_color_white(), 0);
+  lv_obj_set_style_bg_opa(gameSelectScreen, LV_OPA_COVER, 0);
+  lv_obj_clear_flag(gameSelectScreen, LV_OBJ_FLAG_SCROLLABLE);
+
+  lv_obj_t* titel = lv_label_create(gameSelectScreen);
+  lv_label_set_text(titel, "Breakout");
+  lv_obj_set_style_text_font(titel, &font_montserrat_22, 0);
+  lv_obj_set_style_text_color(titel, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_align(titel, LV_ALIGN_TOP_MID, 0, 10);
+
+  lv_obj_t* hsTitel = lv_label_create(gameSelectScreen);
+  lv_label_set_text(hsTitel, "Bestenliste");
+  lv_obj_set_style_text_font(hsTitel, &font_montserrat_18, 0);
+  lv_obj_set_style_text_color(hsTitel, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_set_pos(hsTitel, 20, 45);
+
+  for (int i = 0; i < 5; i++) {
+    hsRows[i] = lv_label_create(gameSelectScreen);
+    lv_obj_set_style_text_font(hsRows[i], &font_montserrat_16, 0);
+    lv_obj_set_style_text_color(hsRows[i], lv_color_hex(0x333333), 0);
+    lv_obj_set_pos(hsRows[i], 20, 70 + i * 28);
+    lv_label_set_text_fmt(hsRows[i], "%d. --", i + 1);
+  }
+
+  lv_obj_t* diffTitel = lv_label_create(gameSelectScreen);
+  lv_label_set_text(diffTitel, "Schwierigkeit");
+  lv_obj_set_style_text_font(diffTitel, &font_montserrat_18, 0);
+  lv_obj_set_style_text_color(diffTitel, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_set_pos(diffTitel, 250, 45);
+
+  for (int i = 0; i < 5; i++) {
+    diffBtns[i] = erstelleTextButton(gameSelectScreen, 250, 70 + i * 30, 210, 26,
+                                      0xbdc3c7, GAME_DIFFICULTIES[i].name, 0xffffff);
+    lv_obj_add_event_cb(diffBtns[i], cbDifficultySelect, LV_EVENT_CLICKED, (void*)(intptr_t)i);
+  }
+  aktualisiereSchwierigkeitButtons();
+
+  lv_obj_t* zurueckBtn = erstelleTextButton(gameSelectScreen, 20, 255, 120, 45, 0x7f8c8d, "Zurueck");
+  lv_obj_add_event_cb(zurueckBtn, cbGameZurueckMenuTap, LV_EVENT_CLICKED, nullptr);
+
+  lv_obj_t* startBtn = erstelleTextButton(gameSelectScreen, 300, 255, 160, 45, 0x2ecc71, "Start");
+  lv_obj_add_event_cb(startBtn, cbGameStartTap, LV_EVENT_CLICKED, nullptr);
+}
+
+static void erstelleGamePlayScreen() {
+  gamePlayScreen = lv_obj_create(nullptr);
+  lv_obj_set_size(gamePlayScreen, 480, 320);
+  lv_obj_set_style_bg_color(gamePlayScreen, lv_color_white(), 0);
+  lv_obj_set_style_bg_opa(gamePlayScreen, LV_OPA_COVER, 0);
+  lv_obj_clear_flag(gamePlayScreen, LV_OBJ_FLAG_SCROLLABLE);
+
+  lblScore = lv_label_create(gamePlayScreen);
+  lv_label_set_text(lblScore, "Score: 0");
+  lv_obj_set_style_text_font(lblScore, &font_montserrat_16, 0);
+  lv_obj_set_style_text_color(lblScore, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_set_pos(lblScore, 10, 6);
+
+  lblLeben = lv_label_create(gamePlayScreen);
+  lv_label_set_text(lblLeben, "Leben: 3");
+  lv_obj_set_style_text_font(lblLeben, &font_montserrat_16, 0);
+  lv_obj_set_style_text_color(lblLeben, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_set_pos(lblLeben, 200, 6);
+
+  gameExitBtn = lv_btn_create(gamePlayScreen);
+  lv_obj_set_pos(gameExitBtn, 430, 2);
+  lv_obj_set_size(gameExitBtn, 44, 30);
+  lv_obj_set_style_bg_color(gameExitBtn, lv_color_hex(0xcc0000), 0);
+  lv_obj_set_style_radius(gameExitBtn, 6, 0);
+  lv_obj_t* exitLbl = lv_label_create(gameExitBtn);
+  lv_label_set_text(exitLbl, LV_SYMBOL_CLOSE);
+  lv_obj_set_style_text_color(exitLbl, lv_color_white(), 0);
+  lv_obj_center(exitLbl);
+  lv_obj_add_event_cb(gameExitBtn, cbGameExitTap, LV_EVENT_CLICKED, nullptr);
+
+  paddle = lv_obj_create(gamePlayScreen);
+  lv_obj_set_size(paddle, 70, PADDLE_H);
+  lv_obj_set_pos(paddle, (480 - 70) / 2, PADDLE_Y);
+  lv_obj_set_style_bg_color(paddle, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_set_style_radius(paddle, 4, 0);
+  lv_obj_set_style_border_width(paddle, 0, 0);
+  lv_obj_clear_flag(paddle, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_clear_flag(paddle, LV_OBJ_FLAG_CLICKABLE);
+
+  leftBtn = lv_btn_create(gamePlayScreen);
+  lv_obj_set_pos(leftBtn, 5, 284);
+  lv_obj_set_size(leftBtn, 90, 30);
+  lv_obj_set_style_bg_color(leftBtn, lv_color_hex(0x34495e), 0);
+  lv_obj_set_style_radius(leftBtn, 6, 0);
+  lv_obj_t* leftLbl = lv_label_create(leftBtn);
+  lv_label_set_text(leftLbl, LV_SYMBOL_LEFT);
+  lv_obj_set_style_text_font(leftLbl, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_color(leftLbl, lv_color_white(), 0);
+  lv_obj_center(leftLbl);
+
+  rightBtn = lv_btn_create(gamePlayScreen);
+  lv_obj_set_pos(rightBtn, 385, 284);
+  lv_obj_set_size(rightBtn, 90, 30);
+  lv_obj_set_style_bg_color(rightBtn, lv_color_hex(0x34495e), 0);
+  lv_obj_set_style_radius(rightBtn, 6, 0);
+  lv_obj_t* rightLbl = lv_label_create(rightBtn);
+  lv_label_set_text(rightLbl, LV_SYMBOL_RIGHT);
+  lv_obj_set_style_text_font(rightLbl, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_color(rightLbl, lv_color_white(), 0);
+  lv_obj_center(rightLbl);
+
+  ball = lv_obj_create(gamePlayScreen);
+  lv_obj_set_size(ball, BALL_SIZE, BALL_SIZE);
+  lv_obj_set_style_radius(ball, LV_RADIUS_CIRCLE, 0);
+  lv_obj_set_style_bg_color(ball, lv_color_hex(0xe9b117), 0);
+  lv_obj_set_style_border_width(ball, 0, 0);
+  lv_obj_clear_flag(ball, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_clear_flag(ball, LV_OBJ_FLAG_CLICKABLE);
+
+  for (int i = 0; i < GAME_MAX_BRICKS; i++) {
+    bricks[i] = lv_obj_create(gamePlayScreen);
+    lv_obj_set_size(bricks[i], BRICK_W, BRICK_H);
+    lv_obj_set_style_radius(bricks[i], 2, 0);
+    lv_obj_set_style_border_width(bricks[i], 0, 0);
+    lv_obj_clear_flag(bricks[i], LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(bricks[i], LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(bricks[i], LV_OBJ_FLAG_HIDDEN);
+    brickAlive[i] = false;
+  }
+
+  gameOverPanel = lv_obj_create(gamePlayScreen);
+  lv_obj_set_size(gameOverPanel, 300, 140);
+  lv_obj_align(gameOverPanel, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_style_bg_color(gameOverPanel, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(gameOverPanel, 220, 0);
+  lv_obj_set_style_radius(gameOverPanel, 10, 0);
+  lv_obj_clear_flag(gameOverPanel, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_add_flag(gameOverPanel, LV_OBJ_FLAG_HIDDEN);
+
+  lblGameOverTitel = lv_label_create(gameOverPanel);
+  lv_label_set_text(lblGameOverTitel, "Game Over");
+  lv_obj_set_style_text_font(lblGameOverTitel, &font_montserrat_20, 0);
+  lv_obj_set_style_text_color(lblGameOverTitel, lv_color_white(), 0);
+  lv_obj_align(lblGameOverTitel, LV_ALIGN_TOP_MID, 0, 12);
+
+  lblGameOverScore = lv_label_create(gameOverPanel);
+  lv_label_set_text(lblGameOverScore, "Score: 0");
+  lv_obj_set_style_text_font(lblGameOverScore, &font_montserrat_16, 0);
+  lv_obj_set_style_text_color(lblGameOverScore, lv_color_white(), 0);
+  lv_obj_align(lblGameOverScore, LV_ALIGN_TOP_MID, 0, 44);
+
+  lv_obj_t* nochmalBtn = erstelleTextButton(gameOverPanel, 20, 85, 120, 40, 0x2ecc71, "Nochmal");
+  lv_obj_add_event_cb(nochmalBtn, cbGameNochmalTap, LV_EVENT_CLICKED, nullptr);
+  lv_obj_t* menuBtn = erstelleTextButton(gameOverPanel, 160, 85, 120, 40, 0x7f8c8d, "Menue");
+  lv_obj_add_event_cb(menuBtn, cbGameZurueckMenuTap, LV_EVENT_CLICKED, nullptr);
+}
+
+void erstelleGameScreens() {
+  erstelleGameSelectScreen();
+  erstelleGamePlayScreen();
+}
+
+// ============================================================
 //  Hinweis-Screen (programmatisch, für "noch nicht konfiguriert")
 // ============================================================
 static lv_obj_t* hinweisScreen = nullptr;
@@ -2578,6 +3048,10 @@ void setup() {
   erstelleWarnkarteScreen();
   erstelleWarnkarte2Screen();
 
+  // Breakout-Minispiel programmatisch anlegen
+  erstelleGameScreens();
+  ladeHighscores();
+
   // Navigations-Buttons sofort verdrahten (vor WiFi-Check, gilt auch im Portal-Modus)
   // Hauptkette: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screenairquality → screen_1
   // Seitenpfad: screen_1 ← (back) → screenbiowetter ↔ screenbiowetter2
@@ -2611,6 +3085,7 @@ void setup() {
   if (objects.labelbuttonbackward)lv_obj_add_flag(objects.labelbuttonbackward,LV_OBJ_FLAG_CLICKABLE);
   REG_CB(objects.fc_settings,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
   REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
+  REG_CB(objects.buttongame, cbButtonGameTap, LV_EVENT_CLICKED);  // screenmenu → Breakout-Auswahl
   // Nach Theme-Wechsel Farbkodierungen wiederherstellen
   if (objects.labelswitchtheme)
     lv_obj_add_event_cb(objects.labelswitchtheme, [](lv_event_t*) { aktualisiereUI(); }, LV_EVENT_CLICKED, nullptr);

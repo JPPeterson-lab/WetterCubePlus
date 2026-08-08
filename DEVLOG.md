@@ -1,5 +1,26 @@
 # Entwicklungs-Log
 
+## 2026-08-08 – v0.9.7-rc1
+
+### Mini-Spiel: Breakout
+
+Erstes Mini-Spiel im Cube, analog zum parallel entwickelten "Organ Cube". Kompletter programmatischer Aufbau in `WetterCubePlus.ino`, ohne PicoPixel-Re-Export für die Spiel-Screens – Auswahl- und Spiel-Screen werden als eigenständige `lv_obj_create(nullptr)`-Screens angelegt und per `lv_scr_load()` direkt geladen (analog zum bestehenden `hinweisScreen`-Muster), da sie nicht Teil des `objects_t`/`ScreensEnum` aus dem PicoPixel-Export sind.
+
+Der Start-Button (`objects.buttongame`, Icon `fc_electronics_38`) existierte bereits im PicoPixel-Export des Menü-Screens, war aber noch nirgends verdrahtet – nur `REG_CB` ergänzt, kein neuer Button nötig.
+
+**Architektur:**
+- Bricks (max. 48, gepoolt) werden einmalig angelegt und pro Runde nur über `HIDDEN`-Flag + Position/Farbe (de)aktiviert – kein `lv_obj_create`/`lv_obj_del` pro Spielrunde, um Heap-Fragmentierung auf dem ESP32-S3 zu vermeiden.
+- Physik läuft über `lv_timer_create(cbGameTick, 20, nullptr)` (50 Hz), automatisch bedient durch das bestehende `lv_timer_handler()` in `loop()` – kein manueller Hook nötig.
+- Highscores persistieren über `Preferences` im eigenen NVS-Namespace `wcp_game` (Top 5, Score + Schwierigkeitsgrad).
+
+**Wichtige LVGL-Falle:** Jedes per `lv_obj_create()` erzeugte Spielobjekt (Bricks, Ball, Paddle) ist per Default `LV_OBJ_FLAG_CLICKABLE`. `lv_indev_search_obj()` sucht rekursiv nach dem tiefsten klickbaren Treffer – ohne explizites `lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICKABLE)` auf jedem dieser Objekte hätte ein Tap auf einen Ziegel/den Ball/das Paddle Touch-Events abgefangen statt sie durchzureichen.
+
+### Steuerung: Pfeiltasten statt Touch-Drag
+
+Erste Version steuerte das Paddle per Touch-Drag (`LV_EVENT_PRESSING` + `lv_indev_get_point`). Feedback: der Finger verdeckt beim Ziehen das Paddle, dadurch schwer zu sehen wohin man steuert. Umgebaut auf zwei feste Pfeiltasten (◀ ▶) unten links/rechts außerhalb der Paddle-Spur – Zustand wird per `lv_obj_has_state(btn, LV_STATE_PRESSED)` direkt im Physik-Tick abgefragt (kein extra Event-Handler nötig), bewegt das Paddle bei gehaltener Taste kontinuierlich. Paddle-Spur dafür von y=296 auf y=270 angehoben, um Platz für die Tastenreihe zu schaffen ohne das Spielfeld zu verkleinern.
+
+---
+
 ## 2026-08-02 – v0.9.6-rc2
 
 ### UI-Korrekturen

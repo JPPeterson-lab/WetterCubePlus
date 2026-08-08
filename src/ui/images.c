@@ -15,12 +15,13 @@
 #include "src/ui/images/fc_plus_38_ffffff.inc"
 #include "src/ui/images/fc_right_60.inc"
 #include "src/ui/images/thunder.inc"
+#include "src/ui/images/fc_electronics_38.inc"
 #include "src/ui/images/snow.inc"
 #include "src/ui/images/fc_right_up2_38.inc"
 #include "src/ui/images/fc_left_down2_38.inc"
 #include "src/ui/images/night_full_moon_partial_cloud.inc"
 #include "src/ui/images/pico_dark_logo_132.inc"
-const ext_img_desc_t images[19] = {
+const ext_img_desc_t images[20] = {
     { "day_partial_cloud", &day_partial_cloud },
     { "fc_home", &fc_home },
     { "fc_settings", &fc_settings },
@@ -35,6 +36,7 @@ const ext_img_desc_t images[19] = {
     { "fc_plus_38_ffffff", &fc_plus_38_ffffff },
     { "fc_right_60", &fc_right_60 },
     { "thunder", &thunder },
+    { "fc_electronics_38", &fc_electronics_38 },
     { "snow", &snow },
     { "fc_right_up2_38", &fc_right_up2_38 },
     { "fc_left_down2_38", &fc_left_down2_38 },

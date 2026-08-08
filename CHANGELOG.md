@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.7-rc1 (2026-08-08)
+
+### Neu
+- **Mini-Spiel: Breakout** – neuer Menüpunkt startet ein Breakout-Spiel direkt auf dem Cube: weißer Hintergrund mit bunten Ziegeln, 5 wählbare Schwierigkeitsgrade (Anfänger bis Extrem), Steuerung per Pfeiltasten (verdeckt das Paddle nicht wie Touch-Drag), jederzeit erreichbarer Exit-Button zurück zum Hauptscreen, persistente Bestenliste (Top 5, überlebt Neustart)
+
+---
+
 ## v0.9.6-rc2 (2026-08-02)
 
 ### Fixes

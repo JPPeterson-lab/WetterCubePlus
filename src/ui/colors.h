@@ -19,10 +19,11 @@ enum ThemeColorsEnum {
     THEME_COLOR_HIGHLITE,
     THEME_COLOR_HIGHLITE_2,
     THEME_COLOR_TEXT,
+    THEME_COLOR_TEXT_HIGHLITE,
 };
 
 extern const char *theme_names[2];
-extern uint32_t theme_colors[2][5];
+extern uint32_t theme_colors[2][6];
 extern uint32_t active_theme_index;
 void change_color_theme(uint32_t theme_index);
 
