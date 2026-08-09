@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.7-rc3 (2026-08-09)
+
+### Fixes
+- **UI-Korrekturen:** Kleinere Layoutfehler behoben (PicoPixel-Re-Export)
+
+---
+
 ## v0.9.7-rc2 (2026-08-09)
 
 ### Geändert

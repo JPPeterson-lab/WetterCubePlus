@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-08-09 – v0.9.7-rc3
+
+### UI-Korrekturen
+
+Kleinere Layoutfehler nach dem v0.9.7-rc2-Export manuell korrigiert und neu exportiert (nur `screens.c` betroffen, keine Objekt-Umbenennungen).
+
+---
+
 ## 2026-08-09 – v0.9.7-rc2
 
 ### Breakout raus, Bubblebreaker rein – Speicher-Grenzen des ESP32-S3
