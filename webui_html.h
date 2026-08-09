@@ -28,7 +28,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawhtml(
     <input type="password" name="pass" placeholder="Passwort eingeben">
     <label>Standort (Stadt)</label>
     <input type="text" name="location" placeholder="z.B. Berlin" value="%LOCATION%">
-    <p class="hint">Keine Umlaute: Munchen statt Muenchen, Koeln statt Koln</p>
+    <p class="hint">Keine Umlaute: Munchen statt München, Koln statt Koeln</p>
     <label>DWD-Pollenregion</label>
     <select name="dwd_region">%DWD_REGIONEN%</select>
     <button type="submit">Speichern &amp; Neustart</button>
