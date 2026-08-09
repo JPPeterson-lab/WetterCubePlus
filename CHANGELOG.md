@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.7-rc2 (2026-08-09)
+
+### Geändert
+- **Mini-Spiel Breakout entfernt, durch Bubblebreaker ersetzt** – Breakout stieß an harte Speichergrenzen des ESP32-S3 (interner DRAM wird zwischen LVGL und WLAN/TLS geteilt); Bubblebreaker ist speicherschonender umgesetzt: Spielfeld als einzelne Zeichenfläche (Canvas) mit Pixelpuffer im PSRAM statt vieler Einzelobjekte. Bunte, zusammenhängende Farbgruppen antippen und auflösen, Auswahl-Screen mit persistenter Bestenliste (Top 5), Start über den Menü-Screen, jederzeit erreichbarer Exit-Button
+- **Dark Mode fertiggestellt** – vollständiges dunkles Farbthema für alle Screens, Hintergründe und Bedienelemente (vorher experimentelles Grundgerüst), Umschalter im Menü-Screen
+
+---
+
 ## v0.9.7-rc1 (2026-08-08)
 
 ### Neu

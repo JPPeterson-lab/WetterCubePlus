@@ -18,8 +18,8 @@ enum ThemeColorsEnum {
     THEME_COLOR_BACKGROUND,
     THEME_COLOR_HIGHLITE,
     THEME_COLOR_HIGHLITE_2,
+    THEME_COLOR_SCREEN,
     THEME_COLOR_TEXT,
-    THEME_COLOR_TEXT_HIGHLITE,
 };
 
 extern const char *theme_names[2];

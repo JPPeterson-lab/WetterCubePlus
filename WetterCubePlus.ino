@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.7-rc1"
+#define FIRMWARE_VERSION "0.9.7-rc2"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -2198,301 +2198,258 @@ void aktualisiereUI() {
 }
 
 // ============================================================
-//  Breakout-Minispiel (programmatisch, screenmenu → buttongame)
+//  Mini-Spiel: Bubblebreaker (screenmenu → buttonbreaker)
 // ============================================================
-struct GameDifficulty { const char* name; lv_coord_t paddleW; float ballSpeed; uint8_t brickRows; };
-static const GameDifficulty GAME_DIFFICULTIES[5] = {
-  { "Anfaenger", 90, 3.0f,  3 },
-  { "Leicht",    80, 3.5f,  4 },
-  { "Mittel",    70, 4.0f,  5 },
-  { "Schwer",    60, 4.75f, 6 },
-  { "Extrem",    50, 5.5f,  6 },   // Reihen bei 6 gedeckelt (Objekt-Budget)
-};
+#define BB_COLS   10
+#define BB_ROWS   7
+#define BB_CELL_W 48
+#define BB_CELL_H 40
+#define BB_TOP    34
+#define BB_CANVAS_W 480
+#define BB_CANVAS_H (BB_ROWS * BB_CELL_H)
+static const uint32_t BB_COLORS[5] = { 0xff4d4d, 0xff9d4d, 0xffe14d, 0x4dff88, 0x4dc9ff };
 
-struct HighscoreEntry { int32_t score; uint8_t diff; };
-static HighscoreEntry gHighscores[5];
-static uint8_t        gHighscoreCount = 0;
+static lv_obj_t*   bbScreen = nullptr;
+static lv_obj_t*   breakerSelectScreen = nullptr;
+static lv_obj_t*   bbHsRows[5];
+// Spielfeld als einzelne lv_canvas (statt vieler Einzelobjekte) – Pixelpuffer liegt im
+// PSRAM und belastet damit NICHT den knappen internen LVGL-Speicherpool (LV_MEM_SIZE).
+static lv_obj_t*   bbCanvas = nullptr;
+static lv_color_t* bbCanvasBuf = nullptr;
+static int8_t    bbBoard[BB_ROWS][BB_COLS];   // -1 = leer, 0..4 = Farbindex
+static bool      bbBesucht[BB_ROWS][BB_COLS];
+static lv_obj_t* bbLblScore = nullptr;
+static lv_obj_t* bbLblBeste = nullptr;
+static lv_obj_t* bbGameOverPanel = nullptr;
+static lv_obj_t* bbLblGameOverTitel = nullptr;
+static lv_obj_t* bbLblGameOverScore = nullptr;
+static int  bbScore = 0;
+static bool bbAktiv = false;
 
-enum GameState { GAME_IDLE, GAME_RUNNING, GAME_OVER };
-static GameState gGameState = GAME_IDLE;
-
-static lv_obj_t* gameSelectScreen = nullptr;
-static lv_obj_t* gamePlayScreen   = nullptr;
-static lv_obj_t* hsRows[5];
-static lv_obj_t* diffBtns[5];
-static uint8_t   gAusgewaehlteSchwierigkeit = 2;   // Default "Mittel"
-
-static lv_obj_t* lblScore = nullptr;
-static lv_obj_t* lblLeben = nullptr;
-static lv_obj_t* gameExitBtn  = nullptr;
-static lv_obj_t* leftBtn  = nullptr;
-static lv_obj_t* rightBtn = nullptr;
-static lv_obj_t* paddle   = nullptr;
-static lv_obj_t* ball     = nullptr;
-static lv_obj_t* gameOverPanel     = nullptr;
-static lv_obj_t* lblGameOverTitel  = nullptr;
-static lv_obj_t* lblGameOverScore  = nullptr;
-
-#define GAME_BRICK_COLS      8
-#define GAME_MAX_BRICK_ROWS  6
-#define GAME_MAX_BRICKS      (GAME_MAX_BRICK_ROWS * GAME_BRICK_COLS)  // 48
-static lv_obj_t* bricks[GAME_MAX_BRICKS];
-static bool      brickAlive[GAME_MAX_BRICKS];
-static uint8_t   brickRow[GAME_MAX_BRICKS];
-
-static lv_timer_t* gameTimer = nullptr;
-static float   ballX, ballY, ballVX, ballVY, ballSpeedMag;
-static int     gScore = 0, gLeben = 0, gAktiveBricks = 0;
-static uint8_t gAktiveSchwierigkeit = 0;
-
-#define PADDLE_Y 270
-#define PADDLE_H 10
-#define PADDLE_STEP 8
-#define BALL_SIZE 14
+static int32_t bbHighscores[5];
+static uint8_t bbHighscoreCount = 0;
 
 // ── Highscore-Persistenz (NVS, eigener Namespace) ────────────────────────────
-static void ladeHighscores() {
-  Preferences prefs; prefs.begin("wcp_game", true);
-  gHighscoreCount = prefs.getUChar("cnt", 0);
+static void bbLadeHighscores() {
+  Preferences prefs; prefs.begin("wcp_bbreak", true);
+  bbHighscoreCount = prefs.getUChar("cnt", 0);
   char key[4];
   for (int i = 0; i < 5; i++) {
-    snprintf(key, sizeof(key), "s%d", i); gHighscores[i].score = prefs.getInt(key, 0);
-    snprintf(key, sizeof(key), "d%d", i); gHighscores[i].diff  = prefs.getUChar(key, 0);
+    snprintf(key, sizeof(key), "s%d", i);
+    bbHighscores[i] = prefs.getInt(key, 0);
   }
   prefs.end();
 }
 
-static void speichereHighscores() {
-  Preferences prefs; prefs.begin("wcp_game", false);
-  prefs.putUChar("cnt", gHighscoreCount);
+static void bbSpeichereHighscores() {
+  Preferences prefs; prefs.begin("wcp_bbreak", false);
+  prefs.putUChar("cnt", bbHighscoreCount);
   char key[4];
   for (int i = 0; i < 5; i++) {
-    snprintf(key, sizeof(key), "s%d", i); prefs.putInt(key, gHighscores[i].score);
-    snprintf(key, sizeof(key), "d%d", i); prefs.putUChar(key, gHighscores[i].diff);
+    snprintf(key, sizeof(key), "s%d", i);
+    prefs.putInt(key, bbHighscores[i]);
   }
   prefs.end();
 }
 
-static bool fuegeHighscoreEin(int32_t score, uint8_t diff) {
-  if (gHighscoreCount < 5) {
-    gHighscores[gHighscoreCount++] = { score, diff };
-  } else if (score > gHighscores[4].score) {
-    gHighscores[4] = { score, diff };
+static bool bbFuegeHighscoreEin(int32_t score) {
+  if (bbHighscoreCount < 5) {
+    bbHighscores[bbHighscoreCount++] = score;
+  } else if (score > bbHighscores[4]) {
+    bbHighscores[4] = score;
   } else {
     return false;
   }
-  for (int i = gHighscoreCount - 1; i > 0 && gHighscores[i].score > gHighscores[i-1].score; i--) {
-    HighscoreEntry tmp = gHighscores[i]; gHighscores[i] = gHighscores[i-1]; gHighscores[i-1] = tmp;
+  for (int i = bbHighscoreCount - 1; i > 0 && bbHighscores[i] > bbHighscores[i - 1]; i--) {
+    int32_t tmp = bbHighscores[i]; bbHighscores[i] = bbHighscores[i - 1]; bbHighscores[i - 1] = tmp;
   }
-  speichereHighscores();
+  bbSpeichereHighscores();
   return true;
 }
 
-static void aktualisiereHighscoreAnzeige() {
+static void bbAktualisiereHighscoreAnzeige() {
   for (int i = 0; i < 5; i++) {
-    if (i < gHighscoreCount)
-      lv_label_set_text_fmt(hsRows[i], "%d. %ld  (%s)", i + 1, (long)gHighscores[i].score, GAME_DIFFICULTIES[gHighscores[i].diff].name);
+    if (i < bbHighscoreCount)
+      lv_label_set_text_fmt(bbHsRows[i], "%d. %ld", i + 1, (long)bbHighscores[i]);
     else
-      lv_label_set_text_fmt(hsRows[i], "%d. --", i + 1);
+      lv_label_set_text_fmt(bbHsRows[i], "%d. --", i + 1);
   }
 }
 
-static void aktualisiereSchwierigkeitButtons() {
-  for (int i = 0; i < 5; i++) {
-    if (!diffBtns[i]) continue;
-    bool sel = (i == gAusgewaehlteSchwierigkeit);
-    lv_obj_set_style_bg_color(diffBtns[i], sel ? lv_color_hex(0x2c3e50) : lv_color_hex(0xbdc3c7), 0);
-  }
+// ── Brett-Logik ───────────────────────────────────────────────────────────────
+static void bbNeuesBrett() {
+  for (int r = 0; r < BB_ROWS; r++)
+    for (int c = 0; c < BB_COLS; c++)
+      bbBoard[r][c] = (int8_t)random(5);
 }
 
-static void cbDifficultySelect(lv_event_t* e) {
-  int idx = (int)(intptr_t)lv_event_get_user_data(e);
-  gAusgewaehlteSchwierigkeit = (uint8_t)idx;
-  aktualisiereSchwierigkeitButtons();
-}
+// Zeichnet das komplette Brett auf die eine Canvas-Fläche (PSRAM-Puffer).
+static void bbZeichneBrett() {
+  if (!bbCanvas) return;
+  lv_canvas_fill_bg(bbCanvas, lv_color_white(), LV_OPA_COVER);
 
-// ── Ziegel-Layout ─────────────────────────────────────────────────────────────
-#define BRICK_W 52
-#define BRICK_H 16
-#define BRICK_GAP 4
-#define BRICK_TOP 40
-#define BRICK_SIDE 18
-static const uint32_t BRICK_ROW_COLORS[GAME_MAX_BRICK_ROWS] = {
-  0xff4d4d, 0xff9d4d, 0xffe14d, 0x4dff88, 0x4dc9ff, 0x9d4dff
-};
+  lv_draw_rect_dsc_t dsc;
+  lv_draw_rect_dsc_init(&dsc);
+  dsc.radius = LV_RADIUS_CIRCLE;
+  dsc.bg_opa = LV_OPA_COVER;
 
-static void startNeueRunde(uint8_t rows) {
-  int aktiv = rows * GAME_BRICK_COLS;
-  for (int i = 0; i < GAME_MAX_BRICKS; i++) {
-    if (!bricks[i]) continue;
-    if (i < aktiv) {
-      int row = i / GAME_BRICK_COLS;
-      int col = i % GAME_BRICK_COLS;
-      brickRow[i] = row;
-      lv_obj_set_pos(bricks[i], BRICK_SIDE + col * (BRICK_W + BRICK_GAP), BRICK_TOP + row * (BRICK_H + BRICK_GAP));
-      lv_obj_set_style_bg_color(bricks[i], lv_color_hex(BRICK_ROW_COLORS[row]), 0);
-      lv_obj_clear_flag(bricks[i], LV_OBJ_FLAG_HIDDEN);
-      brickAlive[i] = true;
-    } else {
-      lv_obj_add_flag(bricks[i], LV_OBJ_FLAG_HIDDEN);
-      brickAlive[i] = false;
+  int size = BB_CELL_H - 4;
+  int xOff = (BB_CELL_W - BB_CELL_H) / 2 + 2;
+
+  for (int r = 0; r < BB_ROWS; r++) {
+    for (int c = 0; c < BB_COLS; c++) {
+      if (bbBoard[r][c] < 0) continue;
+      dsc.bg_color = lv_color_hex(BB_COLORS[bbBoard[r][c]]);
+      lv_canvas_draw_rect(bbCanvas, c * BB_CELL_W + xOff, r * BB_CELL_H + 2, size, size, &dsc);
     }
   }
-  gAktiveBricks = aktiv;
 }
 
-// ── Pfeiltasten-Steuerung Paddle (Finger bleibt am Rand, verdeckt Paddle nicht) ─
-static void bewegePaddle() {
-  lv_coord_t paddleW = GAME_DIFFICULTIES[gAktiveSchwierigkeit].paddleW;
-  lv_coord_t x = lv_obj_get_x(paddle);
-  if (lv_obj_has_state(leftBtn, LV_STATE_PRESSED)) {
-    x -= PADDLE_STEP;
-    if (x < 0) x = 0;
-    lv_obj_set_x(paddle, x);
-  } else if (lv_obj_has_state(rightBtn, LV_STATE_PRESSED)) {
-    x += PADDLE_STEP;
-    if (x > 480 - paddleW) x = 480 - paddleW;
-    lv_obj_set_x(paddle, x);
-  }
-}
-
-// ── Spielende ─────────────────────────────────────────────────────────────────
-static void gameUeber() {
-  if (gameTimer) { lv_timer_del(gameTimer); gameTimer = nullptr; }
-  gGameState = GAME_OVER;
-  bool neuerHighscore = fuegeHighscoreEin(gScore, gAktiveSchwierigkeit);
-  lv_label_set_text(lblGameOverTitel, "Game Over");
-  lv_label_set_text_fmt(lblGameOverScore, "Score: %d%s", gScore, neuerHighscore ? "  (Highscore!)" : "");
-  lv_obj_clear_flag(gameOverPanel, LV_OBJ_FLAG_HIDDEN);
-  lv_obj_move_foreground(gameOverPanel);
-}
-
-// ── Physik-Tick ───────────────────────────────────────────────────────────────
-static void cbGameTick(lv_timer_t*) {
-  if (gGameState != GAME_RUNNING) return;
-
-  bewegePaddle();
-
-  ballX += ballVX;
-  ballY += ballVY;
-
-  // Wände
-  if (ballX <= 0) { ballX = 0; ballVX = -ballVX; }
-  if (ballX + BALL_SIZE >= 480) { ballX = 480 - BALL_SIZE; ballVX = -ballVX; }
-  if (ballY <= 34) { ballY = 34; ballVY = -ballVY; }
-
-  // Paddle-Kollision
-  lv_coord_t paddleW = GAME_DIFFICULTIES[gAktiveSchwierigkeit].paddleW;
-  lv_coord_t paddleX = lv_obj_get_x(paddle);
-  if (ballVY > 0 &&
-      ballY + BALL_SIZE >= PADDLE_Y && ballY + BALL_SIZE <= PADDLE_Y + PADDLE_H + 6 &&
-      ballX + BALL_SIZE >= paddleX && ballX <= paddleX + paddleW) {
-    float hit = ((ballX + BALL_SIZE / 2.0f) - (paddleX + paddleW / 2.0f)) / (paddleW / 2.0f);
-    if (hit < -1.0f) hit = -1.0f;
-    if (hit >  1.0f) hit =  1.0f;
-    ballVX = hit * ballSpeedMag;
-    ballVY = -fabsf(ballVY);
-    ballY = PADDLE_Y - BALL_SIZE;
-  }
-
-  // Brick-Kollision (ein Treffer pro Tick)
-  for (int i = 0; i < GAME_MAX_BRICKS; i++) {
-    if (!brickAlive[i]) continue;
-    lv_coord_t bx = lv_obj_get_x(bricks[i]);
-    lv_coord_t by = lv_obj_get_y(bricks[i]);
-    if (ballX + BALL_SIZE >= bx && ballX <= bx + BRICK_W &&
-        ballY + BALL_SIZE >= by && ballY <= by + BRICK_H) {
-      brickAlive[i] = false;
-      lv_obj_add_flag(bricks[i], LV_OBJ_FLAG_HIDDEN);
-      ballVY = -ballVY;
-      gScore += (brickRow[i] + 1) * 10;
-      gAktiveBricks--;
-      lv_label_set_text_fmt(lblScore, "Score: %d", gScore);
-      break;
+// Iterative Flood-Fill (kein Rekursions-Stack-Risiko auf dem ESP32)
+static void bbFloodFill(int startR, int startC, int8_t farbe, int* rs, int* cs, int* n) {
+  static int stackR[BB_ROWS * BB_COLS];
+  static int stackC[BB_ROWS * BB_COLS];
+  int sp = 0;
+  stackR[sp] = startR; stackC[sp] = startC; sp++;
+  bbBesucht[startR][startC] = true;
+  const int dr[4] = { -1, 1, 0, 0 };
+  const int dc[4] = { 0, 0, -1, 1 };
+  while (sp > 0) {
+    sp--;
+    int r = stackR[sp], c = stackC[sp];
+    rs[*n] = r; cs[*n] = c; (*n)++;
+    for (int k = 0; k < 4; k++) {
+      int nr = r + dr[k], nc = c + dc[k];
+      if (nr < 0 || nr >= BB_ROWS || nc < 0 || nc >= BB_COLS) continue;
+      if (bbBesucht[nr][nc] || bbBoard[nr][nc] != farbe) continue;
+      bbBesucht[nr][nc] = true;
+      stackR[sp] = nr; stackC[sp] = nc; sp++;
     }
   }
+}
 
-  // Boden – Leben verloren
-  if (ballY + BALL_SIZE > 320) {
-    gLeben--;
-    lv_label_set_text_fmt(lblLeben, "Leben: %d", gLeben);
-    if (gLeben <= 0) {
-      gameUeber();
-      return;
+// Schwerkraft (Bubbles fallen in ihrer Spalte nach unten) + Spalten-Kollaps (leere Spalten → links auffüllen)
+static void bbSchwerkraftUndKollaps() {
+  for (int c = 0; c < BB_COLS; c++) {
+    int writeR = BB_ROWS - 1;
+    for (int r = BB_ROWS - 1; r >= 0; r--) {
+      if (bbBoard[r][c] >= 0) {
+        if (writeR != r) { bbBoard[writeR][c] = bbBoard[r][c]; bbBoard[r][c] = -1; }
+        writeR--;
+      }
     }
-    paddleX = lv_obj_get_x(paddle);
-    ballX = paddleX + paddleW / 2.0f - BALL_SIZE / 2.0f;
-    ballY = PADDLE_Y - BALL_SIZE - 4;
-    ballVX = ballSpeedMag * 0.3f;
-    ballVY = -ballSpeedMag;
   }
-
-  // Welle geschafft
-  if (gAktiveBricks == 0) {
-    ballSpeedMag *= 1.1f;
-    float vxSign = (ballVX >= 0) ? 1.0f : -1.0f;
-    ballVX = vxSign * ballSpeedMag * 0.3f;
-    ballVY = -ballSpeedMag;
-    startNeueRunde(GAME_DIFFICULTIES[gAktiveSchwierigkeit].brickRows);
+  int writeC = 0;
+  for (int c = 0; c < BB_COLS; c++) {
+    bool leer = true;
+    for (int r = 0; r < BB_ROWS; r++) if (bbBoard[r][c] >= 0) { leer = false; break; }
+    if (!leer) {
+      if (writeC != c) {
+        for (int r = 0; r < BB_ROWS; r++) { bbBoard[r][writeC] = bbBoard[r][c]; bbBoard[r][c] = -1; }
+      }
+      writeC++;
+    }
   }
-
-  lv_obj_set_pos(ball, (lv_coord_t)ballX, (lv_coord_t)ballY);
 }
 
-// ── Spielstart ────────────────────────────────────────────────────────────────
-static void zeigeGamePlayScreen(uint8_t diff) {
-  if (gGameState == GAME_RUNNING) return;
-  if (gameTimer) { lv_timer_del(gameTimer); gameTimer = nullptr; }
-
-  gAktiveSchwierigkeit = diff;
-  const GameDifficulty& d = GAME_DIFFICULTIES[diff];
-
-  lv_obj_set_size(paddle, d.paddleW, PADDLE_H);
-  lv_coord_t paddleX = (480 - d.paddleW) / 2;
-  lv_obj_set_pos(paddle, paddleX, PADDLE_Y);
-
-  ballSpeedMag = d.ballSpeed;
-  ballX = paddleX + d.paddleW / 2.0f - BALL_SIZE / 2.0f;
-  ballY = PADDLE_Y - BALL_SIZE - 4;
-  ballVX = ballSpeedMag * 0.3f;
-  ballVY = -ballSpeedMag;
-  lv_obj_set_pos(ball, (lv_coord_t)ballX, (lv_coord_t)ballY);
-
-  gScore = 0;
-  gLeben = 3;
-  lv_label_set_text(lblScore, "Score: 0");
-  lv_label_set_text_fmt(lblLeben, "Leben: %d", gLeben);
-  lv_obj_add_flag(gameOverPanel, LV_OBJ_FLAG_HIDDEN);
-
-  startNeueRunde(d.brickRows);
-
-  gGameState = GAME_RUNNING;
-  gameTimer = lv_timer_create(cbGameTick, 20, nullptr);
-  lv_scr_load(gamePlayScreen);
+static bool bbHatZuege() {
+  for (int r = 0; r < BB_ROWS; r++) {
+    for (int c = 0; c < BB_COLS; c++) {
+      if (bbBoard[r][c] < 0) continue;
+      if (c + 1 < BB_COLS && bbBoard[r][c + 1] == bbBoard[r][c]) return true;
+      if (r + 1 < BB_ROWS && bbBoard[r + 1][c] == bbBoard[r][c]) return true;
+    }
+  }
+  return false;
 }
 
-static void cbGameExitTap(lv_event_t*) {
-  if (gameTimer) { lv_timer_del(gameTimer); gameTimer = nullptr; }
-  gGameState = GAME_IDLE;
+static bool bbIstLeer() {
+  for (int r = 0; r < BB_ROWS; r++)
+    for (int c = 0; c < BB_COLS; c++)
+      if (bbBoard[r][c] >= 0) return false;
+  return true;
+}
+
+static void bbGameUeber() {
+  bbAktiv = false;
+  bool neuerHighscore = bbFuegeHighscoreEin(bbScore);
+  int32_t beste = bbHighscoreCount > 0 ? bbHighscores[0] : 0;
+  lv_label_set_text(bbLblGameOverTitel, "Spiel zu Ende");
+  lv_label_set_text_fmt(bbLblGameOverScore, "Punkte: %d%s\nBeste: %ld",
+                         bbScore, neuerHighscore ? "  (Highscore!)" : "", (long)beste);
+  lv_obj_clear_flag(bbGameOverPanel, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_move_foreground(bbGameOverPanel);
+}
+
+static int bbFillRs[BB_ROWS * BB_COLS];
+static int bbFillCs[BB_ROWS * BB_COLS];
+
+static void cbBubbleTap(lv_event_t* e) {
+  if (!bbAktiv) return;
+  lv_indev_t* indev = lv_indev_get_act();
+  if (!indev) return;
+  lv_point_t p;
+  lv_indev_get_point(indev, &p);
+  lv_area_t canvasCoords;
+  lv_obj_get_coords(bbCanvas, &canvasCoords);
+  int lx = p.x - canvasCoords.x1;
+  int ly = p.y - canvasCoords.y1;
+  if (lx < 0 || ly < 0 || lx >= BB_CANVAS_W || ly >= BB_CANVAS_H) return;
+  int c = lx / BB_CELL_W;
+  int r = ly / BB_CELL_H;
+  if (r < 0 || r >= BB_ROWS || c < 0 || c >= BB_COLS) return;
+  if (bbBoard[r][c] < 0) return;
+  memset(bbBesucht, 0, sizeof(bbBesucht));
+  int n = 0;
+  bbFloodFill(r, c, bbBoard[r][c], bbFillRs, bbFillCs, &n);
+  if (n < 2) return;
+  for (int i = 0; i < n; i++) bbBoard[bbFillRs[i]][bbFillCs[i]] = -1;
+  bbScore += (n - 1) * (n - 1) * 5;
+  lv_label_set_text_fmt(bbLblScore, "Punkte: %d", bbScore);
+  bbSchwerkraftUndKollaps();
+  bbZeichneBrett();
+  if (bbIstLeer()) {
+    bbScore += 500;
+    lv_label_set_text_fmt(bbLblScore, "Punkte: %d", bbScore);
+    bbGameUeber();
+    return;
+  }
+  if (!bbHatZuege()) bbGameUeber();
+}
+
+static void bbStarteSpiel() {
+  bbScore = 0;
+  lv_label_set_text(bbLblScore, "Punkte: 0");
+  int32_t beste = bbHighscoreCount > 0 ? bbHighscores[0] : 0;
+  lv_label_set_text_fmt(bbLblBeste, "Beste: %ld", (long)beste);
+  lv_obj_add_flag(bbGameOverPanel, LV_OBJ_FLAG_HIDDEN);
+  bbNeuesBrett();
+  bbZeichneBrett();
+  bbAktiv = true;
+  lv_scr_load(bbScreen);
+}
+
+static void cbBreakerStartTap(lv_event_t*) { bbStarteSpiel(); }
+
+static void cbBBExitTap(lv_event_t*) {
+  bbAktiv = false;
   loadScreen(SCREEN_ID_SCREEN_1);
 }
 
-static void cbGameStartTap(lv_event_t*) { zeigeGamePlayScreen(gAusgewaehlteSchwierigkeit); }
-static void cbGameNochmalTap(lv_event_t*) { zeigeGamePlayScreen(gAktiveSchwierigkeit); }
-static void cbGameZurueckMenuTap(lv_event_t*) {
-  if (gameTimer) { lv_timer_del(gameTimer); gameTimer = nullptr; }
-  gGameState = GAME_IDLE;
-  loadScreen(SCREEN_ID_SCREENMENU);
+static void zeigeBreakerSelect() {
+  bbLadeHighscores();
+  bbAktualisiereHighscoreAnzeige();
+  lv_scr_load(breakerSelectScreen);
 }
 
-static void cbButtonGameTap(lv_event_t*) {
-  ladeHighscores();
-  aktualisiereHighscoreAnzeige();
-  aktualisiereSchwierigkeitButtons();
-  lv_scr_load(gameSelectScreen);
+static void cbOpenBreakerSelect(lv_event_t*) { zeigeBreakerSelect(); }
+
+static void cbBBNochmalTap(lv_event_t*) { bbStarteSpiel(); }
+static void cbBBZurueckMenuTap(lv_event_t*) {
+  bbAktiv = false;
+  zeigeBreakerSelect();
 }
 
-// ── Screen-Aufbau ─────────────────────────────────────────────────────────────
 static lv_obj_t* erstelleTextButton(lv_obj_t* parent, lv_coord_t x, lv_coord_t y, lv_coord_t w, lv_coord_t h,
                                      uint32_t bgColor, const char* text, uint32_t textColor = 0xffffff) {
   lv_obj_t* btn = lv_btn_create(parent);
@@ -2507,163 +2464,115 @@ static lv_obj_t* erstelleTextButton(lv_obj_t* parent, lv_coord_t x, lv_coord_t y
   return btn;
 }
 
-static void erstelleGameSelectScreen() {
-  gameSelectScreen = lv_obj_create(nullptr);
-  lv_obj_set_size(gameSelectScreen, 480, 320);
-  lv_obj_set_style_bg_color(gameSelectScreen, lv_color_white(), 0);
-  lv_obj_set_style_bg_opa(gameSelectScreen, LV_OPA_COVER, 0);
-  lv_obj_clear_flag(gameSelectScreen, LV_OBJ_FLAG_SCROLLABLE);
+// Eigenständiger Auswahl-Screen: Bestenliste, Start, Zurück.
+static void erstelleBreakerSelectScreen() {
+  breakerSelectScreen = lv_obj_create(nullptr);
+  lv_obj_set_size(breakerSelectScreen, 480, 320);
+  lv_obj_set_style_bg_color(breakerSelectScreen, lv_color_white(), 0);
+  lv_obj_set_style_bg_opa(breakerSelectScreen, LV_OPA_COVER, 0);
+  lv_obj_clear_flag(breakerSelectScreen, LV_OBJ_FLAG_SCROLLABLE);
 
-  lv_obj_t* titel = lv_label_create(gameSelectScreen);
-  lv_label_set_text(titel, "Breakout");
+  lv_obj_t* titel = lv_label_create(breakerSelectScreen);
+  lv_label_set_text(titel, "Bubblebreaker");
   lv_obj_set_style_text_font(titel, &font_montserrat_22, 0);
   lv_obj_set_style_text_color(titel, lv_color_hex(0x1a1a1a), 0);
   lv_obj_align(titel, LV_ALIGN_TOP_MID, 0, 10);
 
-  lv_obj_t* hsTitel = lv_label_create(gameSelectScreen);
+  lv_obj_t* hsTitel = lv_label_create(breakerSelectScreen);
   lv_label_set_text(hsTitel, "Bestenliste");
   lv_obj_set_style_text_font(hsTitel, &font_montserrat_18, 0);
   lv_obj_set_style_text_color(hsTitel, lv_color_hex(0x1a1a1a), 0);
-  lv_obj_set_pos(hsTitel, 20, 45);
+  lv_obj_align(hsTitel, LV_ALIGN_TOP_MID, 0, 55);
 
   for (int i = 0; i < 5; i++) {
-    hsRows[i] = lv_label_create(gameSelectScreen);
-    lv_obj_set_style_text_font(hsRows[i], &font_montserrat_16, 0);
-    lv_obj_set_style_text_color(hsRows[i], lv_color_hex(0x333333), 0);
-    lv_obj_set_pos(hsRows[i], 20, 70 + i * 28);
-    lv_label_set_text_fmt(hsRows[i], "%d. --", i + 1);
+    bbHsRows[i] = lv_label_create(breakerSelectScreen);
+    lv_obj_set_style_text_font(bbHsRows[i], &font_montserrat_18, 0);
+    lv_obj_set_style_text_color(bbHsRows[i], lv_color_hex(0x333333), 0);
+    lv_obj_align(bbHsRows[i], LV_ALIGN_TOP_MID, 0, 90 + i * 28);
+    lv_label_set_text_fmt(bbHsRows[i], "%d. --", i + 1);
   }
 
-  lv_obj_t* diffTitel = lv_label_create(gameSelectScreen);
-  lv_label_set_text(diffTitel, "Schwierigkeit");
-  lv_obj_set_style_text_font(diffTitel, &font_montserrat_18, 0);
-  lv_obj_set_style_text_color(diffTitel, lv_color_hex(0x1a1a1a), 0);
-  lv_obj_set_pos(diffTitel, 250, 45);
+  lv_obj_t* zurueckBtn = erstelleTextButton(breakerSelectScreen, 20, 255, 120, 45, 0x7f8c8d, "Zurueck");
+  lv_obj_add_event_cb(zurueckBtn, [](lv_event_t*) { loadScreen(SCREEN_ID_SCREENMENU); }, LV_EVENT_CLICKED, nullptr);
 
-  for (int i = 0; i < 5; i++) {
-    diffBtns[i] = erstelleTextButton(gameSelectScreen, 250, 70 + i * 30, 210, 26,
-                                      0xbdc3c7, GAME_DIFFICULTIES[i].name, 0xffffff);
-    lv_obj_add_event_cb(diffBtns[i], cbDifficultySelect, LV_EVENT_CLICKED, (void*)(intptr_t)i);
-  }
-  aktualisiereSchwierigkeitButtons();
-
-  lv_obj_t* zurueckBtn = erstelleTextButton(gameSelectScreen, 20, 255, 120, 45, 0x7f8c8d, "Zurueck");
-  lv_obj_add_event_cb(zurueckBtn, cbGameZurueckMenuTap, LV_EVENT_CLICKED, nullptr);
-
-  lv_obj_t* startBtn = erstelleTextButton(gameSelectScreen, 300, 255, 160, 45, 0x2ecc71, "Start");
-  lv_obj_add_event_cb(startBtn, cbGameStartTap, LV_EVENT_CLICKED, nullptr);
+  lv_obj_t* startBtn = erstelleTextButton(breakerSelectScreen, 300, 255, 160, 45, 0x2ecc71, "Start");
+  lv_obj_add_event_cb(startBtn, cbBreakerStartTap, LV_EVENT_CLICKED, nullptr);
 }
 
-static void erstelleGamePlayScreen() {
-  gamePlayScreen = lv_obj_create(nullptr);
-  lv_obj_set_size(gamePlayScreen, 480, 320);
-  lv_obj_set_style_bg_color(gamePlayScreen, lv_color_white(), 0);
-  lv_obj_set_style_bg_opa(gamePlayScreen, LV_OPA_COVER, 0);
-  lv_obj_clear_flag(gamePlayScreen, LV_OBJ_FLAG_SCROLLABLE);
+static void erstelleBubbleBreakerScreen() {
+  bbScreen = lv_obj_create(nullptr);
+  lv_obj_set_size(bbScreen, 480, 320);
+  lv_obj_set_style_bg_color(bbScreen, lv_color_white(), 0);
+  lv_obj_set_style_bg_opa(bbScreen, LV_OPA_COVER, 0);
+  lv_obj_clear_flag(bbScreen, LV_OBJ_FLAG_SCROLLABLE);
 
-  lblScore = lv_label_create(gamePlayScreen);
-  lv_label_set_text(lblScore, "Score: 0");
-  lv_obj_set_style_text_font(lblScore, &font_montserrat_16, 0);
-  lv_obj_set_style_text_color(lblScore, lv_color_hex(0x1a1a1a), 0);
-  lv_obj_set_pos(lblScore, 10, 6);
+  bbLblScore = lv_label_create(bbScreen);
+  lv_label_set_text(bbLblScore, "Punkte: 0");
+  lv_obj_set_style_text_font(bbLblScore, &font_montserrat_16, 0);
+  lv_obj_set_style_text_color(bbLblScore, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_set_pos(bbLblScore, 10, 6);
 
-  lblLeben = lv_label_create(gamePlayScreen);
-  lv_label_set_text(lblLeben, "Leben: 3");
-  lv_obj_set_style_text_font(lblLeben, &font_montserrat_16, 0);
-  lv_obj_set_style_text_color(lblLeben, lv_color_hex(0x1a1a1a), 0);
-  lv_obj_set_pos(lblLeben, 200, 6);
+  bbLblBeste = lv_label_create(bbScreen);
+  lv_label_set_text(bbLblBeste, "Beste: 0");
+  lv_obj_set_style_text_font(bbLblBeste, &font_montserrat_16, 0);
+  lv_obj_set_style_text_color(bbLblBeste, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_set_pos(bbLblBeste, 200, 6);
 
-  gameExitBtn = lv_btn_create(gamePlayScreen);
-  lv_obj_set_pos(gameExitBtn, 430, 2);
-  lv_obj_set_size(gameExitBtn, 44, 30);
-  lv_obj_set_style_bg_color(gameExitBtn, lv_color_hex(0xcc0000), 0);
-  lv_obj_set_style_radius(gameExitBtn, 6, 0);
-  lv_obj_t* exitLbl = lv_label_create(gameExitBtn);
+  lv_obj_t* bbExitBtn = lv_btn_create(bbScreen);
+  lv_obj_set_pos(bbExitBtn, 430, 2);
+  lv_obj_set_size(bbExitBtn, 44, 30);
+  lv_obj_set_style_bg_color(bbExitBtn, lv_color_hex(0xcc0000), 0);
+  lv_obj_set_style_radius(bbExitBtn, 6, 0);
+  lv_obj_t* exitLbl = lv_label_create(bbExitBtn);
   lv_label_set_text(exitLbl, LV_SYMBOL_CLOSE);
   lv_obj_set_style_text_color(exitLbl, lv_color_white(), 0);
   lv_obj_center(exitLbl);
-  lv_obj_add_event_cb(gameExitBtn, cbGameExitTap, LV_EVENT_CLICKED, nullptr);
+  lv_obj_add_event_cb(bbExitBtn, cbBBExitTap, LV_EVENT_CLICKED, nullptr);
 
-  paddle = lv_obj_create(gamePlayScreen);
-  lv_obj_set_size(paddle, 70, PADDLE_H);
-  lv_obj_set_pos(paddle, (480 - 70) / 2, PADDLE_Y);
-  lv_obj_set_style_bg_color(paddle, lv_color_hex(0x1a1a1a), 0);
-  lv_obj_set_style_radius(paddle, 4, 0);
-  lv_obj_set_style_border_width(paddle, 0, 0);
-  lv_obj_clear_flag(paddle, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_clear_flag(paddle, LV_OBJ_FLAG_CLICKABLE);
-
-  leftBtn = lv_btn_create(gamePlayScreen);
-  lv_obj_set_pos(leftBtn, 5, 284);
-  lv_obj_set_size(leftBtn, 90, 30);
-  lv_obj_set_style_bg_color(leftBtn, lv_color_hex(0x34495e), 0);
-  lv_obj_set_style_radius(leftBtn, 6, 0);
-  lv_obj_t* leftLbl = lv_label_create(leftBtn);
-  lv_label_set_text(leftLbl, LV_SYMBOL_LEFT);
-  lv_obj_set_style_text_font(leftLbl, &lv_font_montserrat_20, 0);
-  lv_obj_set_style_text_color(leftLbl, lv_color_white(), 0);
-  lv_obj_center(leftLbl);
-
-  rightBtn = lv_btn_create(gamePlayScreen);
-  lv_obj_set_pos(rightBtn, 385, 284);
-  lv_obj_set_size(rightBtn, 90, 30);
-  lv_obj_set_style_bg_color(rightBtn, lv_color_hex(0x34495e), 0);
-  lv_obj_set_style_radius(rightBtn, 6, 0);
-  lv_obj_t* rightLbl = lv_label_create(rightBtn);
-  lv_label_set_text(rightLbl, LV_SYMBOL_RIGHT);
-  lv_obj_set_style_text_font(rightLbl, &lv_font_montserrat_20, 0);
-  lv_obj_set_style_text_color(rightLbl, lv_color_white(), 0);
-  lv_obj_center(rightLbl);
-
-  ball = lv_obj_create(gamePlayScreen);
-  lv_obj_set_size(ball, BALL_SIZE, BALL_SIZE);
-  lv_obj_set_style_radius(ball, LV_RADIUS_CIRCLE, 0);
-  lv_obj_set_style_bg_color(ball, lv_color_hex(0xe9b117), 0);
-  lv_obj_set_style_border_width(ball, 0, 0);
-  lv_obj_clear_flag(ball, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_clear_flag(ball, LV_OBJ_FLAG_CLICKABLE);
-
-  for (int i = 0; i < GAME_MAX_BRICKS; i++) {
-    bricks[i] = lv_obj_create(gamePlayScreen);
-    lv_obj_set_size(bricks[i], BRICK_W, BRICK_H);
-    lv_obj_set_style_radius(bricks[i], 2, 0);
-    lv_obj_set_style_border_width(bricks[i], 0, 0);
-    lv_obj_clear_flag(bricks[i], LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_clear_flag(bricks[i], LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_flag(bricks[i], LV_OBJ_FLAG_HIDDEN);
-    brickAlive[i] = false;
+  // Spielfeld: einzelne Canvas statt vieler Einzelobjekte – Puffer im PSRAM (8 MB frei),
+  // belastet den knappen internen LVGL-Speicherpool nicht.
+  uint32_t bbBufSize = LV_CANVAS_BUF_SIZE_TRUE_COLOR(BB_CANVAS_W, BB_CANVAS_H);
+  bbCanvasBuf = (lv_color_t*)ps_malloc(bbBufSize);
+  if (bbCanvasBuf) {
+    bbCanvas = lv_canvas_create(bbScreen);
+    lv_canvas_set_buffer(bbCanvas, bbCanvasBuf, BB_CANVAS_W, BB_CANVAS_H, LV_IMG_CF_TRUE_COLOR);
+    lv_obj_set_pos(bbCanvas, 0, BB_TOP);
+    lv_obj_clear_flag(bbCanvas, LV_OBJ_FLAG_SCROLLABLE);
+    // WICHTIG: lv_canvas erbt von lv_img, dessen Konstruktor LV_OBJ_FLAG_CLICKABLE
+    // aktiv entfernt (lv_img_constructor in lv_img.c) – ohne dieses Add hier reagiert
+    // die Canvas NIE auf Touch-Events (genau der Bug, der zuvor "kein Ball antippbar" verursachte).
+    lv_obj_add_flag(bbCanvas, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(bbCanvas, cbBubbleTap, LV_EVENT_CLICKED, nullptr);
+  } else {
+    Serial.println("[Bubblebreaker] ps_malloc Canvas-Puffer fehlgeschlagen!");
   }
 
-  gameOverPanel = lv_obj_create(gamePlayScreen);
-  lv_obj_set_size(gameOverPanel, 300, 140);
-  lv_obj_align(gameOverPanel, LV_ALIGN_CENTER, 0, 0);
-  lv_obj_set_style_bg_color(gameOverPanel, lv_color_hex(0x000000), 0);
-  lv_obj_set_style_bg_opa(gameOverPanel, 220, 0);
-  lv_obj_set_style_radius(gameOverPanel, 10, 0);
-  lv_obj_clear_flag(gameOverPanel, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_add_flag(gameOverPanel, LV_OBJ_FLAG_HIDDEN);
+  bbGameOverPanel = lv_obj_create(bbScreen);
+  lv_obj_set_size(bbGameOverPanel, 300, 140);
+  lv_obj_align(bbGameOverPanel, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_style_bg_color(bbGameOverPanel, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(bbGameOverPanel, 220, 0);
+  lv_obj_set_style_radius(bbGameOverPanel, 10, 0);
+  lv_obj_clear_flag(bbGameOverPanel, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_add_flag(bbGameOverPanel, LV_OBJ_FLAG_HIDDEN);
 
-  lblGameOverTitel = lv_label_create(gameOverPanel);
-  lv_label_set_text(lblGameOverTitel, "Game Over");
-  lv_obj_set_style_text_font(lblGameOverTitel, &font_montserrat_20, 0);
-  lv_obj_set_style_text_color(lblGameOverTitel, lv_color_white(), 0);
-  lv_obj_align(lblGameOverTitel, LV_ALIGN_TOP_MID, 0, 12);
+  bbLblGameOverTitel = lv_label_create(bbGameOverPanel);
+  lv_label_set_text(bbLblGameOverTitel, "Spiel zu Ende");
+  lv_obj_set_style_text_font(bbLblGameOverTitel, &font_montserrat_20, 0);
+  lv_obj_set_style_text_color(bbLblGameOverTitel, lv_color_white(), 0);
+  lv_obj_align(bbLblGameOverTitel, LV_ALIGN_TOP_MID, 0, 12);
 
-  lblGameOverScore = lv_label_create(gameOverPanel);
-  lv_label_set_text(lblGameOverScore, "Score: 0");
-  lv_obj_set_style_text_font(lblGameOverScore, &font_montserrat_16, 0);
-  lv_obj_set_style_text_color(lblGameOverScore, lv_color_white(), 0);
-  lv_obj_align(lblGameOverScore, LV_ALIGN_TOP_MID, 0, 44);
+  bbLblGameOverScore = lv_label_create(bbGameOverPanel);
+  lv_label_set_text(bbLblGameOverScore, "Punkte: 0");
+  lv_obj_set_style_text_font(bbLblGameOverScore, &font_montserrat_16, 0);
+  lv_obj_set_style_text_color(bbLblGameOverScore, lv_color_white(), 0);
+  lv_obj_set_style_text_align(bbLblGameOverScore, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_align(bbLblGameOverScore, LV_ALIGN_TOP_MID, 0, 44);
 
-  lv_obj_t* nochmalBtn = erstelleTextButton(gameOverPanel, 20, 85, 120, 40, 0x2ecc71, "Nochmal");
-  lv_obj_add_event_cb(nochmalBtn, cbGameNochmalTap, LV_EVENT_CLICKED, nullptr);
-  lv_obj_t* menuBtn = erstelleTextButton(gameOverPanel, 160, 85, 120, 40, 0x7f8c8d, "Menue");
-  lv_obj_add_event_cb(menuBtn, cbGameZurueckMenuTap, LV_EVENT_CLICKED, nullptr);
-}
-
-void erstelleGameScreens() {
-  erstelleGameSelectScreen();
-  erstelleGamePlayScreen();
+  lv_obj_t* nochmalBtn = erstelleTextButton(bbGameOverPanel, 20, 85, 120, 40, 0x2ecc71, "Nochmal");
+  lv_obj_add_event_cb(nochmalBtn, cbBBNochmalTap, LV_EVENT_CLICKED, nullptr);
+  lv_obj_t* menuBtn = erstelleTextButton(bbGameOverPanel, 160, 85, 120, 40, 0x7f8c8d, "Menue");
+  lv_obj_add_event_cb(menuBtn, cbBBZurueckMenuTap, LV_EVENT_CLICKED, nullptr);
 }
 
 // ============================================================
@@ -3048,9 +2957,10 @@ void setup() {
   erstelleWarnkarteScreen();
   erstelleWarnkarte2Screen();
 
-  // Breakout-Minispiel programmatisch anlegen
-  erstelleGameScreens();
-  ladeHighscores();
+  // Bubblebreaker-Minispiel programmatisch anlegen
+  erstelleBreakerSelectScreen();
+  erstelleBubbleBreakerScreen();
+  bbLadeHighscores();
 
   // Navigations-Buttons sofort verdrahten (vor WiFi-Check, gilt auch im Portal-Modus)
   // Hauptkette: screen_1 → forecastwetter → forecastpollen → screenwarnkarte1 → screensunmoon → screenairquality → screen_1
@@ -3085,7 +2995,8 @@ void setup() {
   if (objects.labelbuttonbackward)lv_obj_add_flag(objects.labelbuttonbackward,LV_OBJ_FLAG_CLICKABLE);
   REG_CB(objects.fc_settings,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
   REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
-  REG_CB(objects.buttongame, cbButtonGameTap, LV_EVENT_CLICKED);  // screenmenu → Breakout-Auswahl
+  REG_CB(objects.buttonbreaker, cbOpenBreakerSelect, LV_EVENT_CLICKED);  // screenmenu → Bubblebreaker-Auswahl
+  REG_CB(objects.button_4, cbHome, LV_EVENT_CLICKED);  // screenforecastpollenhour → screen_1
   // Nach Theme-Wechsel Farbkodierungen wiederherstellen
   if (objects.labelswitchtheme)
     lv_obj_add_event_cb(objects.labelswitchtheme, [](lv_event_t*) { aktualisiereUI(); }, LV_EVENT_CLICKED, nullptr);
@@ -3096,12 +3007,11 @@ void setup() {
   REG_CB(objects.dwdswitch,             cbMenuDwdSwitch,    LV_EVENT_VALUE_CHANGED);
   // Home-Buttons
   REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);  // forecastpollen
-  REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);  // forecastpollenhour
-  REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);  // forecastwetter
-  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte1
-  REG_CB(objects.labelbuttonhome_4, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte2
-  REG_CB(objects.labelbuttonhome_5, cbHome, LV_EVENT_CLICKED);  // screensunmoon
-  REG_CB(objects.labelbuttonhome_6, cbHome, LV_EVENT_CLICKED);  // screenairquality
+  REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);  // forecastwetter
+  REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte1
+  REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte2
+  REG_CB(objects.labelbuttonhome_4, cbHome, LV_EVENT_CLICKED);  // screensunmoon
+  REG_CB(objects.labelbuttonhome_5, cbHome, LV_EVENT_CLICKED);  // screenairquality
   REG_CB(objects.labelbuttonhome_7, cbHome, LV_EVENT_CLICKED);  // screenbiowetter
   REG_CB(objects.labelbuttonhome_8, cbHome, LV_EVENT_CLICKED);  // screenbiowetter2
   // screenhealth navigation

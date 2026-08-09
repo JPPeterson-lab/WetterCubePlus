@@ -8,6 +8,7 @@
 #include "src/ui/images/alert.inc"
 #include "src/ui/images/night_full_moon_clear.inc"
 #include "src/ui/images/overcast.inc"
+#include "src/ui/images/fc_self_service_kiosk_38.inc"
 #include "src/ui/images/fc_left_60.inc"
 #include "src/ui/images/sleet.inc"
 #include "src/ui/images/rain.inc"
@@ -15,7 +16,6 @@
 #include "src/ui/images/fc_plus_38_ffffff.inc"
 #include "src/ui/images/fc_right_60.inc"
 #include "src/ui/images/thunder.inc"
-#include "src/ui/images/fc_electronics_38.inc"
 #include "src/ui/images/snow.inc"
 #include "src/ui/images/fc_right_up2_38.inc"
 #include "src/ui/images/fc_left_down2_38.inc"
@@ -29,6 +29,7 @@ const ext_img_desc_t images[20] = {
     { "alert", &alert },
     { "night_full_moon_clear", &night_full_moon_clear },
     { "overcast", &overcast },
+    { "fc_self_service_kiosk_38", &fc_self_service_kiosk_38 },
     { "fc_left_60", &fc_left_60 },
     { "sleet", &sleet },
     { "rain", &rain },
@@ -36,7 +37,6 @@ const ext_img_desc_t images[20] = {
     { "fc_plus_38_ffffff", &fc_plus_38_ffffff },
     { "fc_right_60", &fc_right_60 },
     { "thunder", &thunder },
-    { "fc_electronics_38", &fc_electronics_38 },
     { "snow", &snow },
     { "fc_right_up2_38", &fc_right_up2_38 },
     { "fc_left_down2_38", &fc_left_down2_38 },

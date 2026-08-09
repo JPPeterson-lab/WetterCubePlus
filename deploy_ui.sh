@@ -113,7 +113,6 @@ EXPECTED=(
   "labelbuttonhome_3"
   "labelbuttonhome_4"
   "labelbuttonhome_5"
-  "labelbuttonhome_6"
   "labelbuttonhome_7"
   "labelbuttonhome_8"
   "arcaqi"
@@ -148,6 +147,8 @@ EXPECTED=(
   "labelhour1"
   "labelhour2"
   "labelhour3"
+  "button_4"
+  "buttonbreaker"
 )
 
 MISSING=0

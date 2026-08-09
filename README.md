@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/Status-Release%20Candidate-brightgreen?style=flat-square)
 ![Fortschritt](https://img.shields.io/badge/Fortschritt-95%25-green?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.9.7--rc1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.9.7--rc2-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -44,9 +44,9 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
 | 👆 | **Touch-Kalibrierung** | Automatisch beim Erststart, jederzeit neu auslösbar |
-| 🎨 | **Theme-System** *(experimentell)* | Menü-Screen mit Theme-Umschalter – Grundlage für vollständige Farbthemes; wird in kommenden Versionen schrittweise ausgebaut |
+| 🌙 | **Dark Mode** | Vollständiges dunkles Farbthema für alle Screens, Hintergründe und Bedienelemente – Umschalter direkt im Menü-Screen |
 | 🎛️ | **Menü-Screen** | Helligkeit, Regen-/Pollenwarnung und DWD-Warnungen direkt am Gerät ein-/ausschalten – kein WebUI nötig |
-| 🎮 | **Mini-Spiel: Breakout** | Klassisches Breakout direkt auf dem Cube – 5 Schwierigkeitsgrade, Steuerung per Pfeiltasten, persistente Bestenliste (Top 5); Start über den Menü-Screen |
+| 🎮 | **Mini-Spiel: Bubblebreaker** | Bunte Bubble-Puzzle direkt auf dem Cube – zusammenhängende Farbgruppen antippen und auflösen, persistente Bestenliste (Top 5); Start über den Menü-Screen |
 
 ---
 
@@ -270,7 +270,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 
 ![Status](https://img.shields.io/badge/Status-Release%20Candidate-brightgreen?style=flat-square)
 ![Progress](https://img.shields.io/badge/Progress-95%25-green?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.9.7--rc1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v0.9.7--rc2-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -303,9 +303,9 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 📡 | **Captive Portal** | Wi-Fi setup without an app |
 | 🔄 | **OTA update** | Firmware update via WebUI over Wi-Fi |
 | 👆 | **Touch calibration** | Automatic on first boot, re-triggerable anytime |
-| 🎨 | **Theme system** *(experimental)* | Menu screen with theme switcher – foundation for full color themes; gradually expanded in future versions |
+| 🌙 | **Dark Mode** | Full dark color theme for all screens, backgrounds, and controls – toggle right on the menu screen |
 | 🎛️ | **Menu screen** | Adjust brightness, toggle rain/pollen warnings and DWD alerts directly on the device – no WebUI needed |
-| 🎮 | **Mini-game: Breakout** | Classic Breakout right on the cube – 5 difficulty levels, arrow-button controls, persistent high-score table (top 5); launch from the menu screen |
+| 🎮 | **Mini-game: Bubblebreaker** | Colorful bubble puzzle right on the cube – tap connected color groups to clear them, persistent high-score table (top 5); launch from the menu screen |
 
 ---
 

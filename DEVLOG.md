@@ -1,5 +1,31 @@
 # Entwicklungs-Log
 
+## 2026-08-09 – v0.9.7-rc2
+
+### Breakout raus, Bubblebreaker rein – Speicher-Grenzen des ESP32-S3
+
+Breakout (48 Bricks + Ball + Paddle + 2 Auswahl-Screens, alle als Einzelobjekte gepoolt) brachte den internen LVGL-Speicherpool (`LV_MEM_SIZE`, `build_opt.h`) an seine Grenze. Beim Versuch, den Pool größer zu machen, zeigte sich: der interne DRAM des ESP32-S3 ist ein einziger, ca. 320 KB kleiner Topf, den sich LVGL-Pool **und** WLAN/TLS-Heap teilen – `LV_MEM_SIZE` hochsetzen verschiebt nur, wer zuerst ausgeht:
+- Zu klein → Laufzeit-Crash beim Rendern (`lv_mem_realloc`, `lv_mem_buf_get`, `circ_calc_aa4` bei Kreis-Objekten)
+- Zu groß auf Kosten von WLAN → alle HTTPS-Requests scheitern mit `HTTP -1`, keine Wetterdaten mehr
+- Zu groß insgesamt → **Linker-Fehler** (`region 'dram0_0_seg' overflowed`), harte Obergrenze ca. 190-200 KB
+
+Dazu kam eine Arduino-IDE-Cache-Falle: reine `build_opt.h`-Änderungen wurden von der IDE mehrfach nicht erkannt, mehrere Testrunden liefen unbemerkt noch mit alten Werten (nachgewiesen über Zeitstempel-Vergleich `lv_mem.c.o` vs. `build_opt.h`). Ausführliche Analyse in den Claude-Memory-Dateien `feedback_lvgl_mem_size.md` und `general_esp32_lvgl_dram_budget.md` (letztere auch nach OrgaCube kopiert, da projektübergreifend relevant).
+
+Ergebnis: Breakout komplett entfernt, `LV_MEM_SIZE` zurück auf den ursprünglichen, bewährten Wert (128 KB). Bubblebreaker als einziges Mini-Spiel neu gebaut – speicherschonender:
+
+**Architektur (Bubblebreaker):**
+- Spielfeld als **eine einzige `lv_canvas`** mit Pixelpuffer im PSRAM (`ps_malloc`) statt vieler Einzelobjekte (70 Zellen) – der Puffer liegt vollständig im PSRAM (mehrere MB frei) und belastet den knappen internen DRAM-Pool praktisch nicht. Zeichnen per `lv_canvas_draw_rect()` mit `radius = LV_RADIUS_CIRCLE` für gefüllte Kreise.
+- **Falle dabei:** `lv_canvas` erbt von `lv_img` (`lv_canvas_class.base_class = &lv_img_class`), dessen Konstruktor `LV_OBJ_FLAG_CLICKABLE` aktiv entfernt (`lv_img.c`). Ohne explizites `lv_obj_add_flag(canvas, LV_OBJ_FLAG_CLICKABLE)` reagiert die Canvas nie auf Taps – stiller Fehler, keine Fehlermeldung, einfach nichts passiert. Gleiche Grundlektion wie schon bei Icon-Buttons (`lv_img_create()`), jetzt auch für Canvas dokumentiert.
+- Tap-Erkennung: ein Handler auf der gesamten Canvas, Touch-Position relativ zur Canvas-Position (`lv_obj_get_coords()`) in Zeile/Spalte umgerechnet, statt 70 einzelner Klick-Handler.
+- Flood-Fill (iterativ, kein Rekursions-Risiko), Schwerkraft + Spalten-Kollaps, Highscore-Persistenz über `Preferences` (eigener NVS-Namespace `wcp_bbreak`) – strukturell identisch zum Breakout-Vorgänger übernommen.
+- Eigener Auswahl-Screen vor Spielstart (Bestenliste + Start/Zurück), Start über `buttonbreaker` auf `screenmenu`.
+
+### Dark Mode fertiggestellt
+
+PicoPixel-Export um `THEME_COLOR_SCREEN` erweitert (Theme-Farbtabelle jetzt 7 statt 6 Einträge) – Screen-Hintergründe reagieren jetzt auch auf den Theme-Umschalter, nicht mehr nur Akzentfarben. Rein generisch in `colors.c`/`change_color_theme()`, keine Code-Änderung im `.ino` nötig.
+
+---
+
 ## 2026-08-08 – v0.9.7-rc1
 
 ### Mini-Spiel: Breakout
