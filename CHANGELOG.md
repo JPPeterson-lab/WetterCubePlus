@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.9.7-rc4 (2026-08-09)
+
+### Neu
+- **Bubblebreaker: Undo** – ein Schritt rückgängig machbar, Button im Spiel-HUD (aktiv/inaktiv farblich unterschieden)
+- **Bubblebreaker: Spielmodi** – Auswahl auf dem Startbildschirm zwischen "Normal" (wie bisher) und "Laufend" (leer gewordene Spalten werden automatisch mit neuen Bubbles aufgefüllt, Spiel läuft weiter bis keine Kombination mehr möglich ist)
+
+### Geändert
+- **Bubblebreaker-Farbe:** Orange durch Lila ersetzt – besser von Rot und Gelb unterscheidbar
+
+---
+
 ## v0.9.7-rc3 (2026-08-09)
 
 ### Fixes

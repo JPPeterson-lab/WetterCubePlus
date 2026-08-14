@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-08-09 – v0.9.7-rc4
+
+### Bubblebreaker: Undo, Spielmodi, Farbwechsel
+
+**Undo:** Vor jedem gültigen Zug wird ein Schnappschuss von `bbBoard` + Punktestand in `bbBoardUndo`/`bbScoreUndo` gesichert (`memcpy`), ein Flag `bbUndoVerfuegbar` steuert Verfügbarkeit. Bewusst nur ein Level (keine Undo-Historie) – matcht "einen Schritt zurück". Undo-Button im HUD ändert Hintergrundfarbe je nach Verfügbarkeit statt echtem Disabled-State (einfacher als LVGL-State-Handling).
+
+**Spielmodus "Laufend":** Neue Funktion `bbFuelleAuf()` scannt nach `bbSchwerkraftUndKollaps()` alle Spalten; komplett leere Spalten werden statt leer zu bleiben mit frischen Zufallsfarben neu befüllt (`random(5)` pro Zelle). Dadurch bleibt das Feld dauerhaft voll, Game Over erst wenn `bbHatZuege()` trotz Auffüllung `false` liefert. Der Vollständig-leer-Bonus (+500) gilt bewusst nur im Normal-Modus (`bbModus == BB_MODUS_NORMAL && bbIstLeer()`), da das Feld im Laufend-Modus durch die Auffüllung praktisch nie leer bleibt.
+
+Modus-Auswahl auf dem Start-Screen als zwei Buttons (Normal/Laufend), Auswahl-Highlight analog zum früheren Breakout-Schwierigkeitsgrad-Muster (`bbAktualisiereModusButtons()`).
+
+**Farbe:** Orange (`0xff9d4d`) durch Lila (`0xc94dff`) ersetzt – auf dem Display schwerer mit Rot/Gelb zu verwechseln als das ursprüngliche Orange.
+
+---
+
 ## 2026-08-09 – v0.9.7-rc3
 
 ### UI-Korrekturen

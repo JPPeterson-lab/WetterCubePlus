@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.7-rc3"
+#define FIRMWARE_VERSION "0.9.7-rc4"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -2207,7 +2207,12 @@ void aktualisiereUI() {
 #define BB_TOP    34
 #define BB_CANVAS_W 480
 #define BB_CANVAS_H (BB_ROWS * BB_CELL_H)
-static const uint32_t BB_COLORS[5] = { 0xff4d4d, 0xff9d4d, 0xffe14d, 0x4dff88, 0x4dc9ff };
+static const uint32_t BB_COLORS[5] = { 0xff4d4d, 0xc94dff, 0xffe14d, 0x4dff88, 0x4dc9ff };
+
+enum BBModus { BB_MODUS_NORMAL, BB_MODUS_LAUFEND };
+static BBModus bbModus = BB_MODUS_NORMAL;
+static lv_obj_t* bbModusNormalBtn = nullptr;
+static lv_obj_t* bbModusLaufendBtn = nullptr;
 
 static lv_obj_t*   bbScreen = nullptr;
 static lv_obj_t*   breakerSelectScreen = nullptr;
@@ -2218,6 +2223,10 @@ static lv_obj_t*   bbCanvas = nullptr;
 static lv_color_t* bbCanvasBuf = nullptr;
 static int8_t    bbBoard[BB_ROWS][BB_COLS];   // -1 = leer, 0..4 = Farbindex
 static bool      bbBesucht[BB_ROWS][BB_COLS];
+static int8_t    bbBoardUndo[BB_ROWS][BB_COLS];
+static int       bbScoreUndo = 0;
+static bool      bbUndoVerfuegbar = false;
+static lv_obj_t* bbUndoBtn = nullptr;
 static lv_obj_t* bbLblScore = nullptr;
 static lv_obj_t* bbLblBeste = nullptr;
 static lv_obj_t* bbGameOverPanel = nullptr;
@@ -2352,6 +2361,18 @@ static void bbSchwerkraftUndKollaps() {
   }
 }
 
+// Modus "Laufend": leer gewordene Spalten (nach Schwerkraft/Kollaps) rechts mit frischen
+// Zufallsbubbles auffüllen, statt sie leer zu lassen – Spielfeld bleibt dauerhaft voll.
+static void bbFuelleAuf() {
+  for (int c = 0; c < BB_COLS; c++) {
+    bool leer = true;
+    for (int r = 0; r < BB_ROWS; r++) if (bbBoard[r][c] >= 0) { leer = false; break; }
+    if (leer) {
+      for (int r = 0; r < BB_ROWS; r++) bbBoard[r][c] = (int8_t)random(5);
+    }
+  }
+}
+
 static bool bbHatZuege() {
   for (int r = 0; r < BB_ROWS; r++) {
     for (int c = 0; c < BB_COLS; c++) {
@@ -2403,12 +2424,20 @@ static void cbBubbleTap(lv_event_t* e) {
   int n = 0;
   bbFloodFill(r, c, bbBoard[r][c], bbFillRs, bbFillCs, &n);
   if (n < 2) return;
+
+  // Undo-Schnappschuss vor der Änderung sichern (ein Schritt zurück möglich)
+  memcpy(bbBoardUndo, bbBoard, sizeof(bbBoard));
+  bbScoreUndo = bbScore;
+  bbUndoVerfuegbar = true;
+  if (bbUndoBtn) lv_obj_set_style_bg_color(bbUndoBtn, lv_color_hex(0x2980b9), 0);
+
   for (int i = 0; i < n; i++) bbBoard[bbFillRs[i]][bbFillCs[i]] = -1;
   bbScore += (n - 1) * (n - 1) * 5;
   lv_label_set_text_fmt(bbLblScore, "Punkte: %d", bbScore);
   bbSchwerkraftUndKollaps();
+  if (bbModus == BB_MODUS_LAUFEND) bbFuelleAuf();
   bbZeichneBrett();
-  if (bbIstLeer()) {
+  if (bbModus == BB_MODUS_NORMAL && bbIstLeer()) {
     bbScore += 500;
     lv_label_set_text_fmt(bbLblScore, "Punkte: %d", bbScore);
     bbGameUeber();
@@ -2417,12 +2446,24 @@ static void cbBubbleTap(lv_event_t* e) {
   if (!bbHatZuege()) bbGameUeber();
 }
 
+static void cbBBUndoTap(lv_event_t*) {
+  if (!bbAktiv || !bbUndoVerfuegbar) return;
+  memcpy(bbBoard, bbBoardUndo, sizeof(bbBoard));
+  bbScore = bbScoreUndo;
+  bbUndoVerfuegbar = false;
+  if (bbUndoBtn) lv_obj_set_style_bg_color(bbUndoBtn, lv_color_hex(0xbdc3c7), 0);
+  lv_label_set_text_fmt(bbLblScore, "Punkte: %d", bbScore);
+  bbZeichneBrett();
+}
+
 static void bbStarteSpiel() {
   bbScore = 0;
   lv_label_set_text(bbLblScore, "Punkte: 0");
   int32_t beste = bbHighscoreCount > 0 ? bbHighscores[0] : 0;
   lv_label_set_text_fmt(bbLblBeste, "Beste: %ld", (long)beste);
   lv_obj_add_flag(bbGameOverPanel, LV_OBJ_FLAG_HIDDEN);
+  bbUndoVerfuegbar = false;
+  if (bbUndoBtn) lv_obj_set_style_bg_color(bbUndoBtn, lv_color_hex(0xbdc3c7), 0);
   bbNeuesBrett();
   bbZeichneBrett();
   bbAktiv = true;
@@ -2443,6 +2484,15 @@ static void zeigeBreakerSelect() {
 }
 
 static void cbOpenBreakerSelect(lv_event_t*) { zeigeBreakerSelect(); }
+
+static void bbAktualisiereModusButtons() {
+  if (bbModusNormalBtn)
+    lv_obj_set_style_bg_color(bbModusNormalBtn, bbModus == BB_MODUS_NORMAL ? lv_color_hex(0x2c3e50) : lv_color_hex(0xbdc3c7), 0);
+  if (bbModusLaufendBtn)
+    lv_obj_set_style_bg_color(bbModusLaufendBtn, bbModus == BB_MODUS_LAUFEND ? lv_color_hex(0x2c3e50) : lv_color_hex(0xbdc3c7), 0);
+}
+static void cbBBModusNormal(lv_event_t*)  { bbModus = BB_MODUS_NORMAL;  bbAktualisiereModusButtons(); }
+static void cbBBModusLaufend(lv_event_t*) { bbModus = BB_MODUS_LAUFEND; bbAktualisiereModusButtons(); }
 
 static void cbBBNochmalTap(lv_event_t*) { bbStarteSpiel(); }
 static void cbBBZurueckMenuTap(lv_event_t*) {
@@ -2488,9 +2538,16 @@ static void erstelleBreakerSelectScreen() {
     bbHsRows[i] = lv_label_create(breakerSelectScreen);
     lv_obj_set_style_text_font(bbHsRows[i], &font_montserrat_18, 0);
     lv_obj_set_style_text_color(bbHsRows[i], lv_color_hex(0x333333), 0);
-    lv_obj_align(bbHsRows[i], LV_ALIGN_TOP_MID, 0, 90 + i * 28);
+    lv_obj_align(bbHsRows[i], LV_ALIGN_TOP_MID, 0, 90 + i * 22);
     lv_label_set_text_fmt(bbHsRows[i], "%d. --", i + 1);
   }
+
+  // Spielmodus-Auswahl
+  bbModusNormalBtn = erstelleTextButton(breakerSelectScreen, 95, 208, 140, 36, 0x2c3e50, "Normal");
+  lv_obj_add_event_cb(bbModusNormalBtn, cbBBModusNormal, LV_EVENT_CLICKED, nullptr);
+  bbModusLaufendBtn = erstelleTextButton(breakerSelectScreen, 245, 208, 140, 36, 0xbdc3c7, "Laufend");
+  lv_obj_add_event_cb(bbModusLaufendBtn, cbBBModusLaufend, LV_EVENT_CLICKED, nullptr);
+  bbAktualisiereModusButtons();
 
   lv_obj_t* zurueckBtn = erstelleTextButton(breakerSelectScreen, 20, 255, 120, 45, 0x7f8c8d, "Zurueck");
   lv_obj_add_event_cb(zurueckBtn, [](lv_event_t*) { loadScreen(SCREEN_ID_SCREENMENU); }, LV_EVENT_CLICKED, nullptr);
@@ -2517,6 +2574,17 @@ static void erstelleBubbleBreakerScreen() {
   lv_obj_set_style_text_font(bbLblBeste, &font_montserrat_16, 0);
   lv_obj_set_style_text_color(bbLblBeste, lv_color_hex(0x1a1a1a), 0);
   lv_obj_set_pos(bbLblBeste, 200, 6);
+
+  bbUndoBtn = lv_btn_create(bbScreen);
+  lv_obj_set_pos(bbUndoBtn, 330, 2);
+  lv_obj_set_size(bbUndoBtn, 75, 28);
+  lv_obj_set_style_bg_color(bbUndoBtn, lv_color_hex(0xbdc3c7), 0);
+  lv_obj_set_style_radius(bbUndoBtn, 6, 0);
+  lv_obj_t* undoLbl = lv_label_create(bbUndoBtn);
+  lv_label_set_text(undoLbl, "Undo");
+  lv_obj_set_style_text_color(undoLbl, lv_color_white(), 0);
+  lv_obj_center(undoLbl);
+  lv_obj_add_event_cb(bbUndoBtn, cbBBUndoTap, LV_EVENT_CLICKED, nullptr);
 
   lv_obj_t* bbExitBtn = lv_btn_create(bbScreen);
   lv_obj_set_pos(bbExitBtn, 430, 2);
