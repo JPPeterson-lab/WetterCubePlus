@@ -1,5 +1,22 @@
 # Entwicklungs-Log
 
+## 2026-08-09 – v0.9.8-rc1
+
+### AQI/PM2.5/Ozon: Farbabweichung zwischen ScreenAirQuality und ScreenHealth
+
+Nutzer-Beobachtung: Ozon (und andere Werte) zeigten auf `screenhealth` z.B. Orange, während `screenairquality` für denselben Schadstoff Grün zeigte. Ursache waren zwei getrennte Probleme:
+
+1. **Doppelte, abweichende Farbskalen:** `pm25Color`/`o3Color` waren als lokale Lambdas separat im `screenairquality`-Block UND nochmal (mit anderen Schwellwerten, z.B. PM2.5 10/25/50 vs. 12/35/55) im `screenhealth`-Block definiert. Fix: `pm25Color`, `pm10Color`, `no2Color`, `o3Color` als geteilte Top-Level-Funktionen (gleiches Muster wie das bereits geteilte `aqiColor`) – jetzt nur noch eine Quelle der Wahrheit.
+2. **Unterschiedlicher Zeitraum:** `screenairquality` zeigte die aktuelle Stunde, `screenhealth` bewusst das Maximum der nächsten 3 Stunden (`aqi_3h`/`pm25_3h`/`o3_3h`, aus einer früheren Session als "Vorwarnung" eingebaut). Rückfrage beim Nutzer ergeben: Konsistenz zwischen den Screens ist wichtiger als die Vorwarnfunktion. `screenhealth` nutzt jetzt dieselben aktuellen Werte wie `screenairquality`; die jetzt toten `_3h`-Felder und deren Berechnung entfernt.
+
+### Biowetter-Periode auf ScreenHealth
+
+Gleiche Nutzer-Beobachtung, andere Ursache: Die Werte-/Farblogik (`bioWertColor`/`bioWertKurz`) war bereits identisch zwischen `screenhealth` und `screenbiowetter` – der scheinbare Unterschied kam daher, dass `screenhealth` je nach Uhrzeit automatisch nur eine von 4 Perioden zeigt (vor 18 Uhr "heute Nachmittag", danach "morgen Vormittag"), während `screenbiowetter` alle 4 Perioden auf 2 Screens nebeneinander zeigt – ohne Kennzeichnung war nicht ersichtlich, welche Periode gerade zu sehen ist.
+
+Fix: der statische "Bio Wetter"-Titel (`objects.biowetter`, im schmalen `container_6`, nur ~183px Platz bei Font-Größe 22 verfügbar) zeigt jetzt dynamisch den Zeitraum selbst ("Heute Nachmittag"/"Morgen Vormittag") statt eines generischen Titels – bei kleinerer Schrift (18 statt 22), um im engen Container sicher zu passen.
+
+---
+
 ## 2026-08-09 – v0.9.7-rc4
 
 ### Bubblebreaker: Undo, Spielmodi, Farbwechsel

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.8-rc1 (2026-08-09)
+
+### Fixes
+- **AQI/PM2.5/Ozon-Farben zwischen ScreenAirQuality und ScreenHealth vereinheitlicht:** beide Screens zeigten teils unterschiedliche Farben für denselben Schadstoff – Ursache war eine doppelte, abweichende PM2.5-Farbskala sowie ein Zeitraum-Unterschied (aktuelle Stunde vs. 3h-Vorwarnung). ScreenHealth nutzt jetzt dieselben aktuellen Werte und dieselben Farbfunktionen wie ScreenAirQuality – identischer Wert ergibt jetzt garantiert identische Farbe
+- **Biowetter-Periode auf ScreenHealth sichtbar gemacht:** zeigt jetzt "Heute Nachmittag" bzw. "Morgen Vormittag" statt eines generischen Titels, damit der Bezug zur Periode auf screenbiowetter klar erkennbar ist
+
+---
+
 ## v0.9.7-rc4 (2026-08-09)
 
 ### Neu

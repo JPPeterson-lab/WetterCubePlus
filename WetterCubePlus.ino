@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.7-rc4"
+#define FIRMWARE_VERSION "0.9.8-rc1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -256,11 +256,10 @@ struct PollenDaten {
   // Luftqualität (Air Quality Index + Einzelwerte) – aktuelle + nächste Stunde
   int   aqi      = -1;
   int   aqi_next = -1;
-  int   aqi_3h   = -1;    // Max AQI nächste 3 Stunden
-  float pm25     = -1.0f;  float pm25_next = -1.0f;  float pm25_3h = -1.0f;
+  float pm25     = -1.0f;  float pm25_next = -1.0f;
   float pm10     = -1.0f;  float pm10_next = -1.0f;
   float no2      = -1.0f;  float no2_next  = -1.0f;
-  float o3       = -1.0f;  float o3_next   = -1.0f;  float o3_3h   = -1.0f;
+  float o3       = -1.0f;  float o3_next   = -1.0f;
   // DWD Pollenflug – heute / morgen / übermorgen (Stufen 0-3 als Float)
   float dwd_birke    = -1.0f; float dwd_birke_tmr    = -1.0f; float dwd_birke_da    = -1.0f;
   float dwd_hasel    = -1.0f; float dwd_hasel_tmr    = -1.0f; float dwd_hasel_da    = -1.0f;
@@ -1585,22 +1584,6 @@ void fetchOpenMeteoPollen() {
       pollen.no2_next = doc["hourly"]["nitrogen_dioxide"][h].as<float>();
       pollen.o3       = doc["hourly"]["ozone"][hNow].as<float>();
       pollen.o3_next  = doc["hourly"]["ozone"][h].as<float>();
-      // Max der nächsten 3 Stunden (h = nächste Stunde)
-      {
-        int aqiM = -1; float pm25M = -1.0f; float o3M = -1.0f;
-        for (int i = 0; i < 3; i++) {
-          int s = min(h + i, 47);
-          int a = doc["hourly"]["european_aqi"][s].as<int>();
-          float p = doc["hourly"]["pm2_5"][s].as<float>();
-          float o = doc["hourly"]["ozone"][s].as<float>();
-          if (a  > aqiM)  aqiM  = a;
-          if (p  > pm25M) pm25M = p;
-          if (o  > o3M)   o3M   = o;
-        }
-        pollen.aqi_3h  = aqiM;
-        pollen.pm25_3h = pm25M;
-        pollen.o3_3h   = o3M;
-      }
       // 3 Stunden-Slots für ScreenForecastPollenHour — Index läuft über Tagesgrenze
       for (int i = 0; i < 3; i++) {
         int slot = min(h + i, 47);
@@ -1760,6 +1743,38 @@ static lv_color_t aqiColor(int aqi) {
   if (aqi <= 80)  return lv_color_hex(0xff8c00);  // schlecht – orange
   if (aqi <= 100) return lv_color_hex(0xff3030);  // sehr schlecht – rot
   return lv_color_hex(0x8b008b);                  // extrem – violett
+}
+
+// Einzelwerte – Farbkodierung nach EU-Grenzwerten. Eine einzige gemeinsame Definition
+// für screenairquality UND screenhealth, damit ein Wert dort nie unterschiedlich
+// eingefärbt werden kann (vorher: zwei getrennte, abweichende Skalen).
+static lv_color_t pm25Color(float v) {
+  if (v < 0)   return lv_color_hex(0x888888);
+  if (v <= 10) return lv_color_hex(0x50c878);
+  if (v <= 25) return lv_color_hex(0xffd700);
+  if (v <= 50) return lv_color_hex(0xff8c00);
+  return lv_color_hex(0xff3030);
+}
+static lv_color_t pm10Color(float v) {
+  if (v < 0)    return lv_color_hex(0x888888);
+  if (v <= 20)  return lv_color_hex(0x50c878);
+  if (v <= 50)  return lv_color_hex(0xffd700);
+  if (v <= 100) return lv_color_hex(0xff8c00);
+  return lv_color_hex(0xff3030);
+}
+static lv_color_t no2Color(float v) {
+  if (v < 0)    return lv_color_hex(0x888888);
+  if (v <= 40)  return lv_color_hex(0x50c878);
+  if (v <= 100) return lv_color_hex(0xffd700);
+  if (v <= 200) return lv_color_hex(0xff8c00);
+  return lv_color_hex(0xff3030);
+}
+static lv_color_t o3Color(float v) {
+  if (v < 0)     return lv_color_hex(0x888888);
+  if (v <= 60)   return lv_color_hex(0x50c878);
+  if (v <= 120)  return lv_color_hex(0xffd700);
+  if (v <= 180)  return lv_color_hex(0xff8c00);
+  return lv_color_hex(0xff3030);
 }
 
 static const char* aqiStatusText(int aqi) {
@@ -1977,36 +1992,8 @@ void aktualisiereUI() {
     if (objects.labelaqistatus)
       lv_label_set_text(objects.labelaqistatus, aqiStatusText(aqi));
 
-    // Einzelwerte – aktuelle Stunde mit Farbkodierung nach EU-Grenzwerten
-    // Schwellen analog zum EU AQI: gut / mäßig / schlecht
-    auto pm25Color = [](float v) -> lv_color_t {
-      if (v < 0)   return lv_color_hex(0x888888);
-      if (v <= 10) return lv_color_hex(0x50c878);
-      if (v <= 25) return lv_color_hex(0xffd700);
-      if (v <= 50) return lv_color_hex(0xff8c00);
-      return lv_color_hex(0xff3030);
-    };
-    auto pm10Color = [](float v) -> lv_color_t {
-      if (v < 0)    return lv_color_hex(0x888888);
-      if (v <= 20)  return lv_color_hex(0x50c878);
-      if (v <= 50)  return lv_color_hex(0xffd700);
-      if (v <= 100) return lv_color_hex(0xff8c00);
-      return lv_color_hex(0xff3030);
-    };
-    auto no2Color = [](float v) -> lv_color_t {
-      if (v < 0)    return lv_color_hex(0x888888);
-      if (v <= 40)  return lv_color_hex(0x50c878);
-      if (v <= 100) return lv_color_hex(0xffd700);
-      if (v <= 200) return lv_color_hex(0xff8c00);
-      return lv_color_hex(0xff3030);
-    };
-    auto o3Color = [](float v) -> lv_color_t {
-      if (v < 0)     return lv_color_hex(0x888888);
-      if (v <= 60)   return lv_color_hex(0x50c878);
-      if (v <= 120)  return lv_color_hex(0xffd700);
-      if (v <= 180)  return lv_color_hex(0xff8c00);
-      return lv_color_hex(0xff3030);
-    };
+    // Einzelwerte – aktuelle Stunde, Farbkodierung über die gemeinsamen Funktionen
+    // pm25Color/pm10Color/no2Color/o3Color (oben) – identisch zu screenhealth.
     auto setAqiBar = [](lv_obj_t* bar, float val, int rangeMax, lv_color_t col) {
       if (!bar) return;
       lv_bar_set_range(bar, 0, rangeMax);
@@ -2090,6 +2077,12 @@ void aktualisiereUI() {
     lv_obj_t* catValLabels[4]  = {objects.labelwscat1val,  objects.labelwscat2val,  objects.labelwscat3val,  objects.labelwscat4val};
     struct tm tiNow; getLocalTime(&tiNow);
     int bioPeriode = (tiNow.tm_hour >= 18) ? 1 : 0;
+    // Statt statischem "Bio Wetter"-Titel den angezeigten Zeitraum selbst zeigen –
+    // macht sichtbar, welche der 4 Perioden von screenbiowetter hier gerade zu sehen ist.
+    if (objects.biowetter) {
+      lv_obj_set_style_text_font(objects.biowetter, &font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+      lv_label_set_text(objects.biowetter, bioPeriode == 0 ? "Heute Nachmittag" : "Morgen Vormittag");
+    }
     bool bioVerfuegbar = bio.geladen;
     bool bioLeer = true;
     if (bioVerfuegbar) {
@@ -2110,28 +2103,15 @@ void aktualisiereUI() {
     }
 
     // Footer: AQI + O3 + UV
-    auto wsPm25Color = [](float v) -> lv_color_t {
-      if (v < 0)   return lv_color_hex(0x888888);
-      if (v < 12)  return lv_color_hex(0x50c878);
-      if (v < 35)  return lv_color_hex(0xffd700);
-      if (v < 55)  return lv_color_hex(0xff8c00);
-      return lv_color_hex(0xff3030);
-    };
+    // Aktuelle Stunde + gemeinsame Farbfunktionen (oben) – identisch zu screenairquality,
+    // damit ein Wert auf beiden Screens garantiert dieselbe Farbe zeigt.
     auto setDot = [](lv_obj_t* obj, lv_color_t col) {
       if (!obj) return;
       lv_obj_set_style_bg_color(obj, col, 0);
     };
-    // Dots: Max der nächsten 3 Stunden
-    auto o3Color = [](float v) -> lv_color_t {
-      if (v < 0)    return lv_color_hex(0x888888);
-      if (v < 60)   return lv_color_hex(0x50c878);
-      if (v < 120)  return lv_color_hex(0xffd700);
-      if (v < 180)  return lv_color_hex(0xff8c00);
-      return lv_color_hex(0xff3030);
-    };
-    setDot(objects.labelwsaqi,  pollen.aqi_3h  < 0 ? lv_color_hex(0x555555) : aqiColor(pollen.aqi_3h));
-    setDot(objects.labelwspm25, pollen.pm25_3h < 0 ? lv_color_hex(0x555555) : wsPm25Color(pollen.pm25_3h));
-    setDot(objects.labelwso3,   pollen.o3_3h   < 0 ? lv_color_hex(0x555555) : o3Color(pollen.o3_3h));
+    setDot(objects.labelwsaqi,  pollen.aqi  < 0 ? lv_color_hex(0x555555) : aqiColor(pollen.aqi));
+    setDot(objects.labelwspm25, pollen.pm25 < 0 ? lv_color_hex(0x555555) : pm25Color(pollen.pm25));
+    setDot(objects.labelwso3,   pollen.o3   < 0 ? lv_color_hex(0x555555) : o3Color(pollen.o3));
     if (objects.labelwsuv) {
       float uv = wetter.uv_next3h;
       lv_color_t uvc = (uv <= 0) ? lv_color_hex(0x555555) :
