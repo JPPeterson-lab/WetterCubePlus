@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.9.8-rc3 (2026-09-11)
+
+### Neu
+- **Diagnose-Log per Browser:** Neuer Endpunkt `/log` zeigt die letzten 25 Diagnose-Ereignisse (Ringpuffer im RAM), freien Heap und Uptime – ohne USB/Serial vor Ort, direkt per OTA-fähiger WebUI abrufbar
+- **fetchWetter() protokolliert Fehler:** HTTP- und JSON-Parse-Fehler landen jetzt im `/log`-Puffer (inkl. freiem Heap zum Fehlerzeitpunkt), statt wie bisher komplett stillschweigend zu verschwinden
+- **`/api/ampel` liefert `data_age_min`:** zeigt, wie viele Minuten die letzte erfolgreiche Wetterdaten-Aktualisierung zurückliegt – hilft bei der Diagnose einer "hängenden" Wetterampel
+
+### WetterAmpel-Addon (ESP32-C3)
+- Wiederverwendeter `WiFiClient` statt Neuanlage pro Abfrage (gegen Heap-Fragmentierung über viele Stunden Laufzeit)
+- Präventiver 24h-Selbstneustart
+- Zusätzliches Heap-Logging bei Fehlern
+
+---
+
 ## v0.9.8-rc1 (2026-08-09)
 
 ### Fixes

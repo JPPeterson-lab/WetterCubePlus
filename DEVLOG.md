@@ -1,5 +1,24 @@
 # Entwicklungs-Log
 
+## 2026-09-11 – v0.9.8-rc3
+
+### Wetterampel bleibt nach einiger Zeit an einer Farbe hängen
+
+Nutzer-Beobachtung: Ampel zeigt nach Neustart korrekt an, bleibt aber im Laufe eines Tages an der zuletzt gesetzten Farbe hängen, bis das Gerät neu startet. Codeanalyse auf beiden Seiten (Split-Architektur: S3 = WetterCubePlus liefert Daten, C3 = WetterAmpel konsumiert):
+
+**S3-Seite:** `fetchWetter()` scheitert bei HTTP-Fehlern komplett stillschweigend – `wetter.temp` bleibt dann auf dem letzten erfolgreichen Wert stehen, `/api/ampel` liefert weiter valides JSON, nur mit eingefrorener Temperatur. Da diese Session sehr viel am LVGL-Speicherhaushalt gearbeitet hat (Bubblebreaker, Canvas-Puffer, `LV_MEM_SIZE`-Tuning), ist es plausibel, dass die dauerhaft belegten zusätzlichen Objekte die Heap-Marge für TLS-Handshakes (WiFiClientSecure) nach einigen Stunden Laufzeit knapper gemacht haben als vorher.
+
+Da das Gerät nur per OTA/WLAN erreichbar ist (kein USB vor Ort), reicht reines `Serial.printf`-Logging nicht – gebaut wurde stattdessen:
+- **RAM-Ringpuffer + `logDiag()`-Helper** (25 Zeilen à 100 Zeichen, `va_list`-basiert wie `Serial.printf`), abrufbar über neuen Endpunkt `GET /log` (Klartext, neueste zuerst, inkl. Heap-Stand + Uptime). Bewusst **kein** Logging bei jedem Erfolg – bei alle 10 Minuten wäre der Puffer in ~4h überschrieben und die seltenen, interessanten Fehler wären weg. Stattdessen: jeder Fehlschlag wird geloggt, und ein "Erholt nach Unterbrechung"-Eintrag bei Wiederherstellung nach >15 Min Lücke.
+- **`letzterWetterFetchErfolg`**-Zeitstempel + `data_age_min`-Feld in `/api/ampel`, damit auf einen Blick erkennbar ist, ob die Temperatur veraltet ist.
+- Bewusst kein NVS-Persistieren des Logs – der beobachtete Fehlerzustand ist "Gerät läuft durch, hängt nur an einem Wert fest" (kein Crash/Neustart), ein RAM-Puffer reicht für diesen Fall völlig aus und vermeidet Flash-Verschleiß.
+
+**C3-Seite (WetterAmpel, im separaten WetterAmpel-Chat bearbeitet):** Logik selbst unauffällig (`setAmpel()` wird bei jedem erfolgreichen Poll ohne aktive DWD-Warnung aufgerufen), aber `HTTPClient`+`String`-Objekte wurden bei allen ~2880 Polls/Tag neu angelegt – klassisches Muster für Heap-Fragmentierung auf dem C3 über viele Stunden. Fix: wiederverwendeter `WiFiClient` statt Neuanlage pro Poll, plus präventiver 24h-Selbstneustart (`esp_restart()`) als Sicherheitsnetz gegen die Fragmentierung selbst wenn die Ursache nicht vollständig behoben ist.
+
+**Sicherheits-Zwischenfall beim Zusammenführen:** Die vom WetterAmpel-Chat committete `WetterAmpel.ino` enthielt das echte WLAN-Passwort + SSID im Klartext (statt der ursprünglichen `"xxx"`-Platzhalter) – vor dem Push bemerkt und zurückgesetzt, da das Repo öffentlich auf GitHub liegt. **Lektion:** Vor jedem Commit/Push den tatsächlichen Diff prüfen, nicht nur den Dateinamen – Secrets können sich unbemerkt in Konfigurationsdateien einschleichen, die normalerweise nur Platzhalter enthalten.
+
+---
+
 ## 2026-08-09 – v0.9.8-rc1
 
 ### AQI/PM2.5/Ozon: Farbabweichung zwischen ScreenAirQuality und ScreenHealth

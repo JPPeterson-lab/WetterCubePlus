@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.8-rc1"
+#define FIRMWARE_VERSION "0.9.8-rc3"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -56,6 +56,7 @@
 #include <Preferences.h>
 #include <ArduinoJson.h>
 #include <time.h>
+#include <stdarg.h>
 extern "C" {
   unsigned lodepng_decode32(unsigned char** out, unsigned* w, unsigned* h,
                              const unsigned char* in, size_t insize);
@@ -322,6 +323,37 @@ static lv_obj_t*  dwdWarnBtn    = nullptr;
 static lv_timer_t* dwdBlinker   = nullptr;
 
 unsigned long letztesDatenUpdate  = 0;
+unsigned long letzterWetterFetchErfolg = 0;  // millis() des letzten erfolgreichen fetchWetter() — für /api/ampel Staleness-Check
+
+// ============================================================
+//  Diagnose-Log (Ring-Puffer im RAM, per Browser unter /log abrufbar)
+//  — nötig weil das Gerät nur per OTA/WLAN erreichbar ist, kein USB/Serial vor Ort.
+// ============================================================
+#define LOG_RING_SIZE 25
+#define LOG_LINE_LEN  100
+static char logRing[LOG_RING_SIZE][LOG_LINE_LEN];
+static int  logRingPos   = 0;
+static int  logRingCount = 0;
+
+void logDiag(const char* fmt, ...) {
+  char msg[LOG_LINE_LEN];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(msg, sizeof(msg), fmt, args);
+  va_end(args);
+
+  char* slot = logRing[logRingPos];
+  struct tm ti;
+  if (getLocalTime(&ti, 0)) {
+    snprintf(slot, LOG_LINE_LEN, "%02d:%02d:%02d %s", ti.tm_hour, ti.tm_min, ti.tm_sec, msg);
+  } else {
+    snprintf(slot, LOG_LINE_LEN, "[%lus] %s", millis() / 1000, msg);
+  }
+  logRingPos = (logRingPos + 1) % LOG_RING_SIZE;
+  if (logRingCount < LOG_RING_SIZE) logRingCount++;
+
+  Serial.println(slot);  // weiterhin auch auf Serial, falls doch mal USB dran ist
+}
 unsigned long letztesPollenUpdate = 0;
 unsigned long letztesWarnUpdate   = 0;
 unsigned long letztesBioUpdate    = 0;
@@ -638,6 +670,7 @@ void handleWebRoot();
 void handleWebSave();
 void handleApiAmpel();
 void handleApiAmpelSave();
+void handleApiLog();
 void handleWebOtaCheck();
 void handleWebOtaDoUpdate();
 void handleWebWlanAendern();
@@ -761,8 +794,14 @@ void handleApiAmpel() {
 
   bool dwd_warn = (anzahl_warnungen > 0 && !dwdWarnBestaetigt);
 
+  // Diagnose: wie alt ist wetter.temp? (letzterWetterFetchErfolg==0 → noch nie erfolgreich seit Boot)
+  long dataAgeMin = (letzterWetterFetchErfolg == 0)
+                       ? -1
+                       : (long)((millis() - letzterWetterFetchErfolg) / 60000UL);
+
   String json = "{";
   json += "\"temperature\":"  + String(t, 1) + ",";
+  json += "\"data_age_min\":" + String(dataAgeMin) + ",";
   json += "\"dwd_warning\":"  + String(dwd_warn ? "true" : "false") + ",";
   json += "\"active\":\""     + String(active) + "\",";
   json += "\"thresholds\":{";
@@ -783,6 +822,25 @@ void handleApiAmpelSave() {
   if (server.hasArg("amp_ro_max")) cfg.ampel_rot_max   = server.arg("amp_ro_max").toInt();
   speichereCfg();
   server.sendHeader("Location", "/"); server.send(302);
+}
+
+// Diagnose-Log per Browser abrufbar (http://<ip>/log) — neuester Eintrag zuerst.
+// RAM-Ringpuffer, überlebt keinen Neustart, aber genau dafür gedacht: Fehler ansehen
+// SOLANGE das Gerät noch läuft, ohne USB/Serial vor Ort zu brauchen.
+void handleApiLog() {
+  String out = "WetterCubePlus Diagnose-Log (neueste zuerst)\n";
+  out += "Aktueller freier Heap: " + String(ESP.getFreeHeap()) + " Bytes\n";
+  out += "Uptime: " + String(millis() / 60000UL) + " Minuten\n";
+  out += "----------------------------------------\n";
+  if (logRingCount == 0) {
+    out += "Noch keine Diagnose-Eintraege seit dem letzten Neustart.\n";
+  } else {
+    for (int i = 0; i < logRingCount; i++) {
+      int idx = (logRingPos - 1 - i + LOG_RING_SIZE * 2) % LOG_RING_SIZE;
+      out += String(logRing[idx]) + "\n";
+    }
+  }
+  server.send(200, "text/plain; charset=utf-8", out);
 }
 
 void handleWebOtaCheck() {
@@ -877,6 +935,7 @@ void starteWebUI() {
   server.on("/wlan_speichern", HTTP_POST, handleWebWlanSave);
   server.on("/api/ampel",      HTTP_GET,  handleApiAmpel);
   server.on("/api/ampel_save", HTTP_POST, handleApiAmpelSave);
+  server.on("/log",            HTTP_GET,  handleApiLog);
   server.begin();
   Serial.println("[WebUI] Gestartet auf wettercubeplus.local");
 }
@@ -966,9 +1025,11 @@ void fetchWetter() {
   url += "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index";
   url += "&timezone=auto&forecast_days=2";
   http.begin(sc, url);
-  if (http.GET() == 200) {
+  int httpCode = http.GET();
+  if (httpCode == 200) {
     DynamicJsonDocument doc(10240);
-    if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
+    DeserializationError jsonErr = deserializeJson(doc, http.getString());
+    if (jsonErr == DeserializationError::Ok) {
       auto c = doc["current"];
       wetter.temp       = c["temperature_2m"].as<float>();
       wetter.feels_like = c["apparent_temperature"].as<float>();
@@ -1013,7 +1074,17 @@ void fetchWetter() {
       bool vorher = wetter.regen_warnung;
       wetter.regen_warnung = regen;
       if (!vorher && regen) { regenWarnBestaetigt = false; regenWarnGezeigt = false; }
+      // Erholung nach vorherigem(n) Fehlschlag(en) protokollieren (>15 Min = mind. 1 verpasster 10-Min-Zyklus).
+      // Erfolge selbst NICHT jedes Mal loggen — würde den 25er-Ringpuffer in ~4h überschreiben.
+      if (letzterWetterFetchErfolg != 0 && millis() - letzterWetterFetchErfolg > 900000UL) {
+        logDiag("[Wetter] Fetch erfolgreich nach Unterbrechung (freeHeap=%u)", (unsigned)ESP.getFreeHeap());
+      }
+      letzterWetterFetchErfolg = millis();
+    } else {
+      logDiag("[Wetter] JSON-Parse fehlgeschlagen: %s (freeHeap=%u)", jsonErr.c_str(), (unsigned)ESP.getFreeHeap());
     }
+  } else {
+    logDiag("[Wetter] HTTP-Fetch fehlgeschlagen: Code %d (freeHeap=%u)", httpCode, (unsigned)ESP.getFreeHeap());
   }
   http.end();
 }

@@ -7,6 +7,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <FastLED.h>
+#include <esp_system.h>
 
 // ── Konfiguration ────────────────────────────────────────────────────────────
 #define WIFI_SSID       "xxx"
@@ -14,6 +15,7 @@
 #define CUBE_HOST       "192.168.x.x"   // IP des WetterCubePlus im LAN
 #define CUBE_PORT       80
 #define POLL_INTERVAL   30000           // ms zwischen zwei Abfragen
+#define RESTART_AFTER   86400000UL      // 24h Uptime → Neustart gegen Heap-Fragmentierung
 
 #define LED_PIN         8
 #define NUM_LEDS        3
@@ -31,12 +33,15 @@
 CRGB leds[NUM_LEDS];
 
 unsigned long lastPoll    = 0;
-bool          dwdWarning  = false;   // aktive DWD-Warnung?
-String        ampelActive = "";      // zuletzt empfangener Temperaturstatus
+bool          dwdWarning  = false;
+String        ampelActive = "";
 
 // Blink-State für DWD (non-blocking)
 bool          blinkState  = false;
 unsigned long lastBlink   = 0;
+
+// Wiederverwendeter WiFiClient — verhindert Heap-Fragmentierung bei langen Laufzeiten
+WiFiClient    wifiClient;
 
 // ── Hilfsfunktionen ──────────────────────────────────────────────────────────
 
@@ -69,12 +74,7 @@ void handleDwdBlink() {
   if (now - lastBlink >= interval) {
     lastBlink = now;
     blinkState = !blinkState;
-
-    if (blinkState) {
-      fill_solid(leds, NUM_LEDS, CRGB::Red);
-    } else {
-      fill_solid(leds, NUM_LEDS, CRGB::Black);
-    }
+    fill_solid(leds, NUM_LEDS, blinkState ? CRGB::Red : CRGB::Black);
     FastLED.show();
   }
 }
@@ -83,8 +83,8 @@ void fetchAndApply() {
   if (WiFi.status() != WL_CONNECTED) return;
 
   HTTPClient http;
-  String url = String("http://") + CUBE_HOST + ":" + CUBE_PORT + "/api/ampel";
-  http.begin(url);
+  // Wiederverwendeter wifiClient statt impliziter Neuanlage pro Poll
+  http.begin(wifiClient, CUBE_HOST, CUBE_PORT, "/api/ampel");
   http.setTimeout(5000);
 
   int code = http.GET();
@@ -93,7 +93,7 @@ void fetchAndApply() {
     StaticJsonDocument<512> doc;
     DeserializationError err = deserializeJson(doc, body);
     if (!err) {
-      bool newDwd = doc["dwd_warning"] | false;
+      bool newDwd        = doc["dwd_warning"] | false;
       const char* active = doc["active"] | "";
 
       ampelActive = String(active);
@@ -101,29 +101,28 @@ void fetchAndApply() {
       dwdWarning = newDwd;
 
       if (dwdWarning) {
-        // DWD aktiv → Blink-State initialisieren falls neu
-        if (dwdCleared == false && blinkState == false) {
+        if (!dwdCleared && !blinkState) {
           lastBlink  = millis();
           blinkState = false;
         }
         Serial.println("[Ampel] DWD-Warnung aktiv → rot blinken");
       } else {
-        // Keine Warnung → normale Ampelfarbe zeigen
         if (dwdCleared) Serial.println("[Ampel] DWD-Warnung quittiert → normale Anzeige");
         blinkState = false;
         setAmpel(ampelActive);
       }
 
-      Serial.printf("[Ampel] active=%s  dwd=%s  temp=%.1f\n",
+      Serial.printf("[Ampel] active=%s  dwd=%s  temp=%.1f  freeHeap=%u\n",
                     active,
                     dwdWarning ? "JA" : "nein",
-                    doc["temperature"].as<float>());
+                    doc["temperature"].as<float>(),
+                    esp_get_free_heap_size());
     } else {
       Serial.printf("[Ampel] JSON-Fehler: %s\n", err.c_str());
       blinkError();
     }
   } else {
-    Serial.printf("[Ampel] HTTP-Fehler: %d\n", code);
+    Serial.printf("[Ampel] HTTP-Fehler: %d  freeHeap=%u\n", code, esp_get_free_heap_size());
     blinkError();
   }
   http.end();
@@ -159,6 +158,13 @@ void setup() {
 }
 
 void loop() {
+  // 24h-Neustart gegen Heap-Fragmentierung
+  if (millis() >= RESTART_AFTER) {
+    Serial.println("[Ampel] 24h-Neustart");
+    delay(100);
+    esp_restart();
+  }
+
   // WiFi-Reconnect falls verloren
   if (WiFi.status() != WL_CONNECTED) {
     WiFi.reconnect();
