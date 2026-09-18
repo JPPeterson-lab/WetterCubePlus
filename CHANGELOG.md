@@ -1,5 +1,7 @@
 # Changelog
 
+*[English version](CHANGELOG.en.md)*
+
 ## v0.9.8-rc4 (2026-09-18)
 
 ### Neu
