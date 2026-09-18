@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-09-18 – v0.9.8-rc4
+
+### Ampel wieder kurz hängengeblieben, Log liefert Hinweis auf Ursache
+
+Der Nutzer meldete: nach v0.9.8-rc3 lief die Ampel mehrere Tage sauber, dann erneut ein Hänger – zeitlich nach dem Antippen des Theme-Umschalt-Labels am Cube. Der `/log`-Auszug zeigte dabei nur ein unauffälliges, sich selbst heilendes Muster von stündlichen 503-Fehlern beim DWD-Wetterabruf (erholt sich jeweils nach ~10 Min., Heap stabil bei ~76KB über 7639 Min. Uptime) – das ist nicht die Ursache, sondern normaler DWD-seitiger Wartungs-Blip.
+
+Codeanalyse des Theme-Buttons ergab: `labelswitchtheme` hat zwei Klick-Handler – den manuell im `.ino` ergänzten `aktualisiereUI()`-Aufruf, und einen von PicoPixel automatisch generierten `do_cycle_theme_0()` → `change_color_theme()` (`src/ui/colors.c`, 581 Zeilen reine LVGL-Style-Umschaltung für Hell/Dunkel-Thema). Nutzer bestätigte: das Umschalten zwischen hellem und dunklem Theme ist **beabsichtigt**, keine Änderung nötig. Die Funktion rührt außerdem nur Anzeige-Styles an, keinen WLAN/HTTP-Code – kann die Ampel-Erreichbarkeit also nicht direkt erklären.
+
+Bisher fehlte jede Sichtbarkeit darüber, ob der Cube `/api/ampel` tatsächlich noch bedient – das bestehende Log deckte nur den DWD-Abruf ab, nicht eingehende Anfragen der Ampel selbst. Ergänzt:
+- **`letzteAmpelAnfrage`**-Zeitstempel, gesetzt bei jedem bedienten `GET /api/ampel`
+- Neue Zeile in `/log`: "Letzte /api/ampel-Anfrage: vor Xs" – die Ampel pollt alle 30s, ein deutlich höherer Wert würde beim nächsten Hänger direkt beweisen, dass der Server zeitweise nicht erreichbar war, statt nur zu vermuten.
+
+---
+
 ## 2026-09-11 – v0.9.8-rc3
 
 ### Wetterampel bleibt nach einiger Zeit an einer Farbe hängen

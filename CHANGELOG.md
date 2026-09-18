@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.8-rc4 (2026-09-18)
+
+### Neu
+- **`/log` zeigt jetzt auch die letzte `/api/ampel`-Anfrage:** neue Zeile "Letzte /api/ampel-Anfrage: vor Xs" im Diagnose-Log – die WetterAmpel pollt alle 30s, ein deutlich höherer Wert beweist direkt, dass der Cube für die Ampel zeitweise nicht erreichbar war (statt nur zu vermuten)
+
+---
+
 ## v0.9.8-rc3 (2026-09-11)
 
 ### Neu

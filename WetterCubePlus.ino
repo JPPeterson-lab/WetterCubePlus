@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "0.9.8-rc3"
+#define FIRMWARE_VERSION "0.9.8-rc4"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -324,6 +324,7 @@ static lv_timer_t* dwdBlinker   = nullptr;
 
 unsigned long letztesDatenUpdate  = 0;
 unsigned long letzterWetterFetchErfolg = 0;  // millis() des letzten erfolgreichen fetchWetter() — für /api/ampel Staleness-Check
+unsigned long letzteAmpelAnfrage = 0;        // millis() der letzten bedienten /api/ampel-Anfrage — zeigt ob der Server für die WetterAmpel erreichbar war
 
 // ============================================================
 //  Diagnose-Log (Ring-Puffer im RAM, per Browser unter /log abrufbar)
@@ -786,6 +787,8 @@ void handleWebSave() {
 }
 
 void handleApiAmpel() {
+  letzteAmpelAnfrage = millis();
+
   float t = wetter.temp;
   const char* active = "none";
   if      (t >= cfg.ampel_rot_min)   active = "red";
@@ -831,6 +834,12 @@ void handleApiLog() {
   String out = "WetterCubePlus Diagnose-Log (neueste zuerst)\n";
   out += "Aktueller freier Heap: " + String(ESP.getFreeHeap()) + " Bytes\n";
   out += "Uptime: " + String(millis() / 60000UL) + " Minuten\n";
+  if (letzteAmpelAnfrage == 0) {
+    out += "Letzte /api/ampel-Anfrage: noch keine seit dem letzten Neustart\n";
+  } else {
+    unsigned long sekundenHer = (millis() - letzteAmpelAnfrage) / 1000UL;
+    out += "Letzte /api/ampel-Anfrage: vor " + String(sekundenHer) + "s (Poll-Intervall der Ampel: 30s — deutlich mehr heisst der Server war fuer sie nicht erreichbar)\n";
+  }
   out += "----------------------------------------\n";
   if (logRingCount == 0) {
     out += "Noch keine Diagnose-Eintraege seit dem letzten Neustart.\n";
