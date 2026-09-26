@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-09-26 – v1.0.0
+
+### Erstes stabiles Release + WetterAmpel-Hänger endgültig gelöst
+
+Das in v0.9.8-rc4 ergänzte `/log`-Diagnosefeld ("Letzte /api/ampel-Anfrage") hat sich sofort bewährt: nach über 6 Tagen fehlerfreiem Cube-Betrieb (kein einziger `fetchWetter()`-Fehler im Ringpuffer) zeigte das Feld einen Wert von über 4 Stunden – der Cube war die ganze Zeit erreichbar und hätte jede Anfrage sofort beantwortet, aber die Ampel hat schlicht keine geschickt. Das bestätigt die im WetterAmpel-Chat behobene Ursache: `WiFi.status() != WL_CONNECTED` → `WiFi.reconnect()` reconnectet auf manchen C3-Modulen nach einem WLAN-Aussetzer nicht zuverlässig, der C3 blieb dann in der Reconnect-Schleife hängen, ohne dass `fetchAndApply()` je wieder aufgerufen wurde – LEDs frieren auf der letzten Farbe ein.
+
+**Fix (WetterAmpel.ino, aus dem WetterAmpel-Chat übernommen):** Neuer `WIFI_TIMEOUT`-Zeitstempel (`wifiLostAt`/`wifiWasLost`) – wenn der C3 länger als 2 Minuten ohne Verbindung ist, erzwingt `esp_restart()` einen sauberen Neustart statt endlos auf `WiFi.reconnect()` zu vertrauen. Ergänzt den bestehenden 24h-Selbstneustart (der greift ja erst nach einem ganzen Tag, viel zu spät für dieses Problem).
+
+Damit sind beide zuvor identifizierten Baustellen (Cube-seitige Sichtbarkeit + C3-seitiger WLAN-Reconnect) geschlossen. Nutzer hat den neuen WetterAmpel-Code geflasht und den Cube auf v1.0.0 gehoben – erstes offizielles stabiles Release, Funktionsumfang abgeschlossen, Status-Badges in README auf "Stable"/100% gesetzt, alle Release-Candidate/Beta-Hinweise entfernt (Changelog-Historie mit alten `-beta`/`-rc`-Versionsnummern bleibt unangetastet, das ist Historie).
+
+---
+
 ## 2026-09-18 – v0.9.8-rc4
 
 ### Ampel wieder kurz hängengeblieben, Log liefert Hinweis auf Ursache

@@ -2,6 +2,16 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.0.0 (2026-09-26)
+
+### Status
+- **First stable release:** feature set complete, all release-candidate tests passed successfully. More features will follow in future updates.
+
+### WetterAmpel add-on (ESP32-C3)
+- **WiFi timeout restart:** If the C3 went more than 2 minutes without a WiFi connection (`WiFi.reconnect()` didn't always reliably restore it), the traffic light stayed on its last color until the next 24h self-restart. Fix: after 2 minutes without a connection, `esp_restart()` forces a clean reconnect attempt. Root cause found via the new `/log` diagnostic field on the cube side (v0.9.8-rc4) – after over 6 days of error-free cube operation, the last `/api/ampel` request was more than 4 hours old, confirming the C3 as the cause
+
+---
+
 ## v0.9.8-rc4 (2026-09-18)
 
 ### New

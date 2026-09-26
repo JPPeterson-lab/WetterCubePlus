@@ -2,6 +2,16 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.0.0 (2026-09-26)
+
+### Status
+- **Erstes stabiles Release:** Funktionsumfang abgeschlossen, alle Release-Candidate-Tests erfolgreich abgeschlossen. Weitere Funktionen folgen in zukünftigen Updates.
+
+### WetterAmpel-Addon (ESP32-C3)
+- **WLAN-Timeout-Neustart:** War der C3 länger als 2 Minuten ohne WLAN-Verbindung (`WiFi.reconnect()` half nicht immer zuverlässig), blieb die Ampel bis zum nächsten 24h-Neustart auf der zuletzt gesetzten Farbe stehen. Fix: Nach 2 Minuten ohne Verbindung erzwingt ein `esp_restart()` einen sauberen Neuverbindungsversuch. Ursache über das neue `/log`-Diagnosefeld auf der Cube-Seite (v0.9.8-rc4) gefunden – nach über 6 Tagen fehlerfreiem Cube-Betrieb blieb die letzte `/api/ampel`-Anfrage über 4 Stunden aus, was den C3 als Ursache bestätigte
+
+---
+
 ## v0.9.8-rc4 (2026-09-18)
 
 ### Neu

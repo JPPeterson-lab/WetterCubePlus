@@ -14,8 +14,9 @@
 #define WIFI_PASSWORD   "xxx"
 #define CUBE_HOST       "192.168.x.x"   // IP des WetterCubePlus im LAN
 #define CUBE_PORT       80
-#define POLL_INTERVAL   30000           // ms zwischen zwei Abfragen
-#define RESTART_AFTER   86400000UL      // 24h Uptime → Neustart gegen Heap-Fragmentierung
+#define POLL_INTERVAL       30000           // ms zwischen zwei Abfragen
+#define RESTART_AFTER       86400000UL      // 24h Uptime → Neustart gegen Heap-Fragmentierung
+#define WIFI_TIMEOUT        120000UL        // 2 Min. ohne WiFi → Neustart
 
 #define LED_PIN         8
 #define NUM_LEDS        3
@@ -42,6 +43,10 @@ unsigned long lastBlink   = 0;
 
 // Wiederverwendeter WiFiClient — verhindert Heap-Fragmentierung bei langen Laufzeiten
 WiFiClient    wifiClient;
+
+// WiFi-Disconnect-Tracking für Timeout-Neustart
+unsigned long wifiLostAt = 0;
+bool          wifiWasLost = false;
 
 // ── Hilfsfunktionen ──────────────────────────────────────────────────────────
 
@@ -165,11 +170,25 @@ void loop() {
     esp_restart();
   }
 
-  // WiFi-Reconnect falls verloren
+  // WiFi-Reconnect mit Timeout-Neustart
   if (WiFi.status() != WL_CONNECTED) {
-    WiFi.reconnect();
+    if (!wifiWasLost) {
+      wifiWasLost = true;
+      wifiLostAt  = millis();
+      Serial.println("[WiFi] Verbindung verloren — starte Reconnect");
+      WiFi.reconnect();
+    } else if (millis() - wifiLostAt >= WIFI_TIMEOUT) {
+      Serial.printf("[WiFi] %lus ohne Verbindung → Neustart\n", WIFI_TIMEOUT / 1000);
+      delay(100);
+      esp_restart();
+    }
     delay(1000);
     return;
+  }
+  // Verbindung (wieder) da
+  if (wifiWasLost) {
+    wifiWasLost = false;
+    Serial.printf("[WiFi] Wiederverbunden nach %lus\n", (millis() - wifiLostAt) / 1000);
   }
 
   // DWD-Blinken (non-blocking, läuft dauerhaft wenn aktiv)
