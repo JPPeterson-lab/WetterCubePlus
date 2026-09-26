@@ -13,6 +13,8 @@ Dieses Projekt ist die Weiterentwicklung des [WetterCube](https://github.com/JPP
 
 Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [Deutschen Wetterdienst (DWD)](https://www.dwd.de) – kein API-Key nötig.
 
+> **🇩🇪 Hinweis:** Dieses Projekt ist aktuell primär für Deutschland ausgelegt – Wetterwarnungen, Pollenflug und Biowetter stammen vom DWD und funktionieren nur innerhalb Deutschlands, zudem ist die Displaysprache Deutsch. Eine englischsprachige, weltweit nutzbare Version mit anderen Wetteranbietern ist angedacht, ein Termin dafür steht aber noch nicht fest. / **Note:** This project currently targets Germany specifically – weather warnings, pollen forecast and Biowetter (health-related weather effects) come from the German Weather Service (DWD) and only work within Germany, and the on-device UI language is German. An English, globally usable version with other weather providers is being considered, but no timeline exists yet.
+
 > **🟢 Stabiles Release (v1.0.0):** Der erste offizielle Vollversion-Release. Weitere Funktionen folgen in zukünftigen Updates. / First official stable release. More features will follow in future updates.
 
 ---
