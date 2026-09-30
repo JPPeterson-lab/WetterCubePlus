@@ -2,6 +2,20 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.0.2 (2026-09-30)
+
+### Fixes
+- **Rain was shown with the sleet icon:** `wmoZuImage()` mapped all WMO codes up to 67 to the `sleet` icon, so plain rain (61/63/65) also showed snowflakes. Now: drizzle and rain → `rain`, only freezing drizzle/rain (56/57/66/67) → `sleet`
+
+### New
+- **New weather icons:** `day_rain`/`night_full_moon_rain` for rain showers (WMO 80–82), `day_snow`/`night_full_moon_snow` for snow showers (WMO 85/86, day/night each), `rain_thunder` for thunderstorms with rain (WMO 95–99) and `mist` for fog (WMO 45; rime fog 48 keeps `fog`)
+
+### Changed
+- **All weather icons are now 128×128 instead of 256×256 px:** The icons are only displayed at about 83–100 px, so the 256px sources wasted flash memory. The firmware shrinks from 4.1 MB to 2.6 MB; the OTA slot (4 MB) now has about 1.5 MB free instead of 87 KB for future features. The changing icons on screen 1 and in the forecast are now uniformly 83 px (previously 85 px)
+- **UI fine-tuning:** Biowetter screen positions corrected by 1 px, title on ScreenHealth now fixed-width and centered (PicoPixel re-export)
+
+---
+
 ## v1.0.0 (2026-09-26)
 
 ### Status

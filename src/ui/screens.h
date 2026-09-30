@@ -191,6 +191,12 @@ typedef struct _objects_t {
     lv_obj_t *snow;
     lv_obj_t *night_full_moon_partial_cloud;
     lv_obj_t *sleet;
+    lv_obj_t *day_rain;
+    lv_obj_t *night_full_moon_rain;
+    lv_obj_t *rain_thunder;
+    lv_obj_t *day_snow;
+    lv_obj_t *night_full_moon_snow;
+    lv_obj_t *mist;
     lv_obj_t *labelbuttonbackward_4;
     lv_obj_t *labelbuttonhome_4;
     lv_obj_t *labelbuttonforward_4;

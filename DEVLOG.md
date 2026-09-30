@@ -1,5 +1,21 @@
 # Entwicklungs-Log
 
+## 2026-09-30 – v1.0.2
+
+### Regen-Icon-Bug, neue Icons und Speicher-Diät (256 → 128 px)
+
+Der Nutzer vermutete, das Nieselregen-Icon passe nicht. Ursache war aber das Mapping: `wmo <= 67` fiel auf `sleet`, also auch normaler Regen (61/63/65). Mapping korrigiert (Regen → `rain`, nur gefrierend 56/57/66/67 → `sleet`, Regenschauer 80–82 → `day_rain`/`night_full_moon_rain`, Schneeschauer 85/86 → `day_snow`/`night_full_moon_snow`, Gewitter → `rain_thunder`, 45 → `mist`, 48 → `fog`).
+
+**Speicher war der eigentliche Engpass:** OTA-Slot 4 MB (`0x400000`), Firmware v1.0.1 = 3.959.299 Bytes, nur ~235 KB Reserve. Ein 256×256-Icon (RGB565A8) kostet 196.608 Bytes, ein 128×128-Icon 49.152 Bytes, angezeigt werden sie aber nur mit 83–128 px. Mit drei neuen 256er-Icons wäre der Slot voll gewesen (4,1 MB, 87 KB Reserve). Deshalb wurden **alle** Wetter-Icons (inkl. `alert`) auf 128 px umgestellt und die neuen Icons gleich als 128er angelegt. Ergebnis: **2.633.223 Bytes, 1.561.081 Bytes (37 %) frei**. Die Icon-Quellen liegen in `~/Desktop/icons/picopixel_upload/`; `alert` stammt nicht aus dem Dovora-Set und wurde aus dem Export (ARGB8888-Array in `alert.inc`) zurückgerechnet und auf 128 px skaliert.
+
+**Zoom:** PicoPixel rechnet den Zoom aus der Widget-Größe und der Bildgröße selbst (83×83 bei 128er-Quelle → Zoom 166, 100×100 → 200, 128×128 → nativ). Zur Laufzeit gesetzte Icons brauchen einen eigenen Zoom, sonst erscheinen sie halb so groß: neuer Helfer `setWetterIcon()` (Zoom = 83·256 / Quellbreite). Wechselnde Icons auf Screen 1 und ScreenForecastWetter sind einheitlich 83 px (vorher 85), die statischen Icons auf ScreenSunMoon 100 px, die Warn-Screens 128 px. Eine frühere Annahme, `rain`/`alert` würden dort mit Zoom 304 (~300 px) angezeigt, war falsch (es sind 128 px).
+
+**PicoPixel-MCP:** per `claude mcp add --scope user` eingerichtet. Eigene PNGs lassen sich per MCP nicht importieren (nur eingebaute Icon-Packs), den Upload macht der Nutzer in Assets; Umhängen der Widgets, Größen und neue Widgets auf dem `lagerscreen` per MCP. Wichtig: Bilder sind pro Widget verlinkte Kopien, `get_asset_usage` auf Bibliotheks-Assets liefert deshalb nichts; Widget-IDs kommen aus `get_screen_tree`.
+
+**Umgebung:** `arduino-cli compile` braucht `--fqbn esp32:esp32:esp32s3:PSRAM=opi,FlashSize=16M,PartitionScheme=custom`, sonst kommt fälschlich "301 % zu groß". Nach Löschen doppelter iCloud-Konfliktdateien (`… 3.c`) in der LovyanGFX-Bibliothek musste zusätzlich der Sketch-Cache geleert werden.
+
+---
+
 ## 2026-09-26 – v1.0.0
 
 ### Erstes stabiles Release + WetterAmpel-Hänger endgültig gelöst

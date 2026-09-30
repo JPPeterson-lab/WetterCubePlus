@@ -17,6 +17,8 @@ typedef struct _ext_img_desc_t {
 } ext_img_desc_t;
 #endif
 
+extern const lv_img_dsc_t rain_thunder;
+extern const lv_img_dsc_t mist;
 extern const lv_img_dsc_t day_partial_cloud;
 extern const lv_img_dsc_t fc_home;
 extern const lv_img_dsc_t fc_settings;
@@ -24,20 +26,24 @@ extern const lv_img_dsc_t fog;
 extern const lv_img_dsc_t alert;
 extern const lv_img_dsc_t night_full_moon_clear;
 extern const lv_img_dsc_t overcast;
+extern const lv_img_dsc_t day_snow;
 extern const lv_img_dsc_t fc_self_service_kiosk_38;
 extern const lv_img_dsc_t fc_left_60;
 extern const lv_img_dsc_t sleet;
 extern const lv_img_dsc_t rain;
+extern const lv_img_dsc_t night_full_moon_snow;
 extern const lv_img_dsc_t day_clear;
 extern const lv_img_dsc_t fc_plus_38_ffffff;
 extern const lv_img_dsc_t fc_right_60;
+extern const lv_img_dsc_t night_full_moon_rain;
 extern const lv_img_dsc_t thunder;
 extern const lv_img_dsc_t snow;
 extern const lv_img_dsc_t fc_right_up2_38;
 extern const lv_img_dsc_t fc_left_down2_38;
+extern const lv_img_dsc_t day_rain;
 extern const lv_img_dsc_t night_full_moon_partial_cloud;
 extern const lv_img_dsc_t pico_dark_logo_132;
-extern const ext_img_desc_t images[20];
+extern const ext_img_desc_t images[26];
 
 
 #ifdef __cplusplus

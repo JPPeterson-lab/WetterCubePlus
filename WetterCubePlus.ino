@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.0.0"
+#define FIRMWARE_VERSION "1.0.2"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1006,13 +1006,22 @@ const lv_img_dsc_t* wmoZuImage(int wmo, bool day) {
   if (wmo == 0)   return day ? &day_clear             : &night_full_moon_clear;          // Klar
   if (wmo <= 2)   return day ? &day_partial_cloud     : &night_full_moon_partial_cloud;  // Teilweise bewölkt
   if (wmo == 3)   return &overcast;                                                      // Bedeckt
-  if (wmo <= 48)  return &fog;                                                           // Nebel
-  if (wmo <= 57)  return &rain;                                                          // Nieselregen
-  if (wmo <= 67)  return &sleet;                                                         // Gefrierender Regen / Schneeregen
+  if (wmo <= 48)  return wmo == 45 ? &mist : &fog;                                       // Nebel (45) / Reifnebel (48)
+  if (wmo <= 55)  return &rain;                                                          // Nieselregen
+  if (wmo <= 57)  return &sleet;                                                         // Gefrierender Nieselregen
+  if (wmo <= 65)  return &rain;                                                          // Regen
+  if (wmo <= 67)  return &sleet;                                                         // Gefrierender Regen
   if (wmo <= 77)  return &snow;                                                          // Schnee
-  if (wmo <= 82)  return &rain;                                                          // Regenschauer
-  if (wmo <= 86)  return &snow;                                                          // Schneeschauer
-  return &thunder;                                                                       // Gewitter
+  if (wmo <= 82)  return day ? &day_rain : &night_full_moon_rain;                        // Regenschauer
+  if (wmo <= 86)  return day ? &day_snow : &night_full_moon_snow;                        // Schneeschauer
+  return &rain_thunder;                                                                  // Gewitter
+}
+
+// Wetter-Icons liegen als 128px-Quelle vor und werden auf 83px skaliert (Zoom 256 = 100 %)
+static void setWetterIcon(lv_obj_t* obj, const lv_img_dsc_t* dsc) {
+  if (!obj || !dsc) return;
+  lv_img_set_src(obj, dsc);
+  lv_img_set_zoom(obj, (uint16_t)(83UL * 256UL / dsc->header.w));
 }
 
 const char* windRichtung(int deg) {
@@ -1887,7 +1896,7 @@ void aktualisiereUI() {
     snprintf(buf, sizeof(buf), "%.0f °C", wetter.temp);
     setLabelFmt(objects.labeltemp, tempColor(wetter.temp), buf);
   }
-  if (objects.imagewetter) lv_img_set_src(objects.imagewetter, wmoZuImage(wetter.wmo_code, wetter.is_day));
+  if (objects.imagewetter) setWetterIcon(objects.imagewetter, wmoZuImage(wetter.wmo_code, wetter.is_day));
   if (objects.labelversion) lv_label_set_text(objects.labelversion, FIRMWARE_VERSION);
 
   // screen_1: Wetter-Details (Feuchte, Wind, Druck)
@@ -1946,7 +1955,7 @@ void aktualisiereUI() {
       lv_label_set_text(hws[i], buf);
     }
     setLabel(hwd[i], windRichtung(wetter.wind_dir_forecast[i]));
-    if (himg[i]) lv_img_set_src(himg[i], wmoZuImage(wetter.wmo_forecast[i], true));
+    if (himg[i]) setWetterIcon(himg[i], wmoZuImage(wetter.wmo_forecast[i], true));
   }
 
   // ── Forecast Pollen (screenforecastpollen) ──────────────────

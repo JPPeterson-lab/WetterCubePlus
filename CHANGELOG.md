@@ -2,6 +2,20 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.0.2 (2026-09-30)
+
+### Fixes
+- **Regen wurde mit dem Schneeregen-Icon angezeigt:** `wmoZuImage()` ordnete alle WMO-Codes bis 67 dem `sleet`-Icon zu, dadurch zeigte auch normaler Regen (61/63/65) Schneeflocken. Jetzt: Nieselregen und Regen → `rain`, nur gefrierender Niesel/Regen (56/57/66/67) → `sleet`
+
+### Neu
+- **Neue Wetter-Icons:** `day_rain`/`night_full_moon_rain` für Regenschauer (WMO 80–82), `day_snow`/`night_full_moon_snow` für Schneeschauer (WMO 85/86, jeweils Tag/Nacht), `rain_thunder` für Gewitter mit Regen (WMO 95–99) und `mist` für Nebel (WMO 45; Reifnebel 48 bleibt `fog`)
+
+### Geändert
+- **Alle Wetter-Icons als 128×128 statt 256×256 px:** Die Icons werden nur mit ca. 83–100 px angezeigt, die 256er-Quellen verschwendeten Flash-Speicher. Die Firmware schrumpft dadurch von 4,1 MB auf 2,6 MB, im OTA-Slot (4 MB) bleiben statt 87 KB jetzt rund 1,5 MB frei für künftige Funktionen. Die wechselnden Icons auf Screen 1 und in der Vorhersage sind einheitlich 83 px groß (vorher 85 px)
+- **UI-Feinjustierung:** Positionen der Bio-Wetter-Screens um 1 px korrigiert, Titel auf ScreenHealth mit fester Breite und zentriert (PicoPixel-Re-Export)
+
+---
+
 ## v1.0.0 (2026-09-26)
 
 ### Status
