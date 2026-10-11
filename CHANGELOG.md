@@ -2,6 +2,16 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.2.1 (2026-10-11)
+
+### Neu
+- **LVGL-Speicher im `/log`:** Die Kopfzeile zeigt jetzt dauerhaft den freien LVGL-Speicher (frei von gesamt, Prozent belegt, größter freier Block). Außerdem steht nach dem Start ein Eintrag mit dem Ausgangswert und dem freien Heap im Log. So lässt sich bei neuen Funktionen mit vielen Bedienelementen sofort sehen, wie viel Platz noch bleibt
+
+### Fixes
+- **Log-Zeitstempel beim Start in lokaler Zeit:** Die Zeitzone wird jetzt gleich zu Beginn gesetzt. Nach einem Software-Neustart (z. B. nach einem Update) zeigten die ersten Einträge sonst UTC, also zwei Stunden früher als die späteren
+
+---
+
 ## v1.2.0 (2026-10-11)
 
 ### Neu

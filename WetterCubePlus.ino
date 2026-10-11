@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.2.0"
+#define FIRMWARE_VERSION "1.2.1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -917,6 +917,9 @@ void handleApiLog() {
   String out = "WetterCubePlus Diagnose-Log (neueste zuerst)\n";
   out += "Aktueller freier Heap: " + String(ESP.getFreeHeap()) + " Bytes\n";
   out += "Uptime: " + String(millis() / 60000UL) + " Minuten\n";
+  { lv_mem_monitor_t m; lv_mem_monitor(&m);
+    out += "LVGL-Speicher: frei " + String((unsigned)m.free_size) + " von " + String((unsigned)m.total_size) +
+           " Bytes (" + String((unsigned)m.used_pct) + " % belegt), groesster Block " + String((unsigned)m.free_biggest_size) + "\n"; }
   out += "Letzter Neustart: " + (resetGrundText.length() ? resetGrundText : String("-")) + "\n";
   out += "WLAN beim Start: " + (wifiStartInfo.length() ? wifiStartInfo : String("-")) + "\n";
   out += "Update: installiert " + String(FIRMWARE_VERSION) + ", neueste bekannte " +
@@ -3608,6 +3611,8 @@ static void cbWarnTap(lv_event_t* e) {
 void setup() {
   Serial.begin(115200);
   Serial.println("\n[WetterCubePlus] Start v" FIRMWARE_VERSION);
+  setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);   // frueh setzen, damit Log-Zeitstempel lokal sind (configTime() setzt TZ spaeter zurueck, siehe unten)
+  tzset();
   resetGrundText = resetGrundName(esp_reset_reason());
   logDiag("[Boot] v%s, Neustart-Grund: %s", FIRMWARE_VERSION, resetGrundText.c_str());
 
@@ -3869,6 +3874,9 @@ void setup() {
   { unsigned long e = millis() + 600; while (millis() < e) { lv_timer_handler(); delay(5); } }
   loadScreen(SCREEN_ID_SCREEN_1);
 
+  { lv_mem_monitor_t m; lv_mem_monitor(&m);
+    logDiag("[Boot] LVGL-Speicher nach dem Start: frei %u von %u Bytes (%u %% belegt), Heap frei %u",
+            (unsigned)m.free_size, (unsigned)m.total_size, (unsigned)m.used_pct, (unsigned)ESP.getFreeHeap()); }
 
   letztesTouchZeit    = millis();
   letztesDatenUpdate  = millis();

@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-11 – v1.2.1
+
+### Log: LVGL-Budget sichtbar, Zeitzone früh gesetzt
+
+Der erste Log nach dem Rechner-Update (v1.2.0) zeigte `LVGL frei: 22092 (vorher 32380)`: Der Rechner braucht rund 10 KB, aber schon im Menü ist der 128-KB-Pool zu etwa 75 % belegt (32 KB frei). Das ist stabil, lässt aber für künftige Screens wenig Luft. Deshalb steht der LVGL-Speicher jetzt als Kopfzeile im `/log` (`lv_mem_monitor()`: frei, gesamt, `used_pct`, größter Block) und beim Start als Eintrag `[Boot] LVGL-Speicher nach dem Start`.
+
+**Zeitzone:** Die Systemzeit überlebt einen Software-Neustart (`ESP.restart()`), die TZ-Variable nicht. Die Einträge vor dem WLAN-Aufbau (`[Boot]`, `[WLAN]`) zeigten deshalb UTC (14:40), spätere lokale Zeit (16:40). `setenv("TZ", …)`/`tzset()` stehen jetzt am Anfang von `setup()`. Die bestehenden Zeilen nach `configTime()` bleiben nötig, weil `configTime(0, 0, …)` die Zeitzone auf UTC zurücksetzt.
+
+---
+
 ## 2026-10-11 – v1.2.0
 
 ### Taschenrechner

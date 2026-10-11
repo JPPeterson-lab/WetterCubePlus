@@ -2,6 +2,16 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.2.1 (2026-10-11)
+
+### New
+- **LVGL memory in `/log`:** The header now permanently shows the free LVGL memory (free of total, percent used, largest free block). After startup the log also contains an entry with the initial value and the free heap. This makes it easy to see how much room is left when adding features with many controls
+
+### Fixes
+- **Log timestamps at startup in local time:** The time zone is now set at the very beginning. After a software restart (e.g. after an update) the first entries previously showed UTC, i.e. two hours earlier than later ones
+
+---
+
 ## v1.2.0 (2026-10-11)
 
 ### New
