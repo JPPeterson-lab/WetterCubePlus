@@ -2,6 +2,14 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.2.0 (2026-10-11)
+
+### Neu
+- **Taschenrechner:** Der neue Button im Menü-Screen öffnet einen bunten Taschenrechner mit den Grundrechenarten (+, −, ×, ÷), Prozent, Vorzeichen-Wechsel, Komma, Rückschritt und „C“. Die Anzeige zeigt oben die Rechnung und darunter groß die Eingabe bzw. das Ergebnis. Das Rechnen folgt dem klassischen Taschenrechner (von links nach rechts, `200 + 10 %` ergibt `220`); eine Division durch 0 zeigt „Fehler“. Mit dem roten X geht es zurück ins Menü
+- Der Rechner-Screen wird erst beim Öffnen angelegt und beim Schließen wieder freigegeben, damit er im Normalbetrieb keinen LVGL-Speicher belegt. Ist der Speicher einmal zu knapp, öffnet er sich nicht und das `/log` nennt den Grund; beim Öffnen steht dort auch der freie LVGL-Speicher
+
+---
+
 ## v1.1.3 (2026-10-11)
 
 ### Neu

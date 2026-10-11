@@ -11,7 +11,7 @@ const char *theme_names[2] = {
 
 uint32_t theme_colors[2][6] = {
     { 0x4adff9ff, 0x1cf6dfa2, 0xffe90b0b, 0xffce4b11, 0xffffffff, 0xff000000 },
-    { 0xff184a7e, 0xff184a7e, 0xff9ae90a, 0xff0cf836, 0xff184a7e, 0xffffffff }
+    { 0xff184a7e, 0xff184a7e, 0xff9ae90a, 0xff0cf836, 0xff06203b, 0xffffffff }
 };
 
 
@@ -343,6 +343,8 @@ void change_color_theme(uint32_t theme_index) {
     lv_obj_set_style_bg_opa(objects.labelbuttonmenu_2, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(objects.buttonbreaker, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(objects.buttonbreaker, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(objects.buttoncalc, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(objects.buttoncalc, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(objects.screenairquality, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(objects.screenairquality, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(objects.container_3, lv_color_hex(theme_colors[theme_index][THEME_COLOR_BACKGR_CONT]), LV_PART_MAIN | LV_STATE_DEFAULT);

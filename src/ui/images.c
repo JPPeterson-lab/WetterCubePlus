@@ -8,6 +8,7 @@
 #include "src/ui/images/fc_settings.inc"
 #include "src/ui/images/fog.inc"
 #include "src/ui/images/alert.inc"
+#include "src/ui/images/fc_calculator_38.inc"
 #include "src/ui/images/night_full_moon_clear.inc"
 #include "src/ui/images/overcast.inc"
 #include "src/ui/images/day_snow.inc"
@@ -27,7 +28,7 @@
 #include "src/ui/images/day_rain.inc"
 #include "src/ui/images/night_full_moon_partial_cloud.inc"
 #include "src/ui/images/pico_dark_logo_132.inc"
-const ext_img_desc_t images[26] = {
+const ext_img_desc_t images[27] = {
     { "rain_thunder", &rain_thunder },
     { "mist", &mist },
     { "day_partial_cloud", &day_partial_cloud },
@@ -35,6 +36,7 @@ const ext_img_desc_t images[26] = {
     { "fc_settings", &fc_settings },
     { "fog", &fog },
     { "alert", &alert },
+    { "fc_calculator_38", &fc_calculator_38 },
     { "night_full_moon_clear", &night_full_moon_clear },
     { "overcast", &overcast },
     { "day_snow", &day_snow },

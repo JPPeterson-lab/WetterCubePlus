@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-10-11 – v1.2.0
+
+### Taschenrechner
+
+Neuer Button `buttoncalc` auf dem Menü-Screen (PicoPixel, Icon `fc_calculator_38`, Position 258/273) startet einen Taschenrechner nach dem Muster des Bubblebreakers: programmatischer Screen, kein PicoPixel-Layout. Zusätzlich kam im Export ein dunkleres Dunkel-Theme (`THEME_COLOR_SCREEN` 0xff06203b) dazu.
+
+**Speicher war die Hauptsorge** (LVGL-Pool 128 KB im internen DRAM, siehe `general_esp32_lvgl_dram_budget`): Der Screen wird beim Öffnen angelegt (`erstelleRechnerScreen()`) und beim Schließen per `lv_obj_del_async()` freigegeben (nicht direkt, weil der Schließen-Button Kind des Screens ist und im eigenen Callback nicht gelöscht werden darf; `loadScreen()` lädt ohne Animation sofort). Alle 20 Tasten teilen sich gemeinsame `lv_style_t` (Basis, Gedrückt, 7 Farben) statt Einzel-Styles pro Objekt, es gibt keine Kreis-Objekte (`LV_RADIUS_CIRCLE` löste beim Bubblebreaker `circ_calc_aa4`-OOM aus). Vor dem Anlegen wird `lv_mem_monitor()` geprüft (mindestens 24 KB frei, sonst kein Öffnen statt eines Out-of-Memory-Hängers), und beim Öffnen steht der freie Speicher vorher/nachher im `/log` (`[Rechner] geoeffnet, LVGL frei: …`). **Offen:** Der tatsächliche Bedarf ist noch nicht am Gerät gemessen, erster Test: Rechner öffnen, `/log` ansehen. Bei Problemen lässt sich der Rechner mit einem Revert wieder entfernen.
+
+**Logik:** klassischer Sofortrechner (links nach rechts, keine Punkt-vor-Strich-Regel), `%` wie bei Taschenrechnern (`200 + 10 %` = 220, sonst Wert / 100), Division durch 0 → „Fehler“. Eingabe intern mit `.`, Anzeige mit `,`, `%.10g` fürs Formatieren, maximal 12 Ziffern. Zeichen ×, ÷, − sind in den eingebauten LVGL-Fonts nicht enthalten, daher `x`, `/` und `-`; Rückschritt ist `LV_SYMBOL_LEFT`.
+
+---
+
 ## 2026-10-11 – v1.1.3
 
 ### Cube blieb nach dem Trennen vom Strom im Einrichtungsmodus

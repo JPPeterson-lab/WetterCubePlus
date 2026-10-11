@@ -229,6 +229,7 @@ typedef struct _objects_t {
     lv_obj_t *labelversion;
     lv_obj_t *labelbuttonmenu_2;
     lv_obj_t *buttonbreaker;
+    lv_obj_t *buttoncalc;
     lv_obj_t *container_3;
     lv_obj_t *labelno2value;
     lv_obj_t *label_9;
@@ -377,6 +378,7 @@ typedef struct _objects_t {
     lv_obj_t *labelswitchtheme_label;
     lv_obj_t *labelbuttonmenu_2_label;
     lv_obj_t *buttonbreaker_label;
+    lv_obj_t *buttoncalc_label;
     lv_obj_t *labelbuttonforward_5_label;
     lv_obj_t *labelbuttonbackward_5_label;
     lv_obj_t *labelbuttonhome_5_label;

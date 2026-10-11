@@ -24,6 +24,7 @@ extern const lv_img_dsc_t fc_home;
 extern const lv_img_dsc_t fc_settings;
 extern const lv_img_dsc_t fog;
 extern const lv_img_dsc_t alert;
+extern const lv_img_dsc_t fc_calculator_38;
 extern const lv_img_dsc_t night_full_moon_clear;
 extern const lv_img_dsc_t overcast;
 extern const lv_img_dsc_t day_snow;
@@ -43,7 +44,7 @@ extern const lv_img_dsc_t fc_left_down2_38;
 extern const lv_img_dsc_t day_rain;
 extern const lv_img_dsc_t night_full_moon_partial_cloud;
 extern const lv_img_dsc_t pico_dark_logo_132;
-extern const ext_img_desc_t images[26];
+extern const ext_img_desc_t images[27];
 
 
 #ifdef __cplusplus

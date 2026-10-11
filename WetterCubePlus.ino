@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.1.3"
+#define FIRMWARE_VERSION "1.2.0"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -2945,6 +2945,261 @@ static void erstelleBubbleBreakerScreen() {
 }
 
 // ============================================================
+//  Taschenrechner (programmatisch; wird beim Oeffnen angelegt und beim Schliessen wieder freigegeben)
+// ============================================================
+static lv_obj_t* rcScreen = nullptr;
+static lv_obj_t* rcWert   = nullptr;   // grosse Anzeige
+static lv_obj_t* rcFormel = nullptr;   // kleine Zeile darueber
+static String    rcEingabe = "0";      // aktuelle Eingabe, '.' als Dezimaltrenner (Anzeige mit ',')
+static String    rcFormelText = "";
+static double    rcAkku = 0;
+static char      rcOp = 0;             // '+', '-', '*', '/' oder 0
+static bool      rcNeu = true;         // naechste Ziffer beginnt eine neue Eingabe
+static bool      rcFehler = false;
+
+// Gemeinsame Styles: ein Satz fuer alle Tasten statt Einzel-Styles pro Objekt (spart LVGL-Speicher)
+static lv_style_t rcStBasis, rcStGedrueckt;
+static lv_style_t rcStFarbe[7];
+static bool rcStylesBereit = false;
+enum { RC_ZIFFER, RC_OP, RC_CLEAR, RC_BACK, RC_PROZENT, RC_VZ, RC_GLEICH };
+static const uint32_t RC_FARBEN[7] = { 0x34495e, 0x3498db, 0xe74c3c, 0xe67e22, 0x9b59b6, 0x16a085, 0x2ecc71 };
+
+static String rcFormat(double v) {
+  if (isnan(v) || isinf(v)) return "Fehler";
+  char b[32];
+  snprintf(b, sizeof(b), "%.10g", v);
+  return String(b);
+}
+static String rcAnzeige(String s) { s.replace('.', ','); return s; }
+static const char* rcOpText(char op) {
+  switch (op) { case '+': return "+"; case '-': return "-"; case '*': return "x"; case '/': return "/"; }
+  return "";
+}
+
+static void rcAktualisiere() {
+  if (!rcWert || !rcFormel) return;
+  lv_label_set_text(rcWert, rcFehler ? "Fehler" : rcAnzeige(rcEingabe).c_str());
+  lv_label_set_text(rcFormel, rcFormelText.c_str());
+}
+
+static void rcAlles() {
+  rcEingabe = "0"; rcFormelText = ""; rcAkku = 0; rcOp = 0; rcNeu = true; rcFehler = false;
+}
+
+static void rcFehlerSetzen(const String& formel) {
+  rcFehler = true; rcOp = 0; rcNeu = true; rcFormelText = formel;
+  rcAktualisiere();
+}
+
+static bool rcRechne(double a, char op, double b, double& out) {
+  switch (op) {
+    case '+': out = a + b; return true;
+    case '-': out = a - b; return true;
+    case '*': out = a * b; return true;
+    case '/': if (b == 0) return false; out = a / b; return true;
+  }
+  out = b; return true;
+}
+
+static void rcZiffer(char c) {
+  if (rcFehler) rcAlles();
+  if (rcNeu) { rcEingabe = ""; rcNeu = false; }
+  if (rcEingabe == "0") rcEingabe = "";
+  if (rcEingabe.length() >= 12) return;
+  rcEingabe += c;
+  rcAktualisiere();
+}
+
+static void rcKomma() {
+  if (rcFehler) rcAlles();
+  if (rcNeu) { rcEingabe = "0"; rcNeu = false; }
+  if (rcEingabe.indexOf('.') < 0 && rcEingabe.length() < 11) rcEingabe += ".";
+  rcAktualisiere();
+}
+
+static void rcOperator(char op) {
+  if (rcFehler) return;
+  double wert = rcEingabe.toDouble();
+  if (!rcOp) {
+    rcAkku = wert;                                  // erster Operator
+  } else if (!rcNeu) {                              // Kettenrechnung: 2 + 3 + ... rechnet zuerst 2 + 3
+    double erg;
+    String formel = rcAnzeige(rcFormat(rcAkku)) + " " + rcOpText(rcOp) + " " + rcAnzeige(rcEingabe);
+    if (!rcRechne(rcAkku, rcOp, wert, erg)) { rcFehlerSetzen(formel + " ="); return; }
+    rcAkku = erg;
+  }                                                 // (Operator direkt nach Operator: nur wechseln)
+  rcOp = op;
+  rcNeu = true;
+  rcEingabe = rcFormat(rcAkku);
+  rcFormelText = rcAnzeige(rcEingabe) + " " + rcOpText(op);
+  rcAktualisiere();
+}
+
+static void rcGleich() {
+  if (rcFehler || !rcOp) return;
+  double b = rcEingabe.toDouble(), erg;
+  String formel = rcAnzeige(rcFormat(rcAkku)) + " " + rcOpText(rcOp) + " " + rcAnzeige(rcEingabe) + " =";
+  if (!rcRechne(rcAkku, rcOp, b, erg)) { rcFehlerSetzen(formel); return; }
+  rcAkku = erg;
+  rcEingabe = rcFormat(erg);
+  rcFormelText = formel;
+  rcOp = 0;
+  rcNeu = true;
+  rcAktualisiere();
+}
+
+static void rcProzent() {
+  if (rcFehler) return;
+  double w = rcEingabe.toDouble();
+  w = (rcOp == '+' || rcOp == '-') ? rcAkku * w / 100.0 : w / 100.0;   // 200 + 10 % = 200 + 20
+  rcEingabe = rcFormat(w);
+  rcNeu = false;
+  rcAktualisiere();
+}
+
+static void rcVorzeichen() {
+  if (rcFehler || rcEingabe == "0") return;
+  if (rcEingabe.startsWith("-")) rcEingabe.remove(0, 1); else rcEingabe = "-" + rcEingabe;
+  rcAktualisiere();
+}
+
+static void rcRueckschritt() {
+  if (rcFehler) { rcAlles(); rcAktualisiere(); return; }
+  if (rcNeu) return;
+  rcEingabe.remove(rcEingabe.length() - 1);
+  if (rcEingabe.length() == 0 || rcEingabe == "-") rcEingabe = "0";
+  rcAktualisiere();
+}
+
+static void rcSchliessen() {
+  loadScreen(SCREEN_ID_SCREENMENU);                 // Rechner ist danach nicht mehr aktiv
+  if (rcScreen) lv_obj_del_async(rcScreen);         // erst nach dem Callback loeschen (Taste ist Kind des Screens)
+  rcScreen = rcWert = rcFormel = nullptr;
+}
+
+static void cbRechnerTaste(lv_event_t* e) {
+  char c = (char)(intptr_t)lv_event_get_user_data(e);
+  switch (c) {
+    case 'C': rcAlles(); rcAktualisiere(); break;
+    case 'B': rcRueckschritt(); break;
+    case 'P': rcProzent(); break;
+    case 'N': rcVorzeichen(); break;
+    case '.': rcKomma(); break;
+    case '=': rcGleich(); break;
+    case '+': case '-': case '*': case '/': rcOperator(c); break;
+    case 'X': rcSchliessen(); break;
+    default:  if (c >= '0' && c <= '9') rcZiffer(c); break;
+  }
+}
+
+static void rcStylesAnlegen() {
+  if (rcStylesBereit) return;
+  lv_style_init(&rcStBasis);
+  lv_style_set_radius(&rcStBasis, 10);
+  lv_style_set_border_width(&rcStBasis, 0);
+  lv_style_set_shadow_width(&rcStBasis, 0);
+  lv_style_set_outline_width(&rcStBasis, 0);
+  lv_style_set_bg_opa(&rcStBasis, LV_OPA_COVER);
+  lv_style_set_text_color(&rcStBasis, lv_color_white());
+  lv_style_set_text_font(&rcStBasis, &lv_font_montserrat_28);
+  lv_style_init(&rcStGedrueckt);
+  lv_style_set_bg_opa(&rcStGedrueckt, LV_OPA_60);
+  for (int i = 0; i < 7; i++) {
+    lv_style_init(&rcStFarbe[i]);
+    lv_style_set_bg_color(&rcStFarbe[i], lv_color_hex(RC_FARBEN[i]));
+  }
+  rcStylesBereit = true;
+}
+
+static void erstelleRechnerScreen() {
+  rcStylesAnlegen();
+  rcScreen = lv_obj_create(nullptr);
+  lv_obj_set_size(rcScreen, 480, 320);
+  lv_obj_set_style_bg_color(rcScreen, lv_color_white(), 0);
+  lv_obj_set_style_bg_opa(rcScreen, LV_OPA_COVER, 0);
+  lv_obj_clear_flag(rcScreen, LV_OBJ_FLAG_SCROLLABLE);
+
+  // Anzeige
+  lv_obj_t* panel = lv_obj_create(rcScreen);
+  lv_obj_set_pos(panel, 6, 4);
+  lv_obj_set_size(panel, 468, 62);
+  lv_obj_set_style_bg_color(panel, lv_color_hex(0x1b2631), 0);
+  lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
+  lv_obj_set_style_radius(panel, 10, 0);
+  lv_obj_set_style_border_width(panel, 0, 0);
+  lv_obj_set_style_pad_all(panel, 0, 0);
+  lv_obj_clear_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
+
+  rcFormel = lv_label_create(panel);
+  lv_label_set_long_mode(rcFormel, LV_LABEL_LONG_DOT);
+  lv_obj_set_width(rcFormel, 400);
+  lv_obj_set_pos(rcFormel, 10, 5);
+  lv_obj_set_style_text_font(rcFormel, &lv_font_montserrat_16, 0);
+  lv_obj_set_style_text_color(rcFormel, lv_color_hex(0x85c1e9), 0);
+
+  rcWert = lv_label_create(panel);
+  lv_obj_set_width(rcWert, 448);
+  lv_obj_set_style_text_align(rcWert, LV_TEXT_ALIGN_RIGHT, 0);
+  lv_obj_set_pos(rcWert, 10, 20);
+  lv_obj_set_style_text_font(rcWert, &lv_font_montserrat_36, 0);
+  lv_obj_set_style_text_color(rcWert, lv_color_white(), 0);
+
+  // Schliessen oben rechts in der Anzeige (wie beim Bubblebreaker)
+  lv_obj_t* ex = lv_btn_create(panel);
+  lv_obj_set_pos(ex, 428, 4);
+  lv_obj_set_size(ex, 34, 26);
+  lv_obj_set_style_bg_color(ex, lv_color_hex(0xcc0000), 0);
+  lv_obj_set_style_radius(ex, 6, 0);
+  lv_obj_set_style_shadow_width(ex, 0, 0);
+  lv_obj_t* exl = lv_label_create(ex);
+  lv_label_set_text(exl, LV_SYMBOL_CLOSE);
+  lv_obj_set_style_text_color(exl, lv_color_white(), 0);
+  lv_obj_center(exl);
+  lv_obj_add_event_cb(ex, cbRechnerTaste, LV_EVENT_CLICKED, (void*)(intptr_t)'X');
+
+  // Tastenfeld 4 x 5
+  struct Taste { char code; const char* text; int art; };
+  static const Taste TASTEN[5][4] = {
+    { {'C', "C", RC_CLEAR}, {'B', LV_SYMBOL_LEFT, RC_BACK}, {'P', "%", RC_PROZENT}, {'/', "/", RC_OP} },
+    { {'7', "7", RC_ZIFFER}, {'8', "8", RC_ZIFFER}, {'9', "9", RC_ZIFFER}, {'*', "x", RC_OP} },
+    { {'4', "4", RC_ZIFFER}, {'5', "5", RC_ZIFFER}, {'6', "6", RC_ZIFFER}, {'-', "-", RC_OP} },
+    { {'1', "1", RC_ZIFFER}, {'2', "2", RC_ZIFFER}, {'3', "3", RC_ZIFFER}, {'+', "+", RC_OP} },
+    { {'N', "+/-", RC_VZ}, {'0', "0", RC_ZIFFER}, {'.', ",", RC_ZIFFER}, {'=', "=", RC_GLEICH} },
+  };
+  for (int r = 0; r < 5; r++) {
+    for (int k = 0; k < 4; k++) {
+      const Taste& t = TASTEN[r][k];
+      lv_obj_t* b = lv_btn_create(rcScreen);
+      lv_obj_set_pos(b, 6 + k * 118, 72 + r * 50);
+      lv_obj_set_size(b, 114, 46);
+      lv_obj_add_style(b, &rcStBasis, 0);
+      lv_obj_add_style(b, &rcStFarbe[t.art], 0);
+      lv_obj_add_style(b, &rcStGedrueckt, LV_STATE_PRESSED);
+      lv_obj_t* l = lv_label_create(b);
+      lv_label_set_text(l, t.text);
+      lv_obj_center(l);
+      lv_obj_add_event_cb(b, cbRechnerTaste, LV_EVENT_CLICKED, (void*)(intptr_t)t.code);
+    }
+  }
+}
+
+static void cbOpenRechner(lv_event_t*) {
+  lv_mem_monitor_t m0, m1;
+  lv_mem_monitor(&m0);
+  if (m0.free_size < 24000) {   // sonst droht ein LVGL-Out-of-Memory beim Anlegen (Pool nur 128 KB)
+    logDiag("[Rechner] zu wenig LVGL-Speicher: frei %u, groesster Block %u", (unsigned)m0.free_size, (unsigned)m0.free_biggest_size);
+    return;
+  }
+  if (rcScreen) { lv_obj_del(rcScreen); rcScreen = rcWert = rcFormel = nullptr; }   // Rest eines nie geschlossenen Rechners
+  rcAlles();
+  erstelleRechnerScreen();
+  rcAktualisiere();
+  lv_scr_load(rcScreen);
+  lv_mem_monitor(&m1);
+  logDiag("[Rechner] geoeffnet, LVGL frei: %u (vorher %u), Block %u", (unsigned)m1.free_size, (unsigned)m0.free_size, (unsigned)m1.free_biggest_size);
+}
+
+// ============================================================
 //  Hinweis-Screen (programmatisch, für "noch nicht konfiguriert")
 // ============================================================
 static lv_obj_t* hinweisScreen = nullptr;
@@ -3467,6 +3722,7 @@ void setup() {
   REG_CB(objects.fc_settings,   cbMenu, LV_EVENT_CLICKED);  // screen_1 → screenmenu
   REG_CB(objects.labelbuttonmenu_2, cbHome, LV_EVENT_CLICKED);  // screenmenu → screen_1
   REG_CB(objects.buttonbreaker, cbOpenBreakerSelect, LV_EVENT_CLICKED);  // screenmenu → Bubblebreaker-Auswahl
+  REG_CB(objects.buttoncalc,    cbOpenRechner,       LV_EVENT_CLICKED);  // screenmenu → Taschenrechner
   REG_CB(objects.button_4, cbHome, LV_EVENT_CLICKED);  // screenforecastpollenhour → screen_1
   // Nach Theme-Wechsel Farbkodierungen wiederherstellen
   if (objects.labelswitchtheme)

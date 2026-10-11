@@ -2,6 +2,14 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.2.0 (2026-10-11)
+
+### New
+- **Calculator:** The new button on the menu screen opens a colorful calculator with basic arithmetic (+, −, ×, ÷), percent, sign toggle, decimal comma, backspace and "C". The display shows the calculation on top and the input or result in large type below. Calculation follows a classic pocket calculator (left to right, `200 + 10 %` gives `220`); a division by 0 shows "Fehler" (error). The red X returns to the menu
+- The calculator screen is only created when it is opened and freed again when it is closed, so it uses no LVGL memory during normal operation. If memory is ever too tight it does not open and `/log` names the reason; on opening, `/log` also shows the free LVGL memory
+
+---
+
 ## v1.1.3 (2026-10-11)
 
 ### New

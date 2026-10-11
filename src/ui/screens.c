@@ -2030,7 +2030,7 @@ void create_screen_screenmenu() {
             // buttonbreaker
             lv_obj_t *obj = lv_btn_create(parent_obj);
             objects.buttonbreaker = obj;
-            lv_obj_set_pos(obj, 190, 273);
+            lv_obj_set_pos(obj, 122, 273);
             lv_obj_set_size(obj, 100, 40);
             lv_obj_set_style_bg_img_src(obj, &fc_self_service_kiosk_38, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_img_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -2043,6 +2043,28 @@ void create_screen_screenmenu() {
                     // buttonbreaker_label
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.buttonbreaker_label = obj;
+                    lv_label_set_text(obj, "");
+                    lv_obj_center(obj);
+                }
+            }
+        }
+        {
+            // buttoncalc
+            lv_obj_t *obj = lv_btn_create(parent_obj);
+            objects.buttoncalc = obj;
+            lv_obj_set_pos(obj, 258, 273);
+            lv_obj_set_size(obj, 100, 40);
+            lv_obj_set_style_bg_img_src(obj, &fc_calculator_38, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_img_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    // buttoncalc_label
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.buttoncalc_label = obj;
                     lv_label_set_text(obj, "");
                     lv_obj_center(obj);
                 }
@@ -5146,6 +5168,8 @@ void delete_screen_screenmenu() {
     objects.labelbuttonmenu_2_label = 0;
     objects.buttonbreaker = 0;
     objects.buttonbreaker_label = 0;
+    objects.buttoncalc = 0;
+    objects.buttoncalc_label = 0;
 }
 
 void delete_screen_screensunmoon() {
