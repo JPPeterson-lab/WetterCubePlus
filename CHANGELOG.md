@@ -2,6 +2,18 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.3.0 (2026-10-12)
+
+### Geändert
+- **LVGL-Speicher im PSRAM:** Der Speicher für alle Bedienelemente (bisher fest 128 KB im knappen internen RAM, zu 75 % belegt) liegt jetzt im 8-MB-PSRAM und hat praktisch kein festes Limit mehr. Der interne RAM wird dadurch für WLAN, HTTPS und Daten frei: Der Platz für Heap und lokale Variablen wächst von ca. 117 KB auf ca. 247 KB. Damit gibt es deutlich mehr Spielraum für künftige Funktionen mit vielen Bedienelementen und weniger Risiko bei den HTTPS-Abrufen (der interne Heap fiel zuvor bis auf ca. 25 KB)
+- **Anleitung zur LVGL-Konfiguration:** Die benötigte `lv_conf.h` liegt jetzt als [`lv_conf.h.example`](lv_conf.h.example) im Repo, die README erklärt, wohin sie gehört (bisher fehlte sie)
+- **Speicheranzeige angepasst:** Das `/log` zeigt „LVGL-Speicher: Pool im PSRAM …“ mit dem freien PSRAM; der Rechner prüft den freien PSRAM, bevor er sich öffnet
+
+### Fixes
+- **Boot-Eintrag im Log vollständig:** Die Log-Zeilen sind jetzt bis 128 Zeichen lang (vorher 100), der Eintrag nach dem Start wurde bei „Heap frei“ abgeschnitten und ist jetzt in zwei Zeilen aufgeteilt
+
+---
+
 ## v1.2.2 (2026-10-11)
 
 ### Neu

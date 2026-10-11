@@ -2,6 +2,18 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.3.0 (2026-10-12)
+
+### Changed
+- **LVGL memory in PSRAM:** The memory for all UI elements (previously a fixed 128 KB in the scarce internal RAM, 75 % used) now lives in the 8 MB PSRAM and has practically no fixed limit any more. This frees the internal RAM for Wi-Fi, HTTPS and data: the space for heap and local variables grows from about 117 KB to about 247 KB. This gives much more headroom for future features with many UI elements and lowers the risk for HTTPS requests (the internal heap used to drop to about 25 KB)
+- **LVGL configuration guide:** The required `lv_conf.h` is now in the repo as [`lv_conf.h.example`](lv_conf.h.example), and the README explains where it belongs (it was missing before)
+- **Memory display adjusted:** `/log` shows "LVGL-Speicher: Pool im PSRAM …" together with the free PSRAM; the calculator checks the free PSRAM before opening
+
+### Fixes
+- **Startup log entry complete:** Log lines are now up to 128 characters long (previously 100); the entry after startup was cut off at "Heap frei" and is now split into two lines
+
+---
+
 ## v1.2.2 (2026-10-11)
 
 ### New

@@ -1,7 +1,7 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.2.2-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.3.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -269,6 +269,8 @@ Der C3 fragt `GET http://wettercubeplus.local/api/ampel` ab. Beide Geräte müss
 | Flash Size | 16 MB |
 | Partition Scheme | **Custom** (partitions.csv im Sketch-Ordner) |
 
+**LVGL-Konfiguration:** Die Datei [`lv_conf.h.example`](lv_conf.h.example) als `lv_conf.h` in den Arduino-`libraries`-Ordner kopieren (neben den Ordner `lvgl`). Die Datei `build_opt.h` im Sketch-Ordner enthält die nötigen Compiler-Schalter (u. a. `-DLV_MEM_PSRAM`, damit der LVGL-Speicher im PSRAM liegt). Nach jeder Änderung an `build_opt.h` den Arduino-Sketch-Cache leeren (`~/Library/Caches/arduino/sketches/…`), sonst wird sie nicht übernommen.
+
 ---
 
 ## 🙏 Credits
@@ -301,7 +303,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.2.2-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.3.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -559,7 +561,9 @@ The C3 polls `GET http://wettercubeplus.local/api/ampel`. Both devices must be o
 | Board | ESP32S3 Dev Module |
 | PSRAM | OPI PSRAM |
 | Flash Size | 16 MB |
-| Partition Scheme | **Custom** (partitions.csv im Sketch-Ordner) |
+| Partition Scheme | **Custom** (partitions.csv in the sketch folder) |
+
+**LVGL configuration:** Copy [`lv_conf.h.example`](lv_conf.h.example) as `lv_conf.h` into the Arduino `libraries` folder (next to the `lvgl` folder). The `build_opt.h` file in the sketch folder contains the required compiler switches (including `-DLV_MEM_PSRAM`, which places the LVGL memory in PSRAM). After every change to `build_opt.h`, clear the Arduino sketch cache (`~/Library/Caches/arduino/sketches/…`), otherwise it will not be picked up.
 
 ---
 

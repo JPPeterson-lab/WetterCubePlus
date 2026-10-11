@@ -1,5 +1,21 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.3.0
+
+### LVGL-Pool in den PSRAM verlegt
+
+**Anlass:** Das Log nach v1.2.2 zeigte: PSRAM zu 91 % frei (Spitze nur ca. 1,3 MB belegt), aber der interne Heap fiel bis auf 25,6 KB (TLS braucht 40–50 KB, es ging nur knapp gut) und der 128-KB-LVGL-Pool war zu 75 % belegt.
+
+**Umsetzung:** `lv_conf.h` (gemeinsam für alle Projekte unter `~/Documents/Arduino/libraries/`) hatte `#define LV_MEM_CUSTOM 0` ohne `#ifndef`; ein `-D` aus `build_opt.h` hätte nicht gegriffen. Neuer Opt-in-Block: Mit `-DLV_MEM_PSRAM` wird `LV_MEM_CUSTOM 1` gesetzt, mit `heap_caps_malloc(…, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)` (Rückfall auf den internen Heap, falls der PSRAM nichts liefert), `heap_caps_realloc`/`heap_caps_free`. Andere Projekte setzen den Schalter nicht und bleiben unverändert. Sicherungskopie: `lv_conf.h.vor-psram-pool.bak`. In `build_opt.h` kam `-DLV_MEM_PSRAM` dazu. Ergebnis im Build: globale Variablen 80,5 KB (24 %) statt 210,6 KB (64 %), lokale Variablen/Heap 247 KB statt 117 KB.
+
+**Folgen im Sketch:** Mit `LV_MEM_CUSTOM` liefert `lv_mem_monitor()` keine Werte (LVGL meldet nur bei eigenem TLSF-Pool). Neue Helfer `lvglFreiBytes()`/`lvglSpeicherText()` nutzen dann den freien PSRAM; sonst ändert sich die Logik nicht. Der Schutz des Rechners prüft jetzt den freien PSRAM. `LOG_LINE_LEN` 100 → 128, die abgeschnittene Boot-Zeile ist in zwei Einträge geteilt.
+
+**Rückweg:** Die Zeile `-DLV_MEM_PSRAM` aus `build_opt.h` entfernen, neu exportieren und als höhere Version veröffentlichen (das Gerät bietet nur neuere Versionen an); die `lv_conf.h`-Änderung ist ohne den Schalter wirkungslos. Nach jeder `build_opt.h`-Änderung den Arduino-Sketch-Cache leeren (siehe Notiz zum DRAM-Budget). Bei einer Endlosschleife beim Start wäre nur USB/Web-Installer mit den Dateien aus dem Release v1.2.2 möglich.
+
+**Zu beobachten nach dem Update:** Gefühlte Geschwindigkeit beim Wechsel der Screens, Rechner und Bubblebreaker (LVGL-Objekte liegen jetzt im etwas langsameren PSRAM) und im `/log` der tiefste Heap-Stand (erwartet deutlich über 25 KB).
+
+---
+
 ## 2026-10-11 – v1.2.2
 
 ### PSRAM-Werte im Log (Entscheidungsgrundlage für den LVGL-Pool im PSRAM)

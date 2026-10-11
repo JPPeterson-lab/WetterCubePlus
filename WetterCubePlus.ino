@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.2.2"
+#define FIRMWARE_VERSION "1.3.0"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -343,7 +343,7 @@ unsigned long letzteAmpelAnfrage = 0;        // millis() der letzten bedienten /
 //  — nötig weil das Gerät nur per OTA/WLAN erreichbar ist, kein USB/Serial vor Ort.
 // ============================================================
 #define LOG_RING_SIZE 25
-#define LOG_LINE_LEN  100
+#define LOG_LINE_LEN  128
 static char logRing[LOG_RING_SIZE][LOG_LINE_LEN];
 static int  logRingPos   = 0;
 static int  logRingCount = 0;
@@ -404,6 +404,27 @@ static const char* wifiGrundName(uint8_t g) {
 
 static void wifiEventCb(arduino_event_id_t event, arduino_event_info_t info) {
   if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) wifiLetzterGrund = info.wifi_sta_disconnected.reason;
+}
+
+// LVGL-Speicher: Liegt der Pool im PSRAM (LV_MEM_CUSTOM, Schalter -DLV_MEM_PSRAM), liefert lv_mem_monitor()
+// keine Werte; dann zaehlt der freie PSRAM.
+static size_t lvglFreiBytes() {
+#if LV_MEM_CUSTOM
+  return ESP.getFreePsram();
+#else
+  lv_mem_monitor_t m; lv_mem_monitor(&m);
+  return m.free_size;
+#endif
+}
+
+static String lvglSpeicherText() {
+#if LV_MEM_CUSTOM
+  return "Pool im PSRAM (kein festes Limit), PSRAM frei " + String((unsigned)ESP.getFreePsram());
+#else
+  lv_mem_monitor_t m; lv_mem_monitor(&m);
+  return "frei " + String((unsigned)m.free_size) + " von " + String((unsigned)m.total_size) + " Bytes (" +
+         String((unsigned)m.used_pct) + " % belegt), groesster Block " + String((unsigned)m.free_biggest_size);
+#endif
 }
 unsigned long letztesPollenUpdate = 0;
 unsigned long letztesWarnUpdate   = 0;
@@ -919,9 +940,7 @@ void handleApiLog() {
   out += "PSRAM: frei " + String(ESP.getFreePsram()) + " von " + String(ESP.getPsramSize()) +
          " Bytes (tiefster Stand seit Start: " + String(ESP.getMinFreePsram()) + ", groesster Block " + String(ESP.getMaxAllocPsram()) + ")\n";
   out += "Uptime: " + String(millis() / 60000UL) + " Minuten\n";
-  { lv_mem_monitor_t m; lv_mem_monitor(&m);
-    out += "LVGL-Speicher: frei " + String((unsigned)m.free_size) + " von " + String((unsigned)m.total_size) +
-           " Bytes (" + String((unsigned)m.used_pct) + " % belegt), groesster Block " + String((unsigned)m.free_biggest_size) + "\n"; }
+  out += "LVGL-Speicher: " + lvglSpeicherText() + "\n";
   out += "Letzter Neustart: " + (resetGrundText.length() ? resetGrundText : String("-")) + "\n";
   out += "WLAN beim Start: " + (wifiStartInfo.length() ? wifiStartInfo : String("-")) + "\n";
   out += "Update: installiert " + String(FIRMWARE_VERSION) + ", neueste bekannte " +
@@ -3189,10 +3208,9 @@ static void erstelleRechnerScreen() {
 }
 
 static void cbOpenRechner(lv_event_t*) {
-  lv_mem_monitor_t m0, m1;
-  lv_mem_monitor(&m0);
-  if (m0.free_size < 24000) {   // sonst droht ein LVGL-Out-of-Memory beim Anlegen (Pool nur 128 KB)
-    logDiag("[Rechner] zu wenig LVGL-Speicher: frei %u, groesster Block %u", (unsigned)m0.free_size, (unsigned)m0.free_biggest_size);
+  size_t vorher = lvglFreiBytes();
+  if (vorher < 24000) {   // sonst droht ein LVGL-Out-of-Memory beim Anlegen
+    logDiag("[Rechner] zu wenig Speicher: frei %u", (unsigned)vorher);
     return;
   }
   if (rcScreen) { lv_obj_del(rcScreen); rcScreen = rcWert = rcFormel = nullptr; }   // Rest eines nie geschlossenen Rechners
@@ -3200,8 +3218,8 @@ static void cbOpenRechner(lv_event_t*) {
   erstelleRechnerScreen();
   rcAktualisiere();
   lv_scr_load(rcScreen);
-  lv_mem_monitor(&m1);
-  logDiag("[Rechner] geoeffnet, LVGL frei: %u (vorher %u), Block %u", (unsigned)m1.free_size, (unsigned)m0.free_size, (unsigned)m1.free_biggest_size);
+  size_t nachher = lvglFreiBytes();
+  logDiag("[Rechner] geoeffnet, Speicher frei: %u (vorher %u), Bedarf %d Bytes", (unsigned)nachher, (unsigned)vorher, (int)((long)vorher - (long)nachher));
 }
 
 // ============================================================
@@ -3876,10 +3894,8 @@ void setup() {
   { unsigned long e = millis() + 600; while (millis() < e) { lv_timer_handler(); delay(5); } }
   loadScreen(SCREEN_ID_SCREEN_1);
 
-  { lv_mem_monitor_t m; lv_mem_monitor(&m);
-    logDiag("[Boot] LVGL-Speicher nach dem Start: frei %u von %u Bytes (%u %% belegt), Heap frei %u, PSRAM frei %u von %u",
-            (unsigned)m.free_size, (unsigned)m.total_size, (unsigned)m.used_pct, (unsigned)ESP.getFreeHeap(),
-            (unsigned)ESP.getFreePsram(), (unsigned)ESP.getPsramSize()); }
+  logDiag("[Boot] LVGL-Speicher: %s", lvglSpeicherText().c_str());
+  logDiag("[Boot] Heap frei %u, PSRAM frei %u von %u", (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getFreePsram(), (unsigned)ESP.getPsramSize());
 
   letztesTouchZeit    = millis();
   letztesDatenUpdate  = millis();
