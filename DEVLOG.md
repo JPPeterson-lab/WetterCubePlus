@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-10-11 – v1.1.0
+
+### Update-Fenster aus dem XL übernommen + automatische Update-Prüfung
+
+Im Chat zu WetterCubePlus XL gibt es einen Hinweis-Screen beim OTA-Update (`uiHinweis` in `src/app/webui.cpp`), der dort nötig ist, weil das RGB-Display beim Flash-Schreiben wild flackert (Flash-Cache steht, der RGB-Treiber ist nicht IRAM-sicher). Beim Cube mit SPI-Display tritt das nicht auf, deshalb gibt es hier keinen Flacker-Text, sondern einen Hinweis „nicht vom Strom trennen“ mit Fortschrittsbalken.
+
+**Umsetzung:** Die OTA-Logik ist in `installiereUpdate()` zusammengefasst und wird von der WebUI (`/ota_update`) und vom Touch-Popup genutzt. `Update.onProgress()` zeichnet den Balken zwischen den Flash-Schreibvorgängen (`lv_timer_handler()` im Callback; `disp_flush` arbeitet synchron ohne DMA, daher kein Konflikt mit dem Flash-Cache). Die Installation per Touch wird nur über ein Flag (`otaStartAngefordert`) angefordert und in `loop()` ausgeführt, nicht im LVGL-Callback, weil dort ein verschachteltes `lv_timer_handler()` nicht zulässig wäre. Alle Texte ohne Umlaute, da die LVGL-Built-in-Fonts nur ASCII kennen.
+
+**Update-Prüfung:** 2 Min. nach dem Start, danach alle 6 Std. (bei Fehler nach 1 Std.). `versionNeuer()` vergleicht Major.Minor.Patch, ein Release gilt als neuer als der gleiche RC; die WebUI nutzt dieselbe Prüfung (vorher `!=`, was bei einer lokal neueren Testversion ein Downgrade angeboten hätte). Das Badge sitzt oben rechts auf Screen 1 (x 384, y 6, 92×32) als dynamisch angelegtes LVGL-Objekt, ohne PicoPixel-Export.
+
+**Test:** Ohne neuere veröffentlichte Version erscheint kein Badge. Zum Testen kurz mit `FIRMWARE_VERSION` auf eine ältere Version bauen; nach 2 Minuten sollte das Symbol erscheinen. Nicht am Gerät getestet war beim Schreiben dieses Eintrags der Fortschrittsbalken während des Flash-Schreibens.
+
+---
+
 ## 2026-09-30 – v1.0.2
 
 ### Regen-Icon-Bug, neue Icons und Speicher-Diät (256 → 128 px)

@@ -1,7 +1,7 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.0.2-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.1.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -43,7 +43,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 💚 | **Gesundheitsscreen** | Kompaktübersicht für wetterfühlige Personen: Top-4 Pollen nach Tagesbelastung, 4 konfigurierbare Biowetter-Kategorien, AQI + UV-Index; Kategorien per WebUI wählbar |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
-| 🔄 | **OTA-Update** | Firmware-Update per WebUI über WLAN |
+| 🔄 | **OTA-Update** | Firmware-Update per WebUI oder direkt am Display, mit Fortschrittsbalken; das Gerät prüft selbst regelmäßig auf neue Versionen und zeigt dann ein Update-Symbol |
 | 👆 | **Touch-Kalibrierung** | Automatisch beim Erststart, jederzeit neu auslösbar |
 | 🌙 | **Dark Mode** | Vollständiges dunkles Farbthema für alle Screens, Hintergründe und Bedienelemente – Umschalter direkt im Menü-Screen |
 | 🎛️ | **Menü-Screen** | Helligkeit, Regen-/Pollenwarnung und DWD-Warnungen direkt am Gerät ein-/ausschalten – kein WebUI nötig |
@@ -218,6 +218,15 @@ Der C3 fragt `GET http://wettercubeplus.local/api/ampel` ab. Beide Geräte müss
 
 ---
 
+## 🔄 Firmware-Update (OTA)
+
+- **Automatische Prüfung:** Zwei Minuten nach dem Start und danach alle 6 Stunden prüft das Gerät, ob eine neuere Version veröffentlicht ist. Gibt es eine, erscheint oben rechts auf dem Hauptscreen ein orangefarbenes **Update-Symbol**.
+- **Am Display installieren:** Auf das Symbol tippen, die Version prüfen und **„Jetzt installieren“** wählen. Mit **„Später“** schließt sich das Fenster, das Symbol bleibt.
+- **Per Browser installieren:** In der Web-Oberfläche unter *Firmware-Update* auf „Auf Updates prüfen“ und „Jetzt installieren“ klicken.
+- **Während des Updates** zeigt das Display einen Fortschrittsbalken. Das Gerät **nicht vom Strom trennen**, es startet danach selbst neu (ca. 1 Minute). Schlägt das Update fehl, läuft das Gerät mit der alten Version weiter und zeigt kurz den Fehler an.
+
+---
+
 ## 🛠️ Manuelle Installation (Arduino IDE)
 
 **Benötigte Bibliotheken:**
@@ -270,7 +279,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.0.2-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.1.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -301,7 +310,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🩺 | **DWD Health Weather** | Health impact forecast for 7 categories (general wellbeing, blood pressure low/high, rheumatism inflammatory/degenerative, asthma, heat stress) – 4 time periods across 2 screens, updated every 3 hours |
 | 🖥️ | **WebUI** | All settings at `wettercubeplus.local` – no reflashing needed |
 | 📡 | **Captive Portal** | Wi-Fi setup without an app |
-| 🔄 | **OTA update** | Firmware update via WebUI over Wi-Fi |
+| 🔄 | **OTA update** | Firmware update via WebUI or directly on the display, with a progress bar; the device checks for new versions on its own and then shows an update icon |
 | 👆 | **Touch calibration** | Automatic on first boot, re-triggerable anytime |
 | 🌙 | **Dark Mode** | Full dark color theme for all screens, backgrounds, and controls – toggle right on the menu screen |
 | 🎛️ | **Menu screen** | Adjust brightness, toggle rain/pollen warnings and DWD alerts directly on the device – no WebUI needed |
@@ -470,6 +479,15 @@ The C3 polls `GET http://wettercubeplus.local/api/ampel`. Both devices must be o
 ```
 
 `dwd_warning: true` means: there are active DWD warnings that have not yet been acknowledged by opening the warning screen on the Cube → all three LEDs blink.
+
+---
+
+## 🔄 Firmware Update (OTA)
+
+- **Automatic check:** Two minutes after start and every 6 hours after that, the device checks whether a newer version has been released. If there is one, an orange **update icon** appears in the top right corner of the main screen.
+- **Install on the display:** Tap the icon, check the version and choose **"Jetzt installieren"** (install now). **"Spaeter"** (later) closes the window; the icon stays.
+- **Install via browser:** In the web interface under *Firmware-Update*, click "Auf Updates pruefen" (check for updates) and then "Jetzt installieren" (install now).
+- **During the update** the display shows a progress bar. **Do not disconnect the device from power**; it restarts by itself afterwards (about 1 minute). If the update fails, the device keeps running the old version and briefly shows the error.
 
 ---
 

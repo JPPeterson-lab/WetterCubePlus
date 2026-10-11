@@ -210,6 +210,7 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
   <div class="status">Aktuelle Version: %VERSION%</div>
   <button type="button" class="btn btn-blau" onclick="checkOta()">Auf Updates pruefen</button>
   <div id="ota_status" class="status"></div>
+  <div class="status" style="margin-top:10px">Hinweis: Waehrend des Updates zeigt das Display einen Fortschrittsbalken. Das Geraet dabei <b>nicht vom Strom trennen</b> &ndash; es startet danach selbst neu (ca. 1 Minute). Das Geraet prueft ausserdem selbst regelmaessig auf Updates und zeigt oben rechts auf dem Hauptscreen ein Update-Symbol.</div>
 </div>
 
 <script>
@@ -226,9 +227,12 @@ function checkOta(){
   }).catch(function(){document.getElementById('ota_status').textContent='Fehler beim Pruefen';});
 }
 function doUpdate(){
-  document.getElementById('ota_status').textContent='Update laeuft... bitte warten (ca. 30 Sek.)';
+  if(!confirm('Update jetzt installieren?\n\nDas Geraet NICHT vom Strom trennen. Es startet danach selbst neu (ca. 1 Minute).')) return;
+  document.getElementById('ota_status').textContent='Update laeuft... Geraet NICHT ausschalten (ca. 1 Minute).';
   fetch('/ota_update',{method:'POST'}).then(function(r){return r.text();}).then(function(t){
-    document.getElementById('ota_status').textContent=t;
+    document.getElementById('ota_status').textContent=(t==='ok')?'Update installiert. Das Geraet startet neu ...':'Fehler: '+t;
+  }).catch(function(){
+    document.getElementById('ota_status').textContent='Verbindung beendet. Wenn das Geraet gerade neu startet, ist das normal.';
   });
 }
 function ladeAmpel(){

@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.0.2"
+#define FIRMWARE_VERSION "1.1.0"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -321,6 +321,18 @@ bool   dwdWarnBestaetigt      = false;
 
 static lv_obj_t*  dwdWarnBtn    = nullptr;
 static lv_timer_t* dwdBlinker   = nullptr;
+
+// Update-Hinweis: automatische Versionspruefung + Badge auf Screen 1
+#define UPDATE_CHECK_ERST      120000UL    // 2 Min. nach dem Start
+#define UPDATE_CHECK_INTERVALL 21600000UL  // danach alle 6 Stunden
+#define UPDATE_CHECK_RETRY     3600000UL   // nach einem Fehler nach 1 Stunde erneut
+static lv_obj_t* updateBadge       = nullptr;
+static lv_obj_t* updatePopup       = nullptr;
+bool          updateVerfuegbar     = false;
+String        updateNeueVersion    = "";
+unsigned long letzterUpdateCheck   = 0;
+unsigned long updateCheckIntervall = UPDATE_CHECK_ERST;
+bool          otaStartAngefordert  = false;   // Installation per Touch: wird in loop() gestartet, nicht im LVGL-Callback
 
 unsigned long letztesDatenUpdate  = 0;
 unsigned long letzterWetterFetchErfolg = 0;  // millis() des letzten erfolgreichen fetchWetter() — für /api/ampel Staleness-Check
@@ -834,6 +846,10 @@ void handleApiLog() {
   String out = "WetterCubePlus Diagnose-Log (neueste zuerst)\n";
   out += "Aktueller freier Heap: " + String(ESP.getFreeHeap()) + " Bytes\n";
   out += "Uptime: " + String(millis() / 60000UL) + " Minuten\n";
+  out += "Update: installiert " + String(FIRMWARE_VERSION) + ", neueste bekannte " +
+         (updateNeueVersion.length() ? updateNeueVersion : String("-")) +
+         (updateVerfuegbar ? " (Update verfuegbar)" : "") + ", letzte Pruefung " +
+         (letzterUpdateCheck ? "vor " + String((millis() - letzterUpdateCheck) / 60000UL) + " Min." : String("noch nicht")) + "\n";
   if (letzteAmpelAnfrage == 0) {
     out += "Letzte /api/ampel-Anfrage: noch keine seit dem letzten Neustart\n";
   } else {
@@ -852,20 +868,192 @@ void handleApiLog() {
   server.send(200, "text/plain; charset=utf-8", out);
 }
 
-void handleWebOtaCheck() {
+// ============================================================
+//  Firmware-Update (OTA): Versionspruefung, Hinweis-Screen mit Fortschritt, Installation
+// ============================================================
+void aktualisiereUpdateBadge();
+
+// true, wenn Version a neuer ist als b ("1.1.0", "1.1.0-rc1"; ein Release ist neuer als dessen RC)
+static bool versionNeuer(const String& a, const String& b) {
+  int pa[3] = {0, 0, 0}, pb[3] = {0, 0, 0};
+  sscanf(a.c_str(), "%d.%d.%d", &pa[0], &pa[1], &pa[2]);
+  sscanf(b.c_str(), "%d.%d.%d", &pb[0], &pb[1], &pb[2]);
+  for (int i = 0; i < 3; i++) if (pa[i] != pb[i]) return pa[i] > pb[i];
+  return b.indexOf('-') >= 0 && a.indexOf('-') < 0;
+}
+
+// Fragt die neueste veroeffentlichte Version ab. true = Abfrage erfolgreich.
+static bool holeNeuesteVersion(String& latest) {
+  if (WiFi.status() != WL_CONNECTED) return false;
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
   http.begin(sc, OTA_VERSION_URL);
-  String latest = FIRMWARE_VERSION;
-  bool update_available = false;
+  http.setTimeout(10000);
+  bool ok = false;
   if (http.GET() == 200) {
     DynamicJsonDocument doc(256);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
-      latest = doc["version"].as<String>();
-      update_available = (latest != FIRMWARE_VERSION);
+      const char* v = doc["version"] | "";
+      if (v[0]) { latest = String(v); ok = true; }
     }
   }
   http.end();
+  return ok;
+}
+
+// Automatische Pruefung (aus loop()): setzt updateVerfuegbar fuer das Badge auf Screen 1
+static void pruefeUpdate() {
+  letzterUpdateCheck = millis();
+  String latest;
+  if (!holeNeuesteVersion(latest)) {
+    updateCheckIntervall = UPDATE_CHECK_RETRY;
+    logDiag("[Update] Pruefung fehlgeschlagen, neuer Versuch in 1 Std.");
+    return;
+  }
+  updateCheckIntervall = UPDATE_CHECK_INTERVALL;
+  bool neu = versionNeuer(latest, FIRMWARE_VERSION);
+  if (neu && (!updateVerfuegbar || updateNeueVersion != latest))
+    logDiag("[Update] Neue Version verfuegbar: %s (installiert: %s)", latest.c_str(), FIRMWARE_VERSION);
+  updateVerfuegbar  = neu;
+  updateNeueVersion = latest;
+}
+
+// ---- Hinweis-Screen waehrend des Updates ----
+static lv_obj_t* updScreen     = nullptr;
+static lv_obj_t* updTitel      = nullptr;
+static lv_obj_t* updText       = nullptr;
+static lv_obj_t* updBalken     = nullptr;
+static lv_obj_t* updProzent    = nullptr;
+static int       updLetztesProzent = -1;
+
+static void lvPump(uint32_t ms) {
+  uint32_t t = millis();
+  while (millis() - t < ms) { lv_timer_handler(); delay(5); }
+}
+
+// Kein Umlaut in den Texten: die LVGL-Built-in-Fonts kennen nur ASCII
+static void zeigeUpdateScreen(const char* titel, uint32_t titelFarbe, const char* text, bool mitBalken) {
+  if (!updScreen) {
+    updScreen = lv_obj_create(nullptr);
+    lv_obj_set_size(updScreen, LV_HOR_RES, LV_VER_RES);
+    lv_obj_set_style_bg_color(updScreen, lv_color_hex(0x1a1a2e), 0);
+    lv_obj_set_style_bg_opa(updScreen, LV_OPA_COVER, 0);
+    lv_obj_clear_flag(updScreen, LV_OBJ_FLAG_SCROLLABLE);
+
+    updTitel = lv_label_create(updScreen);
+    lv_obj_set_style_text_font(updTitel, &lv_font_montserrat_20, 0);
+    lv_obj_align(updTitel, LV_ALIGN_TOP_MID, 0, 24);
+
+    updText = lv_label_create(updScreen);
+    lv_label_set_long_mode(updText, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(updText, LV_HOR_RES - 40);
+    lv_obj_set_style_text_font(updText, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_color(updText, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_text_align(updText, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(updText, LV_ALIGN_TOP_MID, 0, 72);
+
+    updBalken = lv_bar_create(updScreen);
+    lv_obj_set_size(updBalken, 400, 18);
+    lv_obj_align(updBalken, LV_ALIGN_BOTTOM_MID, 0, -64);
+    lv_bar_set_range(updBalken, 0, 100);
+    lv_obj_set_style_bg_color(updBalken, lv_color_hex(0x333355), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(updBalken, lv_color_hex(0x4cd964), LV_PART_INDICATOR);
+
+    updProzent = lv_label_create(updScreen);
+    lv_obj_set_style_text_font(updProzent, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_color(updProzent, lv_color_hex(0xffffff), 0);
+    lv_obj_align(updProzent, LV_ALIGN_BOTTOM_MID, 0, -30);
+  }
+  lv_label_set_text(updTitel, titel);
+  lv_obj_set_style_text_color(updTitel, lv_color_hex(titelFarbe), 0);
+  lv_obj_align(updTitel, LV_ALIGN_TOP_MID, 0, 24);
+  lv_label_set_text(updText, text);
+  if (mitBalken) {
+    lv_obj_clear_flag(updBalken, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(updProzent, LV_OBJ_FLAG_HIDDEN);
+  } else {
+    lv_obj_add_flag(updBalken, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(updProzent, LV_OBJ_FLAG_HIDDEN);
+  }
+  updLetztesProzent = -1;
+  lv_bar_set_value(updBalken, 0, LV_ANIM_OFF);
+  lv_label_set_text(updProzent, "0 %");
+  lv_scr_load(updScreen);
+  lvPump(150);
+}
+
+// Wird von Update.writeStream() nach jedem geschriebenen Block aufgerufen
+static void updateFortschritt(size_t done, size_t total) {
+  if (!updBalken || total == 0) return;
+  int p = (int)((uint64_t)done * 100 / total);
+  if (p == updLetztesProzent) return;
+  updLetztesProzent = p;
+  lv_bar_set_value(updBalken, p, LV_ANIM_OFF);
+  lv_label_set_text_fmt(updProzent, "%d %%", p);
+  lv_timer_handler();
+}
+
+// Laedt und installiert die Firmware. Rueckgabe: Fehlertext, leer = Erfolg.
+static String installiereUpdate() {
+  logDiag("[OTA] Lade %s", OTA_BIN_URL);
+  zeigeUpdateScreen(LV_SYMBOL_DOWNLOAD "  Update wird installiert", 0xf5a623,
+                    "Bitte das Geraet NICHT vom Strom trennen!\n\n"
+                    "Das Update dauert ca. 1 Minute, danach startet das Geraet selbst neu.", true);
+
+  WiFiClientSecure client; client.setInsecure();
+  HTTPClient http;
+  http.begin(client, OTA_BIN_URL);
+  http.setTimeout(30000);
+  int code = http.GET();
+  if (code != 200) {
+    http.end();
+    logDiag("[OTA] Fehler: HTTP %d", code);
+    return "download error " + String(code);
+  }
+
+  int contentLen = http.getSize();
+  if (!Update.begin(contentLen > 0 ? contentLen : UPDATE_SIZE_UNKNOWN)) {
+    http.end();
+    logDiag("[OTA] Fehler: begin failed (%d Bytes)", contentLen);
+    return "begin failed";
+  }
+  Update.onProgress(updateFortschritt);
+  size_t written = Update.writeStream(*http.getStreamPtr());
+  bool success = Update.end(true) && !Update.hasError();
+  http.end();
+
+  if (!success) {
+    String e = Update.errorString();
+    logDiag("[OTA] Fehler: %s", e.c_str());
+    return e.length() ? e : String("unknown error");
+  }
+  logDiag("[OTA] %u Bytes geschrieben, Neustart", (unsigned)written);
+  return "";
+}
+
+static void updateErfolgNeustart() {
+  zeigeUpdateScreen(LV_SYMBOL_OK "  Update installiert", 0x4cd964, "Das Geraet startet jetzt neu ...", false);
+  lvPump(1500);
+  ESP.restart();
+}
+
+// Zeigt den Fehler kurz an und springt zurueck zum Hauptscreen
+static void updateFehlerAnzeigen(const String& fehler) {
+  String text = "Das Update ist fehlgeschlagen:\n" + fehler + "\n\nDas Geraet laeuft mit der alten Version weiter.";
+  zeigeUpdateScreen(LV_SYMBOL_WARNING "  Update fehlgeschlagen", 0xff5555, text.c_str(), false);
+  lvPump(6000);
+  loadScreen(SCREEN_ID_SCREEN_1);
+}
+
+void handleWebOtaCheck() {
+  String latest = FIRMWARE_VERSION;
+  bool ok = holeNeuesteVersion(latest);
+  bool update_available = ok && versionNeuer(latest, FIRMWARE_VERSION);
+  if (ok) {
+    updateVerfuegbar  = update_available;
+    updateNeueVersion = latest;
+    aktualisiereUpdateBadge();
+  }
   String json = "{\"current\":\"" + String(FIRMWARE_VERSION) + "\",\"latest\":\"" +
                 latest + "\",\"update_available\":" +
                 (update_available ? "true" : "false") + "}";
@@ -873,42 +1061,13 @@ void handleWebOtaCheck() {
 }
 
 void handleWebOtaDoUpdate() {
-  Serial.printf("[OTA] Lade: %s\n", OTA_BIN_URL);
-
-  WiFiClientSecure client; client.setInsecure();
-  HTTPClient http;
-  http.begin(client, OTA_BIN_URL);
-  http.setTimeout(30000);
-  int code = http.GET();
-  Serial.printf("[OTA] HTTP rc=%d\n", code);
-  if (code != 200) {
-    http.end();
-    Serial.printf("[OTA] Fehler: HTTP %d\n", code);
-    server.send(502, "text/plain", "download error " + String(code));
-    return;
-  }
-
-  int contentLen = http.getSize();
-  WiFiClient* stream = http.getStreamPtr();
-  Serial.printf("[OTA] %d Bytes\n", contentLen);
-
-  if (!Update.begin(contentLen > 0 ? contentLen : UPDATE_SIZE_UNKNOWN)) {
-    http.end();
-    server.send(500, "text/plain", "begin failed");
-    return;
-  }
-  size_t written = Update.writeStream(*stream);
-  bool success = Update.end(true) && !Update.hasError();
-  http.end();
-
-  if (success) {
-    Serial.printf("[OTA] %u Bytes – Neustart\n", written);
+  String fehler = installiereUpdate();
+  if (fehler.length() == 0) {
     server.send(200, "text/plain", "ok");
-    delay(1500);
-    ESP.restart();
+    updateErfolgNeustart();
   } else {
-    Serial.printf("[OTA] Fehler: %s\n", Update.errorString());
-    server.send(500, "text/plain", Update.errorString());
+    server.send(500, "text/plain", fehler);
+    updateFehlerAnzeigen(fehler);
   }
 }
 
@@ -2907,6 +3066,106 @@ void aktualisiereDwdWarnBtn() {
   }
 }
 
+// ── Update-Hinweis: kleines Badge oben rechts auf Screen 1 + Popup ──
+static void cbUpdatePopupSchliessen(lv_event_t*) {
+  if (updatePopup) { lv_obj_del(updatePopup); updatePopup = nullptr; }
+}
+
+static void cbUpdatePopupInstallieren(lv_event_t*) {
+  if (updatePopup) { lv_obj_del(updatePopup); updatePopup = nullptr; }
+  otaStartAngefordert = true;
+}
+
+static void zeigeUpdatePopup() {
+  if (updatePopup || !objects.screen_1) return;
+
+  // Vollflaechiges, abgedunkeltes Overlay: faengt Touches ab, damit nichts darunter ausgeloest wird
+  updatePopup = lv_obj_create(objects.screen_1);
+  lv_obj_set_size(updatePopup, 480, 320);
+  lv_obj_set_pos(updatePopup, 0, 0);
+  lv_obj_set_style_bg_color(updatePopup, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(updatePopup, LV_OPA_60, 0);
+  lv_obj_set_style_border_width(updatePopup, 0, 0);
+  lv_obj_set_style_radius(updatePopup, 0, 0);
+  lv_obj_clear_flag(updatePopup, LV_OBJ_FLAG_SCROLLABLE);
+
+  lv_obj_t* karte = lv_obj_create(updatePopup);
+  lv_obj_set_size(karte, 420, 240);
+  lv_obj_align(karte, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_style_bg_color(karte, lv_color_hex(0x111111), 0);
+  lv_obj_set_style_bg_opa(karte, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_color(karte, lv_color_hex(0xffffff), 0);
+  lv_obj_set_style_border_width(karte, 2, 0);
+  lv_obj_set_style_radius(karte, 10, 0);
+  lv_obj_clear_flag(karte, LV_OBJ_FLAG_SCROLLABLE);
+
+  lv_obj_t* titel = lv_label_create(karte);
+  lv_label_set_text(titel, LV_SYMBOL_DOWNLOAD "  Update verfuegbar");
+  lv_obj_set_style_text_font(titel, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_color(titel, lv_color_hex(0xf5a623), 0);
+  lv_obj_align(titel, LV_ALIGN_TOP_MID, 0, 6);
+
+  String text = "Neue Version: " + updateNeueVersion + "\nInstalliert: " + String(FIRMWARE_VERSION) +
+                "\n\nDas Update dauert ca. 1 Minute. Das Geraet dabei nicht vom Strom trennen.";
+  lv_obj_t* lbl = lv_label_create(karte);
+  lv_label_set_long_mode(lbl, LV_LABEL_LONG_WRAP);
+  lv_obj_set_width(lbl, 380);
+  lv_label_set_text(lbl, text.c_str());
+  lv_obj_set_style_text_font(lbl, &lv_font_montserrat_16, 0);
+  lv_obj_set_style_text_color(lbl, lv_color_hex(0xeeeeee), 0);
+  lv_obj_align(lbl, LV_ALIGN_TOP_MID, 0, 44);
+
+  lv_obj_t* btnJa = lv_btn_create(karte);
+  lv_obj_set_size(btnJa, 190, 42);
+  lv_obj_align(btnJa, LV_ALIGN_BOTTOM_LEFT, 8, -6);
+  lv_obj_set_style_bg_color(btnJa, lv_color_hex(0x2e8b57), 0);
+  lv_obj_t* lblJa = lv_label_create(btnJa);
+  lv_label_set_text(lblJa, "Jetzt installieren");
+  lv_obj_set_style_text_color(lblJa, lv_color_hex(0xffffff), 0);
+  lv_obj_center(lblJa);
+  lv_obj_add_event_cb(btnJa, cbUpdatePopupInstallieren, LV_EVENT_CLICKED, nullptr);
+
+  lv_obj_t* btnNein = lv_btn_create(karte);
+  lv_obj_set_size(btnNein, 150, 42);
+  lv_obj_align(btnNein, LV_ALIGN_BOTTOM_RIGHT, -8, -6);
+  lv_obj_set_style_bg_color(btnNein, lv_color_hex(0x333333), 0);
+  lv_obj_set_style_border_color(btnNein, lv_color_hex(0xffffff), 0);
+  lv_obj_set_style_border_width(btnNein, 1, 0);
+  lv_obj_t* lblNein = lv_label_create(btnNein);
+  lv_label_set_text(lblNein, "Spaeter");
+  lv_obj_set_style_text_color(lblNein, lv_color_hex(0xffffff), 0);
+  lv_obj_center(lblNein);
+  lv_obj_add_event_cb(btnNein, cbUpdatePopupSchliessen, LV_EVENT_CLICKED, nullptr);
+}
+
+static void cbUpdateBadgeTap(lv_event_t*) { zeigeUpdatePopup(); }
+
+void erstelleUpdateBadge() {
+  if (updateBadge || !objects.screen_1) return;
+  // Oben rechts: dort ist auf Screen 1 frei (Datum endet bei x=328, die Info-Boxen beginnen bei y=44)
+  updateBadge = lv_btn_create(objects.screen_1);
+  lv_obj_set_size(updateBadge, 92, 32);
+  lv_obj_set_pos(updateBadge, 384, 6);
+  lv_obj_set_style_bg_color(updateBadge, lv_color_hex(0xf5a623), 0);
+  lv_obj_set_style_bg_opa(updateBadge, LV_OPA_COVER, 0);
+  lv_obj_set_style_radius(updateBadge, 16, 0);
+  lv_obj_set_style_border_width(updateBadge, 0, 0);
+  lv_obj_set_style_shadow_width(updateBadge, 0, 0);
+  lv_obj_t* lbl = lv_label_create(updateBadge);
+  lv_label_set_text(lbl, LV_SYMBOL_DOWNLOAD " Update");
+  lv_obj_set_style_text_color(lbl, lv_color_hex(0x1a1a1a), 0);
+  lv_obj_set_style_text_font(lbl, &lv_font_montserrat_14, 0);
+  lv_obj_center(lbl);
+  lv_obj_add_flag(updateBadge, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_add_event_cb(updateBadge, cbUpdateBadgeTap, LV_EVENT_CLICKED, nullptr);
+}
+
+void aktualisiereUpdateBadge() {
+  if (!updateBadge) return;
+  if (updateVerfuegbar) lv_obj_clear_flag(updateBadge, LV_OBJ_FLAG_HIDDEN);
+  else                  lv_obj_add_flag(updateBadge, LV_OBJ_FLAG_HIDDEN);
+}
+
 // ── Blinken auf Warnscreens (500 ms, Icon + Titel) ──────────
 static bool warnBlinkState = false;
 static void cbWarnBlink(lv_timer_t*) {
@@ -3255,6 +3514,7 @@ void setup() {
   aktualisiereUI();
   erstelleDwdWarnBtn();
   aktualisiereDwdWarnBtn();
+  erstelleUpdateBadge();
   // Kurz warten damit 100% sichtbar ist, dann Hauptscreen laden
   delay(400);
   // LVGL-Animation-Timing: 600ms lv_timer_handler() vor weiteren Calls (Lessons Learned!)
@@ -3329,6 +3589,20 @@ void loop() {
     letztesBioUpdate = millis();
     fetchBioWetter();
     aktualisiereUI();
+  }
+
+  // Update-Pruefung: 2 Min. nach dem Start, danach alle 6 Stunden (nach einem Fehler nach 1 Stunde)
+  if (millis() - letzterUpdateCheck >= updateCheckIntervall) {
+    pruefeUpdate();
+    aktualisiereUpdateBadge();
+  }
+
+  // Installation per Touch (Popup "Jetzt installieren"): hier statt im LVGL-Callback starten
+  if (otaStartAngefordert) {
+    otaStartAngefordert = false;
+    String fehler = installiereUpdate();
+    if (fehler.length() == 0) updateErfolgNeustart();
+    else                      updateFehlerAnzeigen(fehler);
   }
 
   // Warnbildschirme einmalig anzeigen wenn neue Warnung

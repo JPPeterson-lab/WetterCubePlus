@@ -2,6 +2,21 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.1.0 (2026-10-11)
+
+### New
+- **Automatic update check:** Two minutes after start and then every 6 hours (after an error, after 1 hour) the device checks whether a newer version has been released. If so, an orange "Update" icon appears in the top right corner of the main screen. The version numbers are compared (an older published version does not trigger an update)
+- **Update directly on the display:** Tapping the icon opens a window with the new and installed version and the buttons "Jetzt installieren" (install now) and "Später" (later)
+- **Notice screen with progress bar during the update:** While installing, the display shows "Do not disconnect the device from power" and a bar with a percentage. On success the device restarts; on an error the error is shown briefly and the device returns to the main screen (concept taken over from WetterCubePlus XL, without the flicker notice needed there)
+- **Web interface:** Confirmation dialog before the update starts and an explanatory note
+- **`/log`:** shows installed and latest known version as well as the time of the last check
+
+### Changed
+- The web interface now only offers an update if the published version is actually newer (previously: "different")
+- README: new section "Firmware Update (OTA)"
+
+---
+
 ## v1.0.2 (2026-09-30)
 
 ### Fixes

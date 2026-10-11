@@ -2,6 +2,21 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.1.0 (2026-10-11)
+
+### Neu
+- **Automatische Update-Prüfung:** 2 Minuten nach dem Start und danach alle 6 Stunden (nach einem Fehler nach 1 Stunde) prüft das Gerät, ob eine neuere Version veröffentlicht ist. Dann erscheint oben rechts auf dem Hauptscreen ein orangefarbenes „Update“-Symbol. Verglichen wird die Versionsnummer (eine ältere veröffentlichte Version löst kein Update aus)
+- **Update direkt am Display:** Antippen des Symbols öffnet ein Fenster mit neuer und installierter Version und den Knöpfen „Jetzt installieren“ und „Später“
+- **Hinweis-Screen mit Fortschrittsbalken beim Update:** Während der Installation zeigt das Display „Bitte das Gerät NICHT vom Strom trennen“ und einen Balken mit Prozentanzeige. Bei Erfolg folgt der Neustart, bei einem Fehler wird dieser kurz angezeigt und das Gerät kehrt zum Hauptscreen zurück (Konzept aus WetterCubePlus XL übernommen, ohne den dort nötigen Flacker-Hinweis)
+- **Web-Oberfläche:** Rückfrage vor dem Start des Updates und Hinweistext zum Ablauf
+- **`/log`:** zeigt installierte und neueste bekannte Version sowie den Zeitpunkt der letzten Prüfung
+
+### Geändert
+- Die Web-Oberfläche bietet ein Update nur noch an, wenn die veröffentlichte Version tatsächlich neuer ist (vorher: „anders“)
+- README: neuer Abschnitt „Firmware-Update (OTA)“
+
+---
+
 ## v1.0.2 (2026-09-30)
 
 ### Fixes
