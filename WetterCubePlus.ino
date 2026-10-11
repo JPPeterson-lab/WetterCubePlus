@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.2.1"
+#define FIRMWARE_VERSION "1.2.2"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -915,7 +915,9 @@ void handleApiAmpelSave() {
 // SOLANGE das Gerät noch läuft, ohne USB/Serial vor Ort zu brauchen.
 void handleApiLog() {
   String out = "WetterCubePlus Diagnose-Log (neueste zuerst)\n";
-  out += "Aktueller freier Heap: " + String(ESP.getFreeHeap()) + " Bytes\n";
+  out += "Aktueller freier Heap: " + String(ESP.getFreeHeap()) + " Bytes (tiefster Stand seit Start: " + String(ESP.getMinFreeHeap()) + ")\n";
+  out += "PSRAM: frei " + String(ESP.getFreePsram()) + " von " + String(ESP.getPsramSize()) +
+         " Bytes (tiefster Stand seit Start: " + String(ESP.getMinFreePsram()) + ", groesster Block " + String(ESP.getMaxAllocPsram()) + ")\n";
   out += "Uptime: " + String(millis() / 60000UL) + " Minuten\n";
   { lv_mem_monitor_t m; lv_mem_monitor(&m);
     out += "LVGL-Speicher: frei " + String((unsigned)m.free_size) + " von " + String((unsigned)m.total_size) +
@@ -3875,8 +3877,9 @@ void setup() {
   loadScreen(SCREEN_ID_SCREEN_1);
 
   { lv_mem_monitor_t m; lv_mem_monitor(&m);
-    logDiag("[Boot] LVGL-Speicher nach dem Start: frei %u von %u Bytes (%u %% belegt), Heap frei %u",
-            (unsigned)m.free_size, (unsigned)m.total_size, (unsigned)m.used_pct, (unsigned)ESP.getFreeHeap()); }
+    logDiag("[Boot] LVGL-Speicher nach dem Start: frei %u von %u Bytes (%u %% belegt), Heap frei %u, PSRAM frei %u von %u",
+            (unsigned)m.free_size, (unsigned)m.total_size, (unsigned)m.used_pct, (unsigned)ESP.getFreeHeap(),
+            (unsigned)ESP.getFreePsram(), (unsigned)ESP.getPsramSize()); }
 
   letztesTouchZeit    = millis();
   letztesDatenUpdate  = millis();

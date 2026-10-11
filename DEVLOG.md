@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-11 – v1.2.2
+
+### PSRAM-Werte im Log (Entscheidungsgrundlage für den LVGL-Pool im PSRAM)
+
+Idee: den LVGL-Pool (128 KB im knappen internen DRAM) per `LV_MEM_CUSTOM` in den 8-MB-PSRAM verlegen. Vorher soll sichtbar sein, wie viel PSRAM tatsächlich frei ist. `/log` zeigt jetzt `ESP.getFreePsram()`, `getPsramSize()`, `getMinFreePsram()` (Tiefststand), `getMaxAllocPsram()` und beim Heap `getMinFreeHeap()`. Die Tiefststände sind aussagekräftiger als der Momentanwert, weil kurzzeitige Spitzen (Radar-Dekodierung, Bubblebreaker-Canvas, TLS-Handshake) im laufenden Betrieb sonst unsichtbar bleiben.
+
+Hintergrund der Speicher-Diskussion: PSRAM wird bisher für die zwei LVGL-Zeichenpuffer (480×40, ca. 77 KB), das entpackte Radarbild, den Bubblebreaker-Canvas und große Downloads genutzt (`ps_malloc`); SPIFFS (ca. 8 MB) ist reserviert, wird im Code aber nirgends verwendet.
+
+---
+
 ## 2026-10-11 – v1.2.1
 
 ### Log: LVGL-Budget sichtbar, Zeitzone früh gesetzt

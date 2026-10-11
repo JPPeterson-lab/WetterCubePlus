@@ -2,6 +2,13 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.2.2 (2026-10-11)
+
+### Neu
+- **Speicher-Übersicht im `/log` erweitert:** Die Kopfzeile zeigt jetzt zusätzlich den freien **PSRAM** (frei von gesamt, tiefster Stand seit dem Start, größter freier Block) und beim Heap den tiefsten Stand seit dem Start. Der Eintrag nach dem Start enthält ebenfalls den PSRAM. Damit lässt sich mit Zahlen entscheiden, ob und wie viel Speicher für größere Funktionen frei gemacht werden muss
+
+---
+
 ## v1.2.1 (2026-10-11)
 
 ### Neu

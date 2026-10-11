@@ -2,6 +2,13 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.2.2 (2026-10-11)
+
+### New
+- **Memory overview in `/log` extended:** The header now also shows the free **PSRAM** (free of total, lowest level since start, largest free block) and, for the heap, the lowest level since start. The entry after startup also contains the PSRAM. This allows deciding with real numbers whether, and how much, memory needs to be freed for larger features
+
+---
+
 ## v1.2.1 (2026-10-11)
 
 ### New
