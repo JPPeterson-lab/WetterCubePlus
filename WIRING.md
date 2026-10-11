@@ -53,15 +53,22 @@ T_CLK/T_DIN/T_DO sind NICHT mit SCK/SDI/SDO verbunden!
 ```
 ESP32-S3 N16R8
 ┌─────────────────────┐
-│  GPIO 2  ────────── DC (Display)
-│  GPIO 12 ────────── MISO (Display + Touch)
-│  GPIO 13 ────────── MOSI (Display + Touch)
-│  GPIO 14 ────────── SCLK (Display + Touch)
+│  Display (SPI2)
+│  GPIO 2  ────────── DC   (Display)
+│  GPIO 12 ────────── MISO (Display)
+│  GPIO 13 ────────── MOSI (Display)
+│  GPIO 14 ────────── SCLK (Display)
 │  GPIO 15 ────────── CS   (Display)
 │  GPIO 16 ────────── RST  (Display)
-│  GPIO 17 ────────── BL   (Backlight)
-│  GPIO 18 ────────── IRQ  (Touch)
-│  GPIO 21 ────────── CS   (Touch)
+│  GPIO 17 ────────── BL   (Backlight, PWM)
+│
+│  Touch (eigener Bus SPI3)
+│  GPIO 6  ────────── T_CLK
+│  GPIO 7  ────────── T_DIN (MOSI)
+│  GPIO 8  ────────── T_DO  (MISO)
+│  GPIO 21 ────────── T_CS
+│  GPIO 18 ────────── T_IRQ (nicht genutzt, Polling)
+│
 │  3.3V    ────────── VCC  (Display + Touch)
 │  GND     ────────── GND  (alle)
 └─────────────────────┘

@@ -12,6 +12,8 @@ Dieses Projekt ist die Weiterentwicklung des [WetterCube](https://github.com/JPP
 
 Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [Deutschen Wetterdienst (DWD)](https://www.dwd.de) – kein API-Key nötig.
 
+> **📖 Wiki:** Im **[Wiki](https://github.com/JPPeterson-lab/WetterCubePlus/wiki)** steht alles noch einmal übersichtlich: Hardware und Verkabelung, Inbetriebnahme, Einstellungen, alle Screens, Updates, WetterAmpel, Fehlersuche und Entwicklung (zweisprachig). / Everything is laid out again in the **[wiki](https://github.com/JPPeterson-lab/WetterCubePlus/wiki)**: hardware and wiring, getting started, settings, all screens, updates, WetterAmpel, troubleshooting and development (bilingual).
+
 > **🇩🇪 Hinweis:** Dieses Projekt ist aktuell primär für Deutschland ausgelegt – Wetterwarnungen, Pollenflug und Biowetter stammen vom DWD und funktionieren nur innerhalb Deutschlands, zudem ist die Displaysprache Deutsch. Eine englischsprachige, weltweit nutzbare Version mit anderen Wetteranbietern ist angedacht, ein Termin dafür steht aber noch nicht fest. / **Note:** This project currently targets Germany specifically – weather warnings, pollen forecast and Biowetter (health-related weather effects) come from the German Weather Service (DWD) and only work within Germany, and the on-device UI language is German. An English, globally usable version with other weather providers is being considered, but no timeline exists yet.
 
 > **🟢 Stabil:** Vollversion, weitere Funktionen folgen in zukünftigen Updates. / Stable full release, more features will follow in future updates.
@@ -313,6 +315,8 @@ A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touc
 This project is the successor to [WetterCube](https://github.com/JPPeterson-lab/wettercube).
 
 Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) and the [German Weather Service (DWD)](https://www.dwd.de) – no API key required.
+
+> **📖 Wiki:** Everything is laid out again in the **[wiki](https://github.com/JPPeterson-lab/WetterCubePlus/wiki)**: hardware and wiring, getting started, settings, all screens, updates, WetterAmpel, troubleshooting and development (bilingual).
 
 ---
 
