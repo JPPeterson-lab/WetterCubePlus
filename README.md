@@ -18,9 +18,30 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 ---
 
-## 🎬 Demo
+## 📸 Fotos
 
-[<video src="https://github.com/user-attachments/assets/290eae98-c70c-4688-8af9-603fba5e0c50" /video>](https://github.com/user-attachments/assets/5859e79a-330e-4ba6-8e4d-4b23fa65cfb6)
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/01_hauptscreen.jpg" width="300" alt="Hauptscreen mit Update-Symbol"><br><sub>Hauptscreen mit Update-Symbol</sub></td>
+    <td align="center"><img src="screenshots/02_vorhersage.jpg" width="300" alt="4-Stunden-Vorhersage"><br><sub>4-Stunden-Vorhersage</sub></td>
+    <td align="center"><img src="screenshots/03_pollen.jpg" width="300" alt="Pollenflug, 3 Tage"><br><sub>Pollenflug, 3 Tage</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/04_regenradar.jpg" width="300" alt="Regenradar mit Windpfeil"><br><sub>Regenradar mit Windpfeil</sub></td>
+    <td align="center"><img src="screenshots/05_sonne_mond.jpg" width="300" alt="Sonne, Mond, UV-Index"><br><sub>Sonne, Mond, UV-Index</sub></td>
+    <td align="center"><img src="screenshots/06_luftqualitaet.jpg" width="300" alt="Luftqualität"><br><sub>Luftqualität</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/07_biowetter.jpg" width="300" alt="Biowetter"><br><sub>Biowetter</sub></td>
+    <td align="center"><img src="screenshots/08_gesundheit.jpg" width="300" alt="Gesundheitsübersicht"><br><sub>Gesundheitsübersicht</sub></td>
+    <td align="center"><img src="screenshots/09_update_verfuegbar.jpg" width="300" alt="Update verfügbar"><br><sub>Update verfügbar</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/10_update_installation.jpg" width="300" alt="Update-Installation"><br><sub>Update-Installation</sub></td>
+    <td align="center"><img src="screenshots/11_bubblebreaker_start.jpg" width="300" alt="Bubblebreaker: Start"><br><sub>Bubblebreaker: Start</sub></td>
+    <td align="center"><img src="screenshots/12_bubblebreaker_spiel.jpg" width="300" alt="Bubblebreaker: Spiel"><br><sub>Bubblebreaker: Spiel</sub></td>
+  </tr>
+</table>
 
 ---
 
@@ -29,7 +50,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | | Funktion | Details |
 |---|---|---|
 | 🌡️ | **Wetterdaten** | Temperatur (Ist & gefühlt), Luftfeuchtigkeit, Luftdruck, UV-Index, Sonnenauf-/-untergang |
-| 🌤️ | **Wetter-Icons** | 11 Icons mit Tag/Nacht-Umschaltung – klar, teilweise bewölkt, bedeckt, Nebel, Regen, Schneeregen, Schnee, Gewitter |
+| 🌤️ | **Wetter-Icons** | 15 Icons mit Tag/Nacht-Umschaltung – klar, teilweise bewölkt, bedeckt, Nebel/Dunst, Regen, Regenschauer, Schneeregen, Schnee, Schneeschauer, Gewitter |
 | 💨 | **Wind** | Geschwindigkeit & Richtung |
 | 🕐 | **4-Stunden-Vorhersage** | Icons, Temperatur, Wind pro Slot |
 | 🌿 | **Pollenflug** | Top-3 Allergene stündlich (Open-Meteo), 3-Tage-Forecast für 8 Allergene (DWD) |
@@ -292,12 +313,39 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 
 ---
 
+## 📸 Photos
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/01_hauptscreen.jpg" width="300" alt="Main screen with update icon"><br><sub>Main screen with update icon</sub></td>
+    <td align="center"><img src="screenshots/02_vorhersage.jpg" width="300" alt="4-hour forecast"><br><sub>4-hour forecast</sub></td>
+    <td align="center"><img src="screenshots/03_pollen.jpg" width="300" alt="Pollen forecast, 3 days"><br><sub>Pollen forecast, 3 days</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/04_regenradar.jpg" width="300" alt="Rain radar with wind arrow"><br><sub>Rain radar with wind arrow</sub></td>
+    <td align="center"><img src="screenshots/05_sonne_mond.jpg" width="300" alt="Sun, moon, UV index"><br><sub>Sun, moon, UV index</sub></td>
+    <td align="center"><img src="screenshots/06_luftqualitaet.jpg" width="300" alt="Air quality"><br><sub>Air quality</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/07_biowetter.jpg" width="300" alt="Biowetter (health weather)"><br><sub>Biowetter (health weather)</sub></td>
+    <td align="center"><img src="screenshots/08_gesundheit.jpg" width="300" alt="Health overview"><br><sub>Health overview</sub></td>
+    <td align="center"><img src="screenshots/09_update_verfuegbar.jpg" width="300" alt="Update available"><br><sub>Update available</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/10_update_installation.jpg" width="300" alt="Installing an update"><br><sub>Installing an update</sub></td>
+    <td align="center"><img src="screenshots/11_bubblebreaker_start.jpg" width="300" alt="Bubblebreaker: start"><br><sub>Bubblebreaker: start</sub></td>
+    <td align="center"><img src="screenshots/12_bubblebreaker_spiel.jpg" width="300" alt="Bubblebreaker: game"><br><sub>Bubblebreaker: game</sub></td>
+  </tr>
+</table>
+
+---
+
 ## ✨ Features
 
 | | Feature | Details |
 |---|---|---|
 | 🌡️ | **Weather data** | Temperature (actual & feels-like), humidity, air pressure, UV index, sunrise/sunset |
-| 🌤️ | **Weather icons** | 11 icons with automatic day/night switching – clear, partly cloudy, overcast, fog, rain, sleet, snow, thunderstorm |
+| 🌤️ | **Weather icons** | 15 icons with automatic day/night switching – clear, partly cloudy, overcast, fog/mist, rain, rain showers, sleet, snow, snow showers, thunderstorm |
 | 💨 | **Wind** | Speed & direction |
 | 🕐 | **4-hour forecast** | Icons, temperature, and wind per time slot |
 | 🌿 | **Pollen** | Top-3 allergens hourly (Open-Meteo), 3-day forecast for 8 allergens (DWD) |
