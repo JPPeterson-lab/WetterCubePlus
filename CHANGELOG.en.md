@@ -2,6 +2,13 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.1.1 (2026-10-11)
+
+### Internal
+- **Test release for the update function:** no functional changes. Used to test the automatic update check, the update icon, the update window and the progress bar from v1.1.0 live on the device (device with 1.1.0 → update to 1.1.1)
+
+---
+
 ## v1.1.0 (2026-10-11)
 
 ### New

@@ -2,6 +2,13 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.1.1 (2026-10-11)
+
+### Intern
+- **Testrelease für die Update-Funktion:** keine funktionalen Änderungen. Dient dazu, die automatische Update-Prüfung, das Update-Symbol, das Update-Fenster und den Fortschrittsbalken aus v1.1.0 am Gerät live zu testen (Gerät mit 1.1.0 → Update auf 1.1.1)
+
+---
+
 ## v1.1.0 (2026-10-11)
 
 ### Neu

@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-10-11 – v1.1.1
+
+### Testrelease für den Live-Test der Update-Funktion
+
+v1.1.0 brachte Update-Prüfung, Badge, Popup und Fortschrittsbalken, die sich erst testen lassen, wenn eine neuere Version veröffentlicht ist. v1.1.1 enthält deshalb keine Funktionsänderung, nur die Versionsnummer. Ablauf: Gerät mit 1.1.0 → Badge erscheint spätestens 2 Min. nach einem Neustart (sofort nach „Auf Updates prüfen“ in der WebUI) → Antippen → „Jetzt installieren“ → Fortschrittsbalken → Neustart mit 1.1.1. Dabei besonders beobachten: ob der Balken während des Flash-Schreibens sauber läuft und ob der Hinweis-Screen auch bei einem Abbruch (z. B. WLAN weg) zum Hauptscreen zurückführt.
+
+---
+
 ## 2026-10-11 – v1.1.0
 
 ### Update-Fenster aus dem XL übernommen + automatische Update-Prüfung
