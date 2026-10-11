@@ -2,6 +2,17 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.1.3 (2026-10-11)
+
+### Neu
+- **Diagnose beim Start:** Das `/log` zeigt jetzt „Letzter Neustart“ (Strom angeschlossen, Software-Neustart, Absturz, Watchdog oder **Brownout**/Spannungseinbruch) und „WLAN beim Start“ (Dauer und Signalstärke oder der Fehlergrund, z. B. Netzwerk nicht gefunden oder Passwort). Das hilft zu erkennen, ob ein Aussetzer am Netzteil oder am WLAN lag. Das Log ist auch im Einrichtungsmodus erreichbar (`http://192.168.4.1/log`)
+
+### Geändert
+- **WLAN-Verbindung beim Start robuster:** zwei Versuche (je 15 Sekunden) statt einem, mit neuem Verbindungsaufbau dazwischen
+- **Einrichtungsmodus verbindet sich selbst wieder:** Nach einer fehlgeschlagenen Verbindung versucht der Cube alle 60 Sekunden erneut, sich mit den gespeicherten Zugangsdaten zu verbinden, und startet bei Erfolg neu. Das gilt nicht, solange jemand per Handy am Einrichtungsportal hängt, und nicht, wenn noch nie ein WLAN eingerichtet wurde. Anlass: Nach dem Trennen vom Strom blieb der Cube einmal im Einrichtungsmodus stehen, obwohl die Zugangsdaten gespeichert waren
+
+---
+
 ## v1.1.2 (2026-10-11)
 
 ### Geändert

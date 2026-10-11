@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-10-11 – v1.1.3
+
+### Cube blieb nach dem Trennen vom Strom im Einrichtungsmodus
+
+Der Nutzer trennte den Cube kurz vom Strom; danach wollte er neu eingerichtet werden und fand das WLAN nicht. Nach einem erneuten Neustart lief er ohne neue Eingabe, die Zugangsdaten waren also nie gelöscht (Fall „Verbindung fehlgeschlagen“, nicht „Bitte konfigurieren“). Code-Prüfung: kein `clear()`/`remove()`/`nvs_flash_erase`, seit v1.0.0 keine Änderung an Konfiguration oder WLAN-Start, ein OTA schreibt nur in den anderen App-Slot und lässt die NVS-Partition (0x9000) unberührt. Was Einstellungen tatsächlich löscht: komplettes Löschen des Flashs (USB mit „Erase All Flash“, Web-Installer mit `new_install_prompt_erase`).
+
+Plausible Ursachen: schwaches Netzteil oder Kabel (WLAN-Sendespitzen, Brownout beim Kaltstart) oder Router beim Start nicht bereit. Beweisen ließ sich nichts, weil das RAM-Log beim Neustart verschwindet. Deshalb: (1) `esp_reset_reason()` und der WLAN-Fehlercode (`ARDUINO_EVENT_WIFI_STA_DISCONNECTED`, `reason`) landen im `/log` (Kopfzeilen „Letzter Neustart“ und „WLAN beim Start“, bleiben auch nach vielen Log-Zeilen sichtbar); (2) `/log` ist im Portal erreichbar; (3) zwei Verbindungsversuche à 15 s statt einem; (4) `portalWlanRetry()` verbindet im Einrichtungsmodus alle 60 s erneut und startet bei Erfolg neu (`WIFI_AP_STA` nur für den Versuch, `setAutoReconnect(false)` im Portal, kein Versuch solange `softAPgetStationNum() > 0`).
+
+**Bei Wiederholung:** `/log` aufrufen (im Normalbetrieb `wettercubeplus.local/log`, im Einrichtungsmodus `192.168.4.1/log`) und die Zeilen „Letzter Neustart“ und „WLAN beim Start“ ansehen. „BROWNOUT“ spricht für Netzteil/Kabel, „Netzwerk nicht gefunden“ für Router/Reichweite/Band, „Strom angeschlossen“ ohne Fehler für einen normalen Kaltstart.
+
+---
+
 ## 2026-10-11 – v1.1.2
 
 ### Versionsanzeige vereinheitlicht, Skript `bump_version.sh` erweitert

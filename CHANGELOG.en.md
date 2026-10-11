@@ -2,6 +2,17 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.1.3 (2026-10-11)
+
+### New
+- **Diagnostics at startup:** `/log` now shows "last restart" (power connected, software restart, crash, watchdog or **brownout**/voltage drop) and "Wi-Fi at startup" (duration and signal strength, or the failure reason, e.g. network not found or password). This helps to tell whether a glitch was caused by the power supply or by Wi-Fi. The log is also reachable in setup mode (`http://192.168.4.1/log`)
+
+### Changed
+- **More robust Wi-Fi connection at startup:** two attempts (15 seconds each) instead of one, with a fresh connection attempt in between
+- **Setup mode reconnects by itself:** After a failed connection the device retries every 60 seconds with the saved credentials and restarts on success. This does not happen while someone is connected to the setup portal with a phone, nor if no Wi-Fi has ever been set up. Reason: after being disconnected from power, the device once stayed in setup mode although the credentials were saved
+
+---
+
 ## v1.1.2 (2026-10-11)
 
 ### Changed

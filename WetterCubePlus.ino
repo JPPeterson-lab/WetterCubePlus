@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.1.2"
+#define FIRMWARE_VERSION "1.1.3"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -367,6 +367,44 @@ void logDiag(const char* fmt, ...) {
 
   Serial.println(slot);  // weiterhin auch auf Serial, falls doch mal USB dran ist
 }
+
+// Start-Diagnose: warum wurde neu gestartet, wie lief die WLAN-Verbindung (Anzeige im /log)
+String          resetGrundText = "";
+String          wifiStartInfo  = "";
+volatile uint8_t wifiLetzterGrund = 0;   // letzter Disconnect-Grund des WLAN-Treibers
+
+static const char* resetGrundName(esp_reset_reason_t r) {
+  switch (r) {
+    case ESP_RST_POWERON:   return "Strom angeschlossen";
+    case ESP_RST_SW:        return "Software-Neustart (z. B. nach Update)";
+    case ESP_RST_PANIC:     return "ABSTURZ (Panic)";
+    case ESP_RST_INT_WDT:
+    case ESP_RST_TASK_WDT:
+    case ESP_RST_WDT:       return "ABSTURZ (Watchdog)";
+    case ESP_RST_BROWNOUT:  return "BROWNOUT (Spannungseinbruch, Netzteil/Kabel pruefen)";
+    case ESP_RST_EXT:       return "Reset-Pin";
+    case ESP_RST_DEEPSLEEP: return "Deep-Sleep";
+    default:                return "unbekannt";
+  }
+}
+
+static const char* wifiGrundName(uint8_t g) {
+  switch (g) {
+    case 0:   return "kein Fehlercode (Router antwortet nicht)";
+    case 2:   return "Authentifizierung abgelaufen";
+    case 15:  return "4-Wege-Handshake Timeout (Passwort?)";
+    case 200: return "Beacon-Timeout";
+    case 201: return "Netzwerk nicht gefunden (SSID/Reichweite/2,4 GHz?)";
+    case 202: return "Authentifizierung fehlgeschlagen (Passwort?)";
+    case 203: return "Assoziierung fehlgeschlagen";
+    case 205: return "Verbindung fehlgeschlagen";
+    default:  return "anderer Grund";
+  }
+}
+
+static void wifiEventCb(arduino_event_id_t event, arduino_event_info_t info) {
+  if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) wifiLetzterGrund = info.wifi_sta_disconnected.reason;
+}
 unsigned long letztesPollenUpdate = 0;
 unsigned long letztesWarnUpdate   = 0;
 unsigned long letztesBioUpdate    = 0;
@@ -656,15 +694,19 @@ void handlePortalSave() {
   ESP.restart();
 }
 
+void handleApiLog();
+
 void startePortal() {
   portal_modus = true;
   WiFi.disconnect(true); delay(100);
+  WiFi.setAutoReconnect(false);   // kein Hintergrund-Scan, der das Portal-WLAN stoert
   WiFi.mode(WIFI_AP);
   WiFi.softAP("WetterCubePlus-Setup");
   dnsServer.start(53, "*", WiFi.softAPIP());
 
   server.on("/",          HTTP_GET,  handlePortalRoot);
   server.on("/speichern", HTTP_POST, handlePortalSave);
+  server.on("/log",       HTTP_GET,  handleApiLog);   // Diagnose auch im Einrichtungsmodus: http://192.168.4.1/log
   server.onNotFound([]() { server.sendHeader("Location", "/"); server.send(302); });
   server.begin();
 
@@ -672,6 +714,35 @@ void startePortal() {
   zeigeBootScreen("WLAN: WetterCubePlus-Setup");
   setzeBootFortschritt(0);
   Serial.println("[Portal] AP gestartet: WetterCubePlus-Setup");
+}
+
+// Einrichtungsmodus nach fehlgeschlagener Verbindung: alle 60 s erneut mit den gespeicherten Daten
+// versuchen (z. B. Router war beim Start noch nicht bereit) und bei Erfolg neu starten.
+// Nicht stoeren, solange jemand per Handy am Portal haengt.
+static unsigned long letzterPortalRetry = 0;
+static void portalWlanRetry() {
+  if (cfg.ssid.isEmpty()) return;                       // nie eingerichtet: es gibt nichts zu verbinden
+  if (WiFi.softAPgetStationNum() > 0) return;           // jemand konfiguriert gerade
+  if (millis() - letzterPortalRetry < 60000UL) return;
+  letzterPortalRetry = millis();
+
+  WiFi.mode(WIFI_AP_STA);
+  wifiLetzterGrund = 0;
+  WiFi.begin(cfg.ssid.c_str(), cfg.pass.c_str());
+  uint32_t t0 = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - t0 < 12000) {
+    dnsServer.processNextRequest();
+    server.handleClient();
+    lv_timer_handler();
+    delay(20);
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    logDiag("[WLAN] Verbindung im Einrichtungsmodus hergestellt, Neustart");
+    delay(500);
+    ESP.restart();
+  }
+  logDiag("[WLAN] Wiederholung fehlgeschlagen: %s", wifiGrundName(wifiLetzterGrund));
+  WiFi.disconnect(false, false);   // STA ruhigstellen, Portal-AP bleibt
 }
 
 // ============================================================
@@ -846,6 +917,8 @@ void handleApiLog() {
   String out = "WetterCubePlus Diagnose-Log (neueste zuerst)\n";
   out += "Aktueller freier Heap: " + String(ESP.getFreeHeap()) + " Bytes\n";
   out += "Uptime: " + String(millis() / 60000UL) + " Minuten\n";
+  out += "Letzter Neustart: " + (resetGrundText.length() ? resetGrundText : String("-")) + "\n";
+  out += "WLAN beim Start: " + (wifiStartInfo.length() ? wifiStartInfo : String("-")) + "\n";
   out += "Update: installiert " + String(FIRMWARE_VERSION) + ", neueste bekannte " +
          (updateNeueVersion.length() ? updateNeueVersion : String("-")) +
          (updateVerfuegbar ? " (Update verfuegbar)" : "") + ", letzte Pruefung " +
@@ -3280,6 +3353,8 @@ static void cbWarnTap(lv_event_t* e) {
 void setup() {
   Serial.begin(115200);
   Serial.println("\n[WetterCubePlus] Start v" FIRMWARE_VERSION);
+  resetGrundText = resetGrundName(esp_reset_reason());
+  logDiag("[Boot] v%s, Neustart-Grund: %s", FIRMWARE_VERSION, resetGrundText.c_str());
 
   // Konfiguration laden
   ladeCfg();
@@ -3452,10 +3527,27 @@ void setup() {
   zeigeBootScreen("Verbinde mit " + cfg.ssid + "...");
   setzeBootFortschritt(10);
   WiFi.mode(WIFI_STA);
-  WiFi.begin(cfg.ssid.c_str(), cfg.pass.c_str());
+  WiFi.onEvent(wifiEventCb, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+  // Zwei Versuche (je 15 s): ein neuer WiFi.begin() hilft, wenn der Router beim ersten Mal noch nicht bereit war
   uint32_t t0 = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - t0 < 15000) {
-    lvgl_flush(100);
+  for (int versuch = 1; versuch <= 2 && WiFi.status() != WL_CONNECTED; versuch++) {
+    wifiLetzterGrund = 0;
+    WiFi.begin(cfg.ssid.c_str(), cfg.pass.c_str());
+    uint32_t tv = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - tv < 15000) {
+      lvgl_flush(100);
+    }
+    if (WiFi.status() != WL_CONNECTED) {
+      logDiag("[WLAN] Versuch %d fehlgeschlagen: %s", versuch, wifiGrundName(wifiLetzterGrund));
+      if (versuch < 2) { WiFi.disconnect(); delay(300); }
+    }
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    wifiStartInfo = "verbunden nach " + String((millis() - t0) / 1000.0, 1) + " s, Signal " + String(WiFi.RSSI()) + " dBm";
+    logDiag("[WLAN] %s", wifiStartInfo.c_str());
+  } else {
+    wifiStartInfo = String("FEHLGESCHLAGEN: ") + wifiGrundName(wifiLetzterGrund);
+    logDiag("[WLAN] Verbindung beim Start fehlgeschlagen, Einrichtungsmodus (Wiederholung alle 60 s)");
   }
 
   if (WiFi.status() != WL_CONNECTED) {
@@ -3542,6 +3634,7 @@ void loop() {
   if (portal_modus) {
     dnsServer.processNextRequest();
     server.handleClient();
+    portalWlanRetry();
     return;
   }
 
