@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-11 – v1.1.2
+
+### Versionsanzeige vereinheitlicht, Skript `bump_version.sh` erweitert
+
+Der Nutzer wollte den OTA-Test (v1.1.0 → v1.1.1) wiederholen und die Version überall gleich angezeigt haben. Die Version steht an diesen Stellen: `FIRMWARE_VERSION` in der `.ino` (daraus kommen die Anzeige im Menü-Screen über `labelversion` und die WebUI über `%VERSION%`), `docs/version.json` (vom Gerät für die Update-Prüfung gelesen), `docs/manifest.json`, das Badge in `docs/index.html` und die zwei Version-Badges in der README. Ein Ausreißer war der README-Hinweis „Stabiles Release (v1.0.0)“; er nennt jetzt keine Nummer mehr.
+
+**`bump_version.sh`** (existierte schon mit dem Aufruf `<alt> <neu>`, beim ersten Anlauf versehentlich überschrieben und dann abwärtskompatibel gemacht) braucht jetzt nur noch `X.Y.Z`, setzt alle Stellen auf einmal und prüft danach die Konsistenz; **`--check`** prüft nur. Das früher erwähnte `deploy_and_release.sh` gibt es nicht (mehr). Die Prüfung vergleicht zusätzlich die Versionszeichenkette im exportierten `docs/firmware/firmware.bin` (`[WetterCubePlus] Start vX.Y.Z`). Das fängt den Fall ab, dass in der IDE nicht neu exportiert wurde und eine alte Binary mit neuer `version.json` veröffentlicht würde (dann würde das Gerät dauerhaft ein Update anbieten, das nur die alte Version lädt; im XL-Projekt ist genau das schon einmal passiert). Beim Setzen per `sed` darauf achten, nicht pauschal zu ersetzen: im Code steht auch `version=1.1.0` (WFS) und `VERSION=1.1.1` (WMS).
+
+---
+
 ## 2026-10-11 – v1.1.1
 
 ### Testrelease für den Live-Test der Update-Funktion

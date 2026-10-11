@@ -1,7 +1,7 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.1.1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.1.2-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -14,7 +14,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 > **🇩🇪 Hinweis:** Dieses Projekt ist aktuell primär für Deutschland ausgelegt – Wetterwarnungen, Pollenflug und Biowetter stammen vom DWD und funktionieren nur innerhalb Deutschlands, zudem ist die Displaysprache Deutsch. Eine englischsprachige, weltweit nutzbare Version mit anderen Wetteranbietern ist angedacht, ein Termin dafür steht aber noch nicht fest. / **Note:** This project currently targets Germany specifically – weather warnings, pollen forecast and Biowetter (health-related weather effects) come from the German Weather Service (DWD) and only work within Germany, and the on-device UI language is German. An English, globally usable version with other weather providers is being considered, but no timeline exists yet.
 
-> **🟢 Stabiles Release (v1.0.0):** Der erste offizielle Vollversion-Release. Weitere Funktionen folgen in zukünftigen Updates. / First official stable release. More features will follow in future updates.
+> **🟢 Stabil:** Vollversion, weitere Funktionen folgen in zukünftigen Updates. / Stable full release, more features will follow in future updates.
 
 ---
 
@@ -279,7 +279,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.1.1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.1.2-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)

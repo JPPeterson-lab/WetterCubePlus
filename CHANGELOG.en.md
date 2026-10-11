@@ -2,6 +2,17 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.1.2 (2026-10-11)
+
+### Changed
+- **Version display consistent everywhere:** The README note no longer states a fixed version number (it is shown in the version badge), so it cannot become outdated after a release
+
+### Internal
+- **Second test run for the update function** (device with 1.1.1 → update to 1.1.2)
+- Script `bump_version.sh` extended: only needs the new version now (the old call with old and new version still works), sets it in all files (firmware, `version.json`, `manifest.json`, web page, README badges) and then checks that the exported binary contains the same version (`--check` only checks)
+
+---
+
 ## v1.1.1 (2026-10-11)
 
 ### Internal

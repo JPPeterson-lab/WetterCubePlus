@@ -2,6 +2,17 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.1.2 (2026-10-11)
+
+### Geändert
+- **Versionsanzeige überall einheitlich:** Der README-Hinweis nennt keine feste Versionsnummer mehr (die steht im Version-Badge), sodass sie nach einem Release nicht mehr veralten kann
+
+### Intern
+- **Zweiter Testlauf für die Update-Funktion** (Gerät mit 1.1.1 → Update auf 1.1.2)
+- Skript `bump_version.sh` erweitert: braucht nur noch die neue Version (der alte Aufruf mit alter und neuer Version geht weiter), setzt sie in allen Dateien (Firmware, `version.json`, `manifest.json`, Webseite, README-Badges) und prüft anschließend, ob das exportierte Binary dieselbe Version enthält (`--check` prüft nur)
+
+---
+
 ## v1.1.1 (2026-10-11)
 
 ### Intern
