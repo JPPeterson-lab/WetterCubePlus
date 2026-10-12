@@ -97,8 +97,6 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
 
 <div class="card">
   <h2>Warnungen</h2>
-  <div class="row"><span>Regenwarnung</span>
-    <label class="toggle"><input type="checkbox" name="regen_warn" %RW%><span class="slider"></span></label></div>
   <div class="row"><span>Pollenwarnung</span>
     <label class="toggle"><input type="checkbox" name="pollen_warn" %PW%><span class="slider"></span></label></div>
   <div class="row"><span>DWD-Wetterwarnungen</span>

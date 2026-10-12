@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.6.0
+
+### Regenwarnung entfernt, Nowcast als Kachel
+
+Die alte Regenwarnung (Wettercode ≥ 51 in der aktuellen oder nächsten Stunde → Vollbild-Warnscreen, einmal je Regenereignis, per Tippen bestätigen) ist durch den Nowcast überflüssig geworden. Entfernt wurden im Code: `cfg.regen_warn` samt Preferences-Schlüssel (der alte Eintrag `regen_warn` bleibt unbenutzt im NVS) und Sicherung, `wetter.regen_warnung`, `regenWarn*`-Variablen, die Auswertung in `aktualisiereUI()`, der Menü-Schalter-Callback, der Auslöser in `loop()`, der Rot-Blinktakt und der Tippen-Zweig für `screenwarnung`, der WebUI-Schalter. `zeigeWarnPopup()` hat den Parameter `istRegen` verloren, das Popup bestätigt nur noch die Pollenwarnung.
+
+In PicoPixel (per MCP) gelöscht: Screen `ScreenWarnung` mit seinen vier Labels sowie `Regenswitch` und `LabelRegenChange` im Menü; die Zeilen Pollen und DWD rücken nach oben. Das Regen-Icon (Wettersymbol `rain`) bleibt im Lagerscreen als `ImageWarnRegen`, weil `wmoZuImage()` es braucht. `deploy_ui.sh` prüft die entfernten Objekte nicht mehr.
+
+Der Nowcast-Hinweis ist eine Kachel: Hintergrund 0x0A5CE0, weiße Schrift, Radius 10, Innenabstand 5/6, Höhe passt sich dem Text an. Gesetzt wird das in `aktualisiereNowcast()`, nicht in PicoPixel, weil das Label sonst auch im ausgeblendeten Zustand Platz und Farbe reserviert hätte.
+
+---
+
 ## 2026-10-12 – v1.5.2
 
 ### 503 beim ersten Wetterabruf nach dem Start

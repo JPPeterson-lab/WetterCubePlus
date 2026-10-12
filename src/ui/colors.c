@@ -327,8 +327,6 @@ void change_color_theme(uint32_t theme_index) {
     lv_obj_set_style_text_opa(objects.labeldwdchange, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(objects.labeltheme, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(objects.labeltheme, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(objects.labelregenchange, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(objects.labelregenchange, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(objects.labelpollenchange, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(objects.labelpollenchange, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(objects.labellightchangevalue, lv_color_hex(theme_colors[theme_index][THEME_COLOR_HIGHLITE_2]), LV_PART_INDICATOR | LV_STATE_DEFAULT);
@@ -577,7 +575,6 @@ void change_color_theme(uint32_t theme_index) {
 const uint32_t common_000000 = 0x000000;
 const uint32_t common_0a5ce0 = 0x0a5ce0;
 const uint32_t common_87ceeb = 0x87ceeb;
-const uint32_t common_cc0000 = 0xcc0000;
 const uint32_t common_d67a28 = 0xd67a28;
 const uint32_t common_e9b117 = 0xe9b117;
 const uint32_t common_ffffff = 0xffffff;

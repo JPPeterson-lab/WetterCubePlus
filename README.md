@@ -1,7 +1,7 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.5.2-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.6.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -56,7 +56,6 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 💨 | **Wind** | Geschwindigkeit & Richtung |
 | 🕐 | **4-Stunden-Vorhersage** | Icons, Temperatur, Wind pro Slot |
 | 🌿 | **Pollenflug** | Top-3 Allergene stündlich (Open-Meteo), 3-Tage-Forecast für 8 Allergene (DWD) |
-| 🌧️ | **Regenwarnung** | Blinkendes Warn-Screen 60 Min. vor erwartetem Regen |
 | ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen als farbige Karten (DWD-Warnstufe), tippbar für Details; blinkender Indikator auf dem Hauptscreen |
 | 🚦 | **Ampel-Addon API** | HTTP-JSON-Endpunkt `/api/ampel` für ESP32-C3 Hardware-Addon: Temperatur, Ampelfarbe, DWD-Warnstatus, konfigurierbare Schwellwerte; Modus wählbar (Temperatur, Pollen, Luftqualität) |
 | 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert, mit Standort-Marker |
@@ -69,9 +68,9 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🔄 | **OTA-Update** | Firmware-Update per WebUI oder direkt am Display, mit Fortschrittsbalken; das Gerät prüft selbst regelmäßig auf neue Versionen und zeigt dann ein Update-Symbol |
 | 👆 | **Touch-Kalibrierung** | Automatisch beim Erststart, jederzeit neu auslösbar |
 | 🌙 | **Dark Mode** | Vollständiges dunkles Farbthema für alle Screens, Hintergründe und Bedienelemente – Umschalter direkt im Menü-Screen |
-| 🎛️ | **Menü-Screen** | Helligkeit, Regen-/Pollenwarnung und DWD-Warnungen direkt am Gerät ein-/ausschalten – kein WebUI nötig |
+| 🎛️ | **Menü-Screen** | Helligkeit, Pollenwarnung und DWD-Warnungen direkt am Gerät ein-/ausschalten – kein WebUI nötig |
 | 🎮 | **Mini-Spiel: Bubblebreaker** | Bunte Bubble-Puzzle direkt auf dem Cube – zusammenhängende Farbgruppen antippen und auflösen, Undo für den letzten Zug, wählbar zwischen Modus "Normal" und "Laufend" (Feld füllt sich automatisch nach), persistente Bestenliste (Top 5); Start über den Menü-Screen |
-| 🌧️ | **Regen-Nowcast** | Hauptscreen zeigt oben links, wann es regnet („Regen in 25 Min.“, „Regen noch 10 Min.“ oder „Es regnet“), Daten im 15-Minuten-Raster von Open-Meteo |
+| 🌧️ | **Regen-Nowcast** | Hauptscreen zeigt oben links in einer blauen Kachel, wann es regnet („Regen in 25 Min.“, „Regen noch 10 Min.“ oder „Es regnet“), Daten im 15-Minuten-Raster von Open-Meteo; ersetzt die frühere Regenwarnung |
 | 🤧 | **Meine Allergene** | In der WebUI die eigenen Allergene wählen; Pollenwarnung und Gesundheitsscreen berücksichtigen nur diese |
 | 💾 | **Einstellungen sichern** | Alle Einstellungen (ohne WLAN-Passwort) als Datei herunterladen und wieder einspielen |
 | 🧮 | **Taschenrechner** | Bunter Taschenrechner mit Grundrechenarten, Prozent, Vorzeichen-Wechsel und Rückschritt; Start über den Menü-Screen |
@@ -92,7 +91,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 8 | **DWD Biowetter (Heute)** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Befinden, Blutdruck, Rheuma, Asthma, Wärme) – Heute Vm./Nm. |
 | 9 | **DWD Biowetter (Morgen)** | Wie Screen 8, für Morgen Vm./Nm. und Übermorgen Vm. |
 | 10 | **Gesundheitsscreen** | Top-4 Pollen (Tageswert), 4 wählbare Biowetter-Kategorien, AQI & UV-Index |
-| 11 | **Warnscreen** | Blinkendes Warn-Screen bei Regen- oder Pollenwarnung (Antippen für Details) |
+| 11 | **Warnscreen** | Blinkendes Warn-Screen bei Pollenwarnung (Antippen für Details) |
 | 12 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
 
 ---
@@ -131,8 +130,7 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 | **Display** | Helligkeit: 10–100 % (Slider, sofort aktiv) |
 | | Dimm-Timeout: Aus / 1 / 3 / 5 / 10 Minuten |
 | | Nachtmodus: Von/Bis (15-Min-Schritte), eigene Nacht-Helligkeit 0–50 % |
-| **Warnungen** | Regenwarnung ein/aus |
-| | Pollenwarnung ein/aus |
+| **Warnungen** | Pollenwarnung ein/aus |
 | | Pollen-Schwellwert: Gering / Mittel / Hoch / Sehr hoch |
 | **DWD-Region** | Bundesland-Auswahl für Wetterwarnungen & Radarkarte |
 | **Biowetter** | DWD-Zone (A–J) für Biowetter-Daten |
@@ -310,7 +308,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.5.2-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.6.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -361,7 +359,6 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 💨 | **Wind** | Speed & direction |
 | 🕐 | **4-hour forecast** | Icons, temperature, and wind per time slot |
 | 🌿 | **Pollen** | Top-3 allergens hourly (Open-Meteo), 3-day forecast for 8 allergens (DWD) |
-| 🌧️ | **Rain warning** | Flashing warning screen 60 min before expected rainfall |
 | ⚠️ | **DWD weather warnings** | Up to 5 active warnings as color-coded cards (DWD severity level), tap for details; blinking indicator on main screen |
 | 🚦 | **Traffic light addon API** | HTTP JSON endpoint `/api/ampel` for ESP32-C3 hardware addon: temperature, active color, DWD warning status, configurable thresholds; selectable mode (temperature, pollen, air quality) |
 | 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min, with location marker |
@@ -373,9 +370,9 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🔄 | **OTA update** | Firmware update via WebUI or directly on the display, with a progress bar; the device checks for new versions on its own and then shows an update icon |
 | 👆 | **Touch calibration** | Automatic on first boot, re-triggerable anytime |
 | 🌙 | **Dark Mode** | Full dark color theme for all screens, backgrounds, and controls – toggle right on the menu screen |
-| 🎛️ | **Menu screen** | Adjust brightness, toggle rain/pollen warnings and DWD alerts directly on the device – no WebUI needed |
+| 🎛️ | **Menu screen** | Adjust brightness, toggle pollen warnings and DWD alerts directly on the device – no WebUI needed |
 | 🎮 | **Mini-game: Bubblebreaker** | Colorful bubble puzzle right on the cube – tap connected color groups to clear them, undo your last move, choose between "Normal" and "Endless" mode (board auto-refills), persistent high-score table (top 5); launch from the menu screen |
-| 🌧️ | **Rain nowcast** | The main screen shows at the top left when it rains ("Regen in 25 Min.", "Regen noch 10 Min." or "Es regnet"), based on Open-Meteo 15-minute data |
+| 🌧️ | **Rain nowcast** | The main screen shows at the top left, in a blue tile, when it rains ("Regen in 25 Min.", "Regen noch 10 Min." or "Es regnet"), based on Open-Meteo 15-minute data; replaces the former rain warning |
 | 🤧 | **My allergens** | Choose your own allergens in the WebUI; the pollen warning and the health screen consider only those |
 | 💾 | **Settings backup** | Download all settings (without the Wi-Fi password) as a file and restore them later |
 | 🧮 | **Calculator** | Colorful pocket calculator with basic arithmetic, percent, sign toggle and backspace; launch from the menu screen |
@@ -395,7 +392,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 7 | **Air Quality** | European AQI (arc), PM2.5, PM10, NO₂, ozone – color-coded by EU thresholds |
 | 8 | **DWD Health Weather (Today)** | Health impact for 7 categories (wellbeing, blood pressure, rheumatism, asthma, heat) – Today am/pm |
 | 9 | **DWD Health Weather (Tomorrow)** | Same as screen 8, for tomorrow am/pm and day-after am |
-| 10 | **Warning screen** | Flashing alert for rain or pollen warnings (tap for details) |
+| 10 | **Warning screen** | Flashing alert for pollen warnings (tap for details) |
 | 11 | **DWD warning list** | Location-based DWD warnings as color-coded cards by severity level |
 
 ---
@@ -434,8 +431,7 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 | **Display** | Brightness: 10–100 % (slider, applied instantly) |
 | | Dimming timeout: Off / 1 / 3 / 5 / 10 minutes |
 | | Night mode: From/To (15-min steps), separate night brightness 0–50 % |
-| **Warnings** | Rain warning on/off |
-| | Pollen warning on/off |
+| **Warnings** | Pollen warning on/off |
 | | Pollen threshold: Low / Moderate / High / Very High |
 | **DWD region** | Select federal state for weather warnings & radar map |
 | **Firmware** | OTA update: install new firmware over Wi-Fi – no USB needed |

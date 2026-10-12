@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.5.2"
+#define FIRMWARE_VERSION "1.6.0"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -133,7 +133,6 @@ struct Config {
   float  lat = 0.0f;
   float  lon = 0.0f;
   int    dwd_region = 31;       // 31 = Berlin; vollständige Liste siehe unten
-  bool   regen_warn = true;
   bool   pollen_warn = true;
   int    pollen_schwelle = 2;   // 0=gering 1=mittel 2=hoch 3=stark
   int    pollen_auswahl  = 0xFF; // gewaehlte Allergene, Bit i = POLLEN_ANZEIGE[i] (Standard: alle)
@@ -236,7 +235,6 @@ struct WetterDaten {
   String time_forecast[4];
   float  wind_speed_forecast[4] = {};
   int    wind_dir_forecast[4]   = {};
-  bool   regen_warnung = false;
   // Regen-Nowcast (Open-Meteo minutely_15): Startzeit und Niederschlag je 15-Min-Slot
   static const int NC_MAX = 12;
   time_t nc_start[NC_MAX] = {};
@@ -321,9 +319,6 @@ bool   portal_modus           = false;
 bool   pollenWarnAktiv        = false;
 bool   pollenWarnBestaetigt   = false;
 bool   pollenWarnGezeigt      = false;
-bool   regenWarnAktiv         = false;
-bool   regenWarnBestaetigt    = false;
-bool   regenWarnGezeigt       = false;
 bool   dwdWarnAktiv           = false;
 bool   dwdWarnBestaetigt      = false;
 
@@ -600,7 +595,6 @@ void ladeCfg() {
   cfg.lat             = prefs.getFloat ("lat",         0.0f);
   cfg.lon             = prefs.getFloat ("lon",         0.0f);
   cfg.dwd_region      = prefs.getInt   ("dwd_region",  31);
-  cfg.regen_warn      = prefs.getBool  ("regen_warn",  true);
   cfg.pollen_warn     = prefs.getBool  ("pollen_warn", true);
   cfg.pollen_schwelle = prefs.getInt   ("pol_schw",    2);
   cfg.pollen_auswahl  = prefs.getInt   ("pol_ausw",    0xFF);
@@ -634,7 +628,6 @@ void speichereCfg() {
   prefs.putFloat ("lat",        cfg.lat);
   prefs.putFloat ("lon",        cfg.lon);
   prefs.putInt   ("dwd_region", cfg.dwd_region);
-  prefs.putBool  ("regen_warn", cfg.regen_warn);
   prefs.putBool  ("pollen_warn",cfg.pollen_warn);
   prefs.putInt   ("pol_schw",   cfg.pollen_schwelle);
   prefs.putInt   ("pol_ausw",   cfg.pollen_auswahl);
@@ -844,7 +837,6 @@ void handleWebRoot() {
   html.replace("%IP%",          WiFi.localIP().toString());
   html.replace("%LOCATION%",    cfg.location);
   html.replace("%DWD_REGIONEN%",baueDwdRegionenOptions(cfg.dwd_region));
-  html.replace("%RW%",          cfg.regen_warn    ? "checked" : "");
   html.replace("%PW%",          cfg.pollen_warn   ? "checked" : "");
   html.replace("%WR%",          cfg.warn_region   ? "checked" : "");
   html.replace("%BRIGHT%",      String(cfg.brightness));
@@ -893,7 +885,6 @@ void handleWebSave() {
   String prevLocation = cfg.location;
   if (server.hasArg("location"))   cfg.location        = server.arg("location");
   if (server.hasArg("dwd_region")) cfg.dwd_region      = server.arg("dwd_region").toInt();
-  cfg.regen_warn      = server.hasArg("regen_warn");
   cfg.pollen_warn     = server.hasArg("pollen_warn");
   cfg.warn_region     = server.hasArg("warn_region");
   cfg.night_mode      = server.hasArg("night_mode");
@@ -930,7 +921,6 @@ void handleWebBackup() {
   doc["lat"]              = cfg.lat;
   doc["lon"]              = cfg.lon;
   doc["dwd_region"]       = cfg.dwd_region;
-  doc["regen_warn"]       = cfg.regen_warn;
   doc["pollen_warn"]      = cfg.pollen_warn;
   doc["pollen_schwelle"]  = cfg.pollen_schwelle;
   doc["pollen_auswahl"]   = cfg.pollen_auswahl;
@@ -974,7 +964,6 @@ void handleWebRestore() {
   #define RS_INT(key, feld, lo, hi)  if (!doc[key].isNull()) { cfg.feld = rsKlemme(doc[key].as<int>(), lo, hi); n++; }
   #define RS_BOOL(key, feld)         if (!doc[key].isNull()) { cfg.feld = doc[key].as<bool>(); n++; }
   RS_INT ("dwd_region",       dwd_region,       0, 255);
-  RS_BOOL("regen_warn",       regen_warn);
   RS_BOOL("pollen_warn",      pollen_warn);
   RS_INT ("pollen_schwelle",  pollen_schwelle,  0, 3);
   RS_INT ("pollen_auswahl",   pollen_auswahl,   0, 255);
@@ -1506,14 +1495,6 @@ static bool fetchWetterEinmal() {
         ncN++;
       }
       wetter.nc_n = ncN;
-      // Regenwarnung: WMO >= 51 in aktueller oder nächster Stunde
-      bool regen = false;
-      for (int i = 0; i < 2; i++) {
-        if (doc["hourly"]["weather_code"][h + i].as<int>() >= 51) regen = true;
-      }
-      bool vorher = wetter.regen_warnung;
-      wetter.regen_warnung = regen;
-      if (!vorher && regen) { regenWarnBestaetigt = false; regenWarnGezeigt = false; }
       // Erholung nach vorherigem(n) Fehlschlag(en) protokollieren (>15 Min = mind. 1 verpasster 10-Min-Zyklus).
       // Erfolge selbst NICHT jedes Mal loggen — würde den 25er-Ringpuffer in ~4h überschreiben.
       if (letzterWetterFetchErfolg != 0 && millis() - letzterWetterFetchErfolg > 900000UL) {
@@ -1920,9 +1901,8 @@ void aktualisiereRadarMarker() {
 // Forward-Deklarationen (definiert weiter unten)
 static String ohneUmlaute(const String& s);
 static lv_obj_t* warnPopup = nullptr;
-static bool warnPopupIstRegen = false;
 static bool warnPopupNurSchliessen = false;
-static void zeigeWarnPopup(lv_obj_t* parent, bool istRegen, const char* titel, const char* text, bool nurSchliessen = false);
+static void zeigeWarnPopup(lv_obj_t* parent, const char* titel, const char* text, bool nurSchliessen = false);
 
 // -- DWD Warnliste (ScreenWarnkarte2) --
 static lv_obj_t* warnListeContainer = nullptr;
@@ -1976,7 +1956,7 @@ static void cbWarnKarteCardTap(lv_event_t* e) {
   int lv = constrain(warnungen[idx].level, 0, 4);
   String text = String(levelName[lv]) + "\n" + ohneUmlaute(warnungen[idx].beschreibung).substring(0, 200);
   String titel = ohneUmlaute(warnungen[idx].titel);
-  zeigeWarnPopup(objects.screenwarnkarte2, false, titel.c_str(), text.c_str(), true);
+  zeigeWarnPopup(objects.screenwarnkarte2, titel.c_str(), text.c_str(), true);
 }
 
 void aktualisiereWarnliste() {
@@ -2375,6 +2355,14 @@ static void aktualisiereNowcast() {
     }
   }
   if (buf[0]) {
+    // Farbige Kachel mit weisser Schrift, damit der Hinweis auffaellt
+    lv_obj_set_style_bg_color(objects.labelregen, lv_color_hex(0x0A5CE0), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(objects.labelregen, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_text_color(objects.labelregen, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_style_radius(objects.labelregen, 10, LV_PART_MAIN);
+    lv_obj_set_style_pad_ver(objects.labelregen, 5, LV_PART_MAIN);
+    lv_obj_set_style_pad_hor(objects.labelregen, 6, LV_PART_MAIN);
+    lv_obj_set_height(objects.labelregen, LV_SIZE_CONTENT);
     lv_label_set_text(objects.labelregen, buf);
     lv_obj_clear_flag(objects.labelregen, LV_OBJ_FLAG_HIDDEN);
   } else {
@@ -2503,15 +2491,6 @@ void aktualisiereUI() {
   setPollenLabel(objects.labelambrosiaday1, pollen.dwd_ambrosia);
   setPollenLabel(objects.labelambrosiaday2, pollen.dwd_ambrosia_tmr);
   setPollenLabel(objects.labelambrosiaday3, pollen.dwd_ambrosia_da);
-
-  // ── Regenwarnung (screenwarnung) ────────────────────────────
-  regenWarnAktiv = cfg.regen_warn && wetter.regen_warnung;
-  if (regenWarnAktiv) {
-    setLabel(objects.labelwarntitel,  "Regenwarnung!");
-    setLabel(objects.labelwarndetail, "Regen in den nächsten");
-    setLabel(objects.labelwarndetail2,"60 Min.");
-    setLabel(objects.labelwarnhint,   "Tippen zum Bestätigen");
-  }
 
   // ── SunMoon (screensunmoon) ─────────────────────────────────
   if (objects.labeluvindexvalue) {
@@ -3547,14 +3526,6 @@ static void cbMenuBrightness(lv_event_t* e) {
   prefs.end();
 }
 
-static void cbMenuRegenSwitch(lv_event_t* e) {
-  lv_obj_t* sw = lv_event_get_target(e);
-  cfg.regen_warn = lv_obj_has_state(sw, LV_STATE_CHECKED);
-  Preferences prefs; prefs.begin("wcp", false);
-  prefs.putBool("regen_warn", cfg.regen_warn);
-  prefs.end();
-}
-
 static void cbMenuPollenSwitch(lv_event_t* e) {
   lv_obj_t* sw = lv_event_get_target(e);
   cfg.pollen_warn = lv_obj_has_state(sw, LV_STATE_CHECKED);
@@ -3579,10 +3550,6 @@ static void cbMenuDwdSwitch(lv_event_t* e) {
 static void cbMenu(lv_event_t*) {
   loadScreen(SCREEN_ID_SCREENMENU);
   // Switch-Zustände und Arc auf aktuelle cfg-Werte setzen
-  if (objects.regenswitch) {
-    if (cfg.regen_warn) lv_obj_add_state(objects.regenswitch, LV_STATE_CHECKED);
-    else                lv_obj_clear_state(objects.regenswitch, LV_STATE_CHECKED);
-  }
   if (objects.pollenswitch) {
     if (cfg.pollen_warn) lv_obj_add_state(objects.pollenswitch, LV_STATE_CHECKED);
     else                 lv_obj_clear_state(objects.pollenswitch, LV_STATE_CHECKED);
@@ -3777,11 +3744,7 @@ static bool warnBlinkState = false;
 static void cbWarnBlink(lv_timer_t*) {
   warnBlinkState = !warnBlinkState;
   lv_obj_t* aktiv = lv_scr_act();
-  if (aktiv == objects.screenwarnung) {
-    // Hintergrund blinkt zwischen Rot und Dunkelrot
-    lv_color_t bg = warnBlinkState ? lv_color_hex(0xcc0000) : lv_color_hex(0x550000);
-    lv_obj_set_style_bg_color(aktiv, bg, LV_PART_MAIN);
-  } else if (aktiv == objects.screenwarnungpollen) {
+  if (aktiv == objects.screenwarnungpollen) {
     // Hintergrund blinkt zwischen Orange und Dunkelorange
     lv_color_t bg = warnBlinkState ? lv_color_hex(0xd67a28) : lv_color_hex(0x5a2f0a);
     lv_obj_set_style_bg_color(aktiv, bg, LV_PART_MAIN);
@@ -3796,17 +3759,12 @@ static void cbWarnPopupOk(lv_event_t*) {
     warnPopup = nullptr;
   }
   if (warnPopupNurSchliessen) return;
-  if (warnPopupIstRegen) {
-    regenWarnBestaetigt = true;
-  } else {
-    pollenWarnBestaetigt = true;
-  }
+  pollenWarnBestaetigt = true;
   loadScreen(SCREEN_ID_SCREEN_1);
 }
 
-static void zeigeWarnPopup(lv_obj_t* parent, bool istRegen, const char* titel, const char* text, bool nurSchliessen) {
+static void zeigeWarnPopup(lv_obj_t* parent, const char* titel, const char* text, bool nurSchliessen) {
   if (warnPopup) { lv_obj_del(warnPopup); warnPopup = nullptr; }
-  warnPopupIstRegen    = istRegen;
   warnPopupNurSchliessen = nurSchliessen;
 
   // Halbtransparentes dunkles Overlay über dem Warnscreen
@@ -3856,24 +3814,13 @@ static void cbWarnTap(lv_event_t* e) {
   lv_obj_t* src = lv_event_get_current_target(e);
   if (warnPopup) return; // Popup schon offen – nur OK-Button schließt
 
-  if (src == objects.screenwarnung) {
-    String details = "";
-    for (int i = 0; i < anzahl_warnungen && i < 3; i++) {
-      if (i > 0) details += "\n\n";
-      details += ohneUmlaute(warnungen[i].titel);
-      if (!warnungen[i].beschreibung.isEmpty())
-        details += "\n" + ohneUmlaute(warnungen[i].beschreibung).substring(0, 100);
-    }
-    if (details.isEmpty()) details = "Regen in den naechsten 60 Min. erwartet.";
-    zeigeWarnPopup(objects.screenwarnung, true, "Wetterwarnung", details.c_str(), false);
-
-  } else if (src == objects.screenwarnungpollen) {
+  if (src == objects.screenwarnungpollen) {
     String pollenName = ohneUmlaute(schleimsterPollen());
     float maxP = -1; for (int i=0;i<8;i++) if (pollenGewaehlt(i)) maxP=max(maxP,pollenWertWarnung(i));
     const char* stufe = maxP>=3?"stark":(maxP>=2?"hoch":(maxP>=1?"mittel":"gering"));
     String msg = pollenName + ": " + stufe + " Belastung\n(Stufe " + String((int)maxP) + " von 3)";
     msg += "\nSchwelle: >" + String(cfg.pollen_schwelle);
-    zeigeWarnPopup(objects.screenwarnungpollen, false, "Pollenwarnung", msg.c_str(), false);
+    zeigeWarnPopup(objects.screenwarnungpollen, "Pollenwarnung", msg.c_str(), false);
   }
 }
 
@@ -4006,7 +3953,6 @@ void setup() {
     lv_obj_add_event_cb(objects.labelswitchtheme, [](lv_event_t*) { aktualisiereUI(); }, LV_EVENT_CLICKED, nullptr);
   // Menü-Screen Controls
   REG_CB(objects.labellightchangevalue, cbMenuBrightness,   LV_EVENT_VALUE_CHANGED);
-  REG_CB(objects.regenswitch,           cbMenuRegenSwitch,  LV_EVENT_VALUE_CHANGED);
   REG_CB(objects.pollenswitch,          cbMenuPollenSwitch, LV_EVENT_VALUE_CHANGED);
   REG_CB(objects.dwdswitch,             cbMenuDwdSwitch,    LV_EVENT_VALUE_CHANGED);
   // Home-Buttons
@@ -4028,7 +3974,6 @@ void setup() {
   REG_CB(objects.fc_settings2,      cbHealthMenu,                LV_EVENT_CLICKED);  // fc_settings2 → screenmenu
   REG_CB(objects.fc_plus_38_ffffff, [](lv_event_t*) { loadScreen(SCREEN_ID_SCREENHEALTH); }, LV_EVENT_CLICKED);  // screen_1 → screenhealth
   // Warn-Screens
-  REG_CB(objects.screenwarnung,       cbWarnTap,       LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnungpollen, cbWarnTap,       LV_EVENT_CLICKED);
   REG_CB(objects.screenwarnkarte2,    cbWarnkarte2Tap, LV_EVENT_CLICKED);
   #undef REG_CB
@@ -4236,10 +4181,7 @@ void loop() {
   }
 
   // Warnbildschirme einmalig anzeigen wenn neue Warnung
-  if (regenWarnAktiv && !regenWarnBestaetigt && !regenWarnGezeigt) {
-    regenWarnGezeigt = true;
-    loadScreen(SCREEN_ID_SCREENWARNUNG);
-  } else if (pollenWarnAktiv && !pollenWarnBestaetigt && !pollenWarnGezeigt) {
+  if (pollenWarnAktiv && !pollenWarnBestaetigt && !pollenWarnGezeigt) {
     pollenWarnGezeigt = true;
     loadScreen(SCREEN_ID_SCREENWARNUNGPOLLEN);
   }

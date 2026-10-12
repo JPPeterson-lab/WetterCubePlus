@@ -31,7 +31,6 @@ void change_color_theme(uint32_t theme_index);
 extern const uint32_t common_000000;
 extern const uint32_t common_0a5ce0;
 extern const uint32_t common_87ceeb;
-extern const uint32_t common_cc0000;
 extern const uint32_t common_d67a28;
 extern const uint32_t common_e9b117;
 extern const uint32_t common_ffffff;

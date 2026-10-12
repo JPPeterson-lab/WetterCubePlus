@@ -2,6 +2,16 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.6.0 (2026-10-12)
+
+### New
+- **Rain hint as a colored tile:** "Regen in 25 Min.", "Regen noch 10 Min." or "Es regnet" now appears on the main screen in a blue, rounded tile with white text and stands out much more
+
+### Removed
+- **Rain warning:** The flashing full-screen warning for rain is gone. The rain hint (nowcast) shows more precisely when it rains, without taking over the screen. The rain switch in the menu screen and in the WebUI is gone as well. The pollen warning and the DWD warnings are unchanged. Old settings backups can still be restored, the rain value in them is ignored
+
+---
+
 ## v1.5.2 (2026-10-12)
 
 ### Fixes

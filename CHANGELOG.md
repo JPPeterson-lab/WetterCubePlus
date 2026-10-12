@@ -2,6 +2,16 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.6.0 (2026-10-12)
+
+### Neu
+- **Regen-Hinweis als farbige Kachel:** „Regen in 25 Min.“, „Regen noch 10 Min.“ oder „Es regnet“ steht auf dem Hauptscreen jetzt in einer blauen, abgerundeten Kachel mit weißer Schrift und fällt dadurch deutlich mehr auf
+
+### Entfernt
+- **Regenwarnung:** Der blinkende Vollbild-Warnscreen für Regen entfällt. Der Regen-Hinweis (Nowcast) zeigt genauer, wann es regnet, ohne den Bildschirm zu übernehmen. Damit entfallen auch der Regen-Schalter im Menü-Screen und in der WebUI. Die Pollenwarnung und die DWD-Warnungen bleiben unverändert. Alte Einstellungssicherungen lassen sich weiter einspielen, der Regen-Wert darin wird ignoriert
+
+---
+
 ## v1.5.2 (2026-10-12)
 
 ### Fixes

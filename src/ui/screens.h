@@ -21,7 +21,6 @@ typedef struct _objects_t {
     lv_obj_t *screenforecastwetter;
     lv_obj_t *screenforecastpollenhour;
     lv_obj_t *screenforecastpollen;
-    lv_obj_t *screenwarnung;
     lv_obj_t *screenwarnungpollen;
     lv_obj_t *screen_1;
     lv_obj_t *screenboot;
@@ -62,11 +61,6 @@ typedef struct _objects_t {
     lv_obj_t *labelpollenwarntitel;
     lv_obj_t *labelpollenwarnart;
     lv_obj_t *labelpollenwarnhint;
-    lv_obj_t *imagewarnregen;
-    lv_obj_t *labelwarntitel;
-    lv_obj_t *labelwarndetail;
-    lv_obj_t *labelwarndetail2;
-    lv_obj_t *labelwarnhint;
     lv_obj_t *labelbuttonbackward_1;
     lv_obj_t *labelbuttonhome;
     lv_obj_t *container_9;
@@ -198,6 +192,7 @@ typedef struct _objects_t {
     lv_obj_t *day_snow;
     lv_obj_t *night_full_moon_snow;
     lv_obj_t *mist;
+    lv_obj_t *imagewarnregen;
     lv_obj_t *labelbuttonbackward_4;
     lv_obj_t *labelbuttonhome_4;
     lv_obj_t *labelbuttonforward_4;
@@ -220,10 +215,8 @@ typedef struct _objects_t {
     lv_obj_t *container_8;
     lv_obj_t *labeldwdchange;
     lv_obj_t *labeltheme;
-    lv_obj_t *labelregenchange;
     lv_obj_t *labelpollenchange;
     lv_obj_t *labelswitchtheme;
-    lv_obj_t *regenswitch;
     lv_obj_t *pollenswitch;
     lv_obj_t *dwdswitch;
     lv_obj_t *labellightchangevalue;
@@ -408,10 +401,9 @@ enum ScreensEnum {
     SCREEN_ID_SCREENFORECASTWETTER = 10,
     SCREEN_ID_SCREENFORECASTPOLLENHOUR = 11,
     SCREEN_ID_SCREENFORECASTPOLLEN = 12,
-    SCREEN_ID_SCREENWARNUNG = 13,
-    SCREEN_ID_SCREENWARNUNGPOLLEN = 14,
-    SCREEN_ID_SCREEN_1 = 15,
-    SCREEN_ID_SCREENBOOT = 16,
+    SCREEN_ID_SCREENWARNUNGPOLLEN = 13,
+    SCREEN_ID_SCREEN_1 = 14,
+    SCREEN_ID_SCREENBOOT = 15,
 };
 
 void create_screen_screenhealth();
@@ -450,9 +442,6 @@ void delete_screen_screenforecastpollenhour();
 void create_screen_screenforecastpollen();
 void tick_screen_screenforecastpollen();
 void delete_screen_screenforecastpollen();
-void create_screen_screenwarnung();
-void tick_screen_screenwarnung();
-void delete_screen_screenwarnung();
 void create_screen_screenwarnungpollen();
 void tick_screen_screenwarnungpollen();
 void delete_screen_screenwarnungpollen();
