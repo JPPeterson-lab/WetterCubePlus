@@ -1,7 +1,7 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.3.1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.4.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -71,6 +71,9 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌙 | **Dark Mode** | Vollständiges dunkles Farbthema für alle Screens, Hintergründe und Bedienelemente – Umschalter direkt im Menü-Screen |
 | 🎛️ | **Menü-Screen** | Helligkeit, Regen-/Pollenwarnung und DWD-Warnungen direkt am Gerät ein-/ausschalten – kein WebUI nötig |
 | 🎮 | **Mini-Spiel: Bubblebreaker** | Bunte Bubble-Puzzle direkt auf dem Cube – zusammenhängende Farbgruppen antippen und auflösen, Undo für den letzten Zug, wählbar zwischen Modus "Normal" und "Laufend" (Feld füllt sich automatisch nach), persistente Bestenliste (Top 5); Start über den Menü-Screen |
+| 🌧️ | **Regen-Nowcast** | Hauptscreen zeigt oben links, wann es regnet („Regen in 25 Min.“, „Regen noch 10 Min.“ oder „Es regnet“), Daten im 15-Minuten-Raster von Open-Meteo |
+| 🤧 | **Meine Allergene** | In der WebUI die eigenen Allergene wählen; Pollenwarnung und Gesundheitsscreen berücksichtigen nur diese |
+| 💾 | **Einstellungen sichern** | Alle Einstellungen (ohne WLAN-Passwort) als Datei herunterladen und wieder einspielen |
 | 🧮 | **Taschenrechner** | Bunter Taschenrechner mit Grundrechenarten, Prozent, Vorzeichen-Wechsel und Rückschritt; Start über den Menü-Screen |
 
 ---
@@ -305,7 +308,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.3.1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.4.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -370,6 +373,9 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🌙 | **Dark Mode** | Full dark color theme for all screens, backgrounds, and controls – toggle right on the menu screen |
 | 🎛️ | **Menu screen** | Adjust brightness, toggle rain/pollen warnings and DWD alerts directly on the device – no WebUI needed |
 | 🎮 | **Mini-game: Bubblebreaker** | Colorful bubble puzzle right on the cube – tap connected color groups to clear them, undo your last move, choose between "Normal" and "Endless" mode (board auto-refills), persistent high-score table (top 5); launch from the menu screen |
+| 🌧️ | **Rain nowcast** | The main screen shows at the top left when it rains ("Regen in 25 Min.", "Regen noch 10 Min." or "Es regnet"), based on Open-Meteo 15-minute data |
+| 🤧 | **My allergens** | Choose your own allergens in the WebUI; the pollen warning and the health screen consider only those |
+| 💾 | **Settings backup** | Download all settings (without the Wi-Fi password) as a file and restore them later |
 | 🧮 | **Calculator** | Colorful pocket calculator with basic arithmetic, percent, sign toggle and backspace; launch from the menu screen |
 
 ---

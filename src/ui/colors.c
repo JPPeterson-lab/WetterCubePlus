@@ -575,6 +575,7 @@ void change_color_theme(uint32_t theme_index) {
 
 // Common colors
 const uint32_t common_000000 = 0x000000;
+const uint32_t common_0a5ce0 = 0x0a5ce0;
 const uint32_t common_87ceeb = 0x87ceeb;
 const uint32_t common_cc0000 = 0xcc0000;
 const uint32_t common_d67a28 = 0xd67a28;

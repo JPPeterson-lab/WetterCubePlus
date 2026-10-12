@@ -2,6 +2,15 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.4.0 (2026-10-12)
+
+### New
+- **Rain nowcast on the main screen:** The top left now tells you when it rains: "Regen in 25 Min." (rain in 25 min), "Regen noch 10 Min." (rain for 10 more min) or "Es regnet" (it is raining). Data comes from Open-Meteo in 15-minute steps (next 3 hours, available worldwide); if no rain is in sight the field stays empty. The text is recalculated every minute
+- **My allergens:** The WebUI lets you choose the allergens you react to (hazel, alder, ash, birch, grass, rye, mugwort, ragweed). The pollen warning and the pollen list on the health screen consider only these; unselected ones show as "-" there. Default: all
+- **Back up and restore settings:** The WebUI now offers "Einstellungen herunterladen" (download, file `wettercubeplus-einstellungen.json`) and "Wiederherstellen" (restore). The backup contains all settings but **not** the Wi-Fi password. On restore, values are validated and clamped to sensible ranges, then the device restarts
+
+---
+
 ## v1.3.1 (2026-10-12)
 
 ### Changed

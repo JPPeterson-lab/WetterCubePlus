@@ -57,6 +57,7 @@ typedef struct _objects_t {
     lv_obj_t *label_28;
     lv_obj_t *labelhumidity;
     lv_obj_t *label_1;
+    lv_obj_t *labelregen;
     lv_obj_t *imagealert;
     lv_obj_t *labelpollenwarntitel;
     lv_obj_t *labelpollenwarnart;

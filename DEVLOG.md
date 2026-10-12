@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.4.0
+
+### Regen-Nowcast, Allergen-Auswahl, Sichern/Wiederherstellen
+
+**Nowcast:** `fetchWetter()` hängt `minutely_15=precipitation&forecast_minutely_15=12` an die Abfrage an (3 Stunden; das Raster beginnt mit dem 15-Min-Slot, in dem man gerade ist, geprüft per curl). Die Zeitstrings werden per `sscanf`/`mktime` in `time_t` gewandelt (lokale Zeit, TZ ist früh gesetzt) und in `wetter.nc_start[]`/`nc_mm[]` abgelegt; `DynamicJsonDocument` von 10 auf 12 KB. `aktualisiereNowcast()` rechnet aus den Slots den Text neu (Schwelle 0,1 mm je 15 Min.) und wird zusammen mit der Uhrzeit jede Minute aufgerufen, damit „in 25 Min.“ nicht bis zum nächsten 10-Min-Abruf stehen bleibt. Label `LabelRegen` (oben links) per PicoPixel-MCP angelegt, ohne Treffer wird es ausgeblendet. Offene Beobachtung: Leerer Platz oben links ist der Normalfall; ob die Schriftgröße im Label bei „Regen noch 10 Min.“ in zwei Zeilen umbricht, am echten Display prüfen.
+
+**Allergene:** `cfg.pollen_auswahl` als Bitmaske (Bit i = Eintrag in `POLLEN_ANZEIGE`, Standard 0xFF), Preferences-Schlüssel `pol_ausw`. Die Warnung nimmt das Maximum der gewählten Allergene (`pollenWertWarnung()` vereinheitlicht Open-Meteo-Werte per `openMeteoToDwd()` und DWD-Tageswerte Hasel/Esche/Roggen). Im Formular steht ein verstecktes Feld `pol_a_form`, damit ein Speichern ohne die Schalter (z. B. aus der Geräte-Menüseite) die Auswahl nicht auf 0 setzt. Noch nicht gefiltert: die Top-2-Pollen auf dem Hauptscreen.
+
+**Sichern/Wiederherstellen:** `GET /backup` liefert eine JSON-Datei mit allen Einstellungen außer WLAN-Zugangsdaten (öffentliche Anleitungen sollen keine Passwörter in Dateien erzeugen). `POST /restore` prüft den Typ-Marker, übernimmt nur bekannte Schlüssel, klemmt Zahlen auf Bereiche, setzt bei ungültigen Koordinaten lat/lon auf 0 (dann neu per Geocoding) und startet neu.
+
+---
+
 ## 2026-10-12 – v1.3.1
 
 ### Temperaturfarben kräftiger, themenabhängig

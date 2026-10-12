@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.3.1"
+#define FIRMWARE_VERSION "1.4.0"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -136,6 +136,7 @@ struct Config {
   bool   regen_warn = true;
   bool   pollen_warn = true;
   int    pollen_schwelle = 2;   // 0=gering 1=mittel 2=hoch 3=stark
+  int    pollen_auswahl  = 0xFF; // gewaehlte Allergene, Bit i = POLLEN_ANZEIGE[i] (Standard: alle)
   int    dim_timeout = 3;       // Minuten; 0 = aus
   int    brightness = 80;       // Prozent
   bool   warn_region = true;    // DWD-Warnungen aktiv
@@ -235,6 +236,11 @@ struct WetterDaten {
   float  wind_speed_forecast[4] = {};
   int    wind_dir_forecast[4]   = {};
   bool   regen_warnung = false;
+  // Regen-Nowcast (Open-Meteo minutely_15): Startzeit und Niederschlag je 15-Min-Slot
+  static const int NC_MAX = 12;
+  time_t nc_start[NC_MAX] = {};
+  float  nc_mm[NC_MAX]    = {};
+  int    nc_n             = 0;
 };
 
 struct PollenDaten {
@@ -596,6 +602,7 @@ void ladeCfg() {
   cfg.regen_warn      = prefs.getBool  ("regen_warn",  true);
   cfg.pollen_warn     = prefs.getBool  ("pollen_warn", true);
   cfg.pollen_schwelle = prefs.getInt   ("pol_schw",    2);
+  cfg.pollen_auswahl  = prefs.getInt   ("pol_ausw",    0xFF);
   cfg.dim_timeout       = prefs.getInt   ("dim_time",    3);
   cfg.brightness        = prefs.getInt   ("bright",      80);
   cfg.warn_region       = prefs.getBool  ("warn_reg",    true);
@@ -628,6 +635,7 @@ void speichereCfg() {
   prefs.putBool  ("regen_warn", cfg.regen_warn);
   prefs.putBool  ("pollen_warn",cfg.pollen_warn);
   prefs.putInt   ("pol_schw",   cfg.pollen_schwelle);
+  prefs.putInt   ("pol_ausw",   cfg.pollen_auswahl);
   prefs.putInt   ("dim_time",    cfg.dim_timeout);
   prefs.putInt   ("bright",      cfg.brightness);
   prefs.putBool  ("warn_reg",    cfg.warn_region);
@@ -815,6 +823,17 @@ static String baueBioZoneOptions(const String& sel) {
   return out;
 }
 
+// Schalter fuer "Meine Allergene" (Bit i = Allergen i, Reihenfolge wie POLLEN_ANZEIGE)
+static String bauePollenAuswahl() {
+  static const char* NAMEN_HTML[8] = {"Hasel", "Erle", "Esche", "Birke", "Gr&auml;ser", "Roggen", "Beifu&szlig;", "Ambrosia"};
+  String out = "<input type=\"hidden\" name=\"pol_a_form\" value=\"1\">";
+  for (int i = 0; i < 8; i++) {
+    out += "<div class=\"row\"><span>" + String(NAMEN_HTML[i]) + "</span><label class=\"toggle\"><input type=\"checkbox\" name=\"pol_a" +
+           String(i) + "\"" + (((cfg.pollen_auswahl >> i) & 1) ? " checked" : "") + "><span class=\"slider\"></span></label></div>";
+  }
+  return out;
+}
+
 void handleWebRoot() {
   String html = FPSTR(WEBUI_HTML);
   html.replace("%VERSION%",     FIRMWARE_VERSION);
@@ -856,6 +875,7 @@ void handleWebRoot() {
   html.replace("%AMP_GE_MAX%", String(cfg.ampel_gelb_max));
   html.replace("%AMP_RO_MIN%", String(cfg.ampel_rot_min));
   html.replace("%AMP_RO_MAX%", String(cfg.ampel_rot_max));
+  html.replace("%POL_AUSWAHL%",       bauePollenAuswahl());
   html.replace("%BIO_ZONE_OPTIONS%",  baueBioZoneOptions(cfg.bio_zone));
   html.replace("%WS_CAT_OPTIONS0%",   baueWsCatOptions(cfg.ws_cat0));
   html.replace("%WS_CAT_OPTIONS1%",   baueWsCatOptions(cfg.ws_cat1));
@@ -876,6 +896,11 @@ void handleWebSave() {
   if (server.hasArg("night_to"))     cfg.night_to         = server.arg("night_to").toInt();
   if (server.hasArg("night_bright")) cfg.night_brightness = server.arg("night_bright").toInt();
   if (server.hasArg("pol_schw"))   cfg.pollen_schwelle = server.arg("pol_schw").toInt();
+  if (server.hasArg("pol_a_form")) {   // Marker: nur auswerten, wenn die Allergen-Schalter wirklich mitgesendet wurden
+    int m = 0;
+    for (int i = 0; i < 8; i++) if (server.hasArg("pol_a" + String(i))) m |= (1 << i);
+    cfg.pollen_auswahl = m;
+  }
   if (server.hasArg("brightness")) cfg.brightness      = server.arg("brightness").toInt();
   if (server.hasArg("dim_time"))   cfg.dim_timeout     = server.arg("dim_time").toInt();
   if (server.hasArg("bio_zone"))   cfg.bio_zone        = server.arg("bio_zone");
@@ -889,6 +914,98 @@ void handleWebSave() {
   setBrightness(cfg.brightness);
   aktualisiereUI();
   server.sendHeader("Location", "/"); server.send(302);
+}
+
+// ── Einstellungen sichern und wiederherstellen (ohne WLAN-Zugangsdaten) ──────────
+void handleWebBackup() {
+  DynamicJsonDocument doc(2048);
+  doc["typ"]              = "WetterCubePlus-Einstellungen";
+  doc["firmware"]         = FIRMWARE_VERSION;
+  doc["location"]         = cfg.location;
+  doc["lat"]              = cfg.lat;
+  doc["lon"]              = cfg.lon;
+  doc["dwd_region"]       = cfg.dwd_region;
+  doc["regen_warn"]       = cfg.regen_warn;
+  doc["pollen_warn"]      = cfg.pollen_warn;
+  doc["pollen_schwelle"]  = cfg.pollen_schwelle;
+  doc["pollen_auswahl"]   = cfg.pollen_auswahl;
+  doc["warn_region"]      = cfg.warn_region;
+  doc["dim_timeout"]      = cfg.dim_timeout;
+  doc["brightness"]       = cfg.brightness;
+  doc["night_mode"]       = cfg.night_mode;
+  doc["night_from"]       = cfg.night_from;
+  doc["night_to"]         = cfg.night_to;
+  doc["night_brightness"] = cfg.night_brightness;
+  doc["ampel_gruen_min"]  = cfg.ampel_gruen_min;
+  doc["ampel_gruen_max"]  = cfg.ampel_gruen_max;
+  doc["ampel_gelb_min"]   = cfg.ampel_gelb_min;
+  doc["ampel_gelb_max"]   = cfg.ampel_gelb_max;
+  doc["ampel_rot_min"]    = cfg.ampel_rot_min;
+  doc["ampel_rot_max"]    = cfg.ampel_rot_max;
+  doc["bio_zone"]         = cfg.bio_zone;
+  doc["ws_cat0"]          = cfg.ws_cat0;
+  doc["ws_cat1"]          = cfg.ws_cat1;
+  doc["ws_cat2"]          = cfg.ws_cat2;
+  doc["ws_cat3"]          = cfg.ws_cat3;
+  String out;
+  serializeJsonPretty(doc, out);
+  server.sendHeader("Content-Disposition", "attachment; filename=wettercubeplus-einstellungen.json");
+  server.send(200, "application/json", out);
+}
+
+static int rsKlemme(int v, int lo, int hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+void handleWebRestore() {
+  String body = server.arg("plain");
+  DynamicJsonDocument doc(2048);
+  if (body.length() == 0 || deserializeJson(doc, body) != DeserializationError::Ok ||
+      String((const char*)(doc["typ"] | "")) != "WetterCubePlus-Einstellungen") {
+    server.send(400, "text/plain", "Keine gueltige Sicherungsdatei");
+    return;
+  }
+  int n = 0;
+  // Nur bekannte Schluessel uebernehmen, Zahlen auf sinnvolle Bereiche begrenzen
+  #define RS_INT(key, feld, lo, hi)  if (!doc[key].isNull()) { cfg.feld = rsKlemme(doc[key].as<int>(), lo, hi); n++; }
+  #define RS_BOOL(key, feld)         if (!doc[key].isNull()) { cfg.feld = doc[key].as<bool>(); n++; }
+  RS_INT ("dwd_region",       dwd_region,       0, 255);
+  RS_BOOL("regen_warn",       regen_warn);
+  RS_BOOL("pollen_warn",      pollen_warn);
+  RS_INT ("pollen_schwelle",  pollen_schwelle,  0, 3);
+  RS_INT ("pollen_auswahl",   pollen_auswahl,   0, 255);
+  RS_BOOL("warn_region",      warn_region);
+  RS_INT ("dim_timeout",      dim_timeout,      -1, 10);
+  RS_INT ("brightness",       brightness,       10, 100);
+  RS_BOOL("night_mode",       night_mode);
+  RS_INT ("night_from",       night_from,       0, 1439);
+  RS_INT ("night_to",         night_to,         0, 1439);
+  RS_INT ("night_brightness", night_brightness, 0, 50);
+  RS_INT ("ampel_gruen_min",  ampel_gruen_min,  -50, 120);
+  RS_INT ("ampel_gruen_max",  ampel_gruen_max,  -50, 120);
+  RS_INT ("ampel_gelb_min",   ampel_gelb_min,   -50, 120);
+  RS_INT ("ampel_gelb_max",   ampel_gelb_max,   -50, 120);
+  RS_INT ("ampel_rot_min",    ampel_rot_min,    -50, 120);
+  RS_INT ("ampel_rot_max",    ampel_rot_max,    -50, 120);
+  RS_INT ("ws_cat0",          ws_cat0,          0, 6);
+  RS_INT ("ws_cat1",          ws_cat1,          0, 6);
+  RS_INT ("ws_cat2",          ws_cat2,          0, 6);
+  RS_INT ("ws_cat3",          ws_cat3,          0, 6);
+  #undef RS_INT
+  #undef RS_BOOL
+  String zone = String((const char*)(doc["bio_zone"] | ""));
+  if (zone.length() == 1 && zone[0] >= 'A' && zone[0] <= 'K') { cfg.bio_zone = zone; n++; }
+  String ort = String((const char*)(doc["location"] | ""));
+  if (ort.length() > 0 && ort.length() <= 60) {
+    cfg.location = ort; n++;
+    float la = doc["lat"] | 0.0f, lo = doc["lon"] | 0.0f;
+    bool koordOk = (la != 0.0f || lo != 0.0f) && la >= -90.0f && la <= 90.0f && lo >= -180.0f && lo <= 180.0f;
+    cfg.lat = koordOk ? la : 0.0f;   // 0 = beim naechsten Start per Geocoding neu bestimmen
+    cfg.lon = koordOk ? lo : 0.0f;
+  }
+  speichereCfg();
+  logDiag("[Sicherung] %d Einstellungen wiederhergestellt, Neustart", n);
+  server.send(200, "text/plain", "ok " + String(n));
+  delay(1500);
+  ESP.restart();
 }
 
 void handleApiAmpel() {
@@ -1195,6 +1312,8 @@ void handleWebWlanSave() {
 void starteWebUI() {
   server.on("/",               HTTP_GET,  handleWebRoot);
   server.on("/speichern",      HTTP_POST, handleWebSave);
+  server.on("/backup",         HTTP_GET,  handleWebBackup);
+  server.on("/restore",        HTTP_POST, handleWebRestore);
   server.on("/ota_check",      HTTP_GET,  handleWebOtaCheck);
   server.on("/ota_update",     HTTP_POST, handleWebOtaDoUpdate);
   server.on("/wlan",           HTTP_GET,  handleWebWlanAendern);
@@ -1233,6 +1352,25 @@ float openMeteoToDwd(float grains) {
   if (grains <= 30)  return  2.0f;   // mittel
   if (grains <= 100) return  2.5f;   // hoch
   return                     3.0f;   // stark
+}
+
+// ── Eigene Allergene (Auswahl in der WebUI) ──────────────────
+static const char* POLLEN_ANZEIGE[8] = {"Hasel", "Erle", "Esche", "Birke", "Gräser", "Roggen", "Beifuß", "Ambrosia"};
+static bool pollenGewaehlt(int i) { return (cfg.pollen_auswahl >> i) & 1; }
+
+// Wert eines Allergens (DWD-Skala 0-3) fuer Warnung und Anzeige: Open-Meteo (naechste Stunde), wo vorhanden,
+// sonst der DWD-Tageswert (Hasel, Esche und Roggen liefert Open-Meteo nicht)
+static float pollenWertWarnung(int i) {
+  switch (i) {
+    case 0:  return pollen.dwd_hasel;
+    case 1:  return openMeteoToDwd(pollen.erle);
+    case 2:  return pollen.dwd_esche;
+    case 3:  return openMeteoToDwd(pollen.birke);
+    case 4:  return openMeteoToDwd(pollen.graeser);
+    case 5:  return pollen.dwd_roggen;
+    case 6:  return openMeteoToDwd(pollen.beifuss);
+    default: return openMeteoToDwd(pollen.ambrosia);
+  }
 }
 
 const char* pollenText(float v) {
@@ -1300,11 +1438,12 @@ void fetchWetter() {
   url += ",wind_speed_10m,wind_direction_10m,surface_pressure,weather_code,is_day";
   url += "&daily=uv_index_max,sunrise,sunset,temperature_2m_min,temperature_2m_max";
   url += "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index";
+  url += "&minutely_15=precipitation&forecast_minutely_15=12";
   url += "&timezone=auto&forecast_days=2";
   http.begin(sc, url);
   int httpCode = http.GET();
   if (httpCode == 200) {
-    DynamicJsonDocument doc(10240);
+    DynamicJsonDocument doc(12288);
     DeserializationError jsonErr = deserializeJson(doc, http.getString());
     if (jsonErr == DeserializationError::Ok) {
       auto c = doc["current"];
@@ -1343,6 +1482,20 @@ void fetchWetter() {
         if (v > uvMax) uvMax = v;
       }
       wetter.uv_next3h = uvMax;
+      // Regen-Nowcast: 15-Min-Slots der naechsten 3 Stunden
+      JsonArray ncT = doc["minutely_15"]["time"].as<JsonArray>();
+      JsonArray ncP = doc["minutely_15"]["precipitation"].as<JsonArray>();
+      int ncN = 0;
+      for (size_t i = 0; i < ncT.size() && i < ncP.size() && ncN < WetterDaten::NC_MAX; i++) {
+        int y, mo, d, hh, mi;
+        if (sscanf(ncT[i] | "", "%d-%d-%dT%d:%d", &y, &mo, &d, &hh, &mi) != 5) continue;
+        struct tm t = {};
+        t.tm_year = y - 1900; t.tm_mon = mo - 1; t.tm_mday = d; t.tm_hour = hh; t.tm_min = mi; t.tm_isdst = -1;
+        wetter.nc_start[ncN] = mktime(&t);   // Zeitzone ist per setenv/configTime bereits auf lokal gesetzt
+        wetter.nc_mm[ncN]    = ncP[i].as<float>();
+        ncN++;
+      }
+      wetter.nc_n = ncN;
       // Regenwarnung: WMO >= 51 in aktueller oder nächster Stunde
       bool regen = false;
       for (int i = 0; i < 2; i++) {
@@ -2071,14 +2224,11 @@ static void setPollenLabel(lv_obj_t* obj, float v) {
 static String schleimsterPollen() {
   float max_v = -1.0f;
   const char* name = "Pollen";
-  struct { float v; const char* n; } list[] = {
-    {openMeteoToDwd(pollen.birke),    "Birke"},
-    {openMeteoToDwd(pollen.erle),     "Erle"},
-    {openMeteoToDwd(pollen.graeser),  "Gräser"},
-    {openMeteoToDwd(pollen.beifuss),  "Beifuß"},
-    {openMeteoToDwd(pollen.ambrosia), "Ambrosia"},
-  };
-  for (auto& e : list) { if (e.v > max_v) { max_v = e.v; name = e.n; } }
+  for (int i = 0; i < 8; i++) {
+    if (!pollenGewaehlt(i)) continue;
+    float v = pollenWertWarnung(i);
+    if (v > max_v) { max_v = v; name = POLLEN_ANZEIGE[i]; }
+  }
   return String(name);
 }
 
@@ -2135,7 +2285,47 @@ static const char* aqiStatusText(int aqi) {
   return "Extrem";
 }
 
+// Regen-Nowcast fuer Screen 1: "Regen in 25 Min." / "Regen noch ca. 15 Min." / ausgeblendet
+static void aktualisiereNowcast() {
+  if (!objects.labelregen) return;
+  const float SCHWELLE = 0.1f;   // mm je 15 Min. (ab hier zaehlt ein Slot als Regen)
+  time_t jetzt = time(nullptr);
+  char buf[40] = "";
+  if (wetter.nc_n > 0 && jetzt > 1700000000L && jetzt - wetter.nc_start[0] < 6 * 3600L) {
+    int aktuell = -1;   // Slot, in dem wir gerade sind
+    for (int i = 0; i < wetter.nc_n; i++) {
+      if (jetzt >= wetter.nc_start[i] && jetzt < wetter.nc_start[i] + 900) { aktuell = i; break; }
+    }
+    if (aktuell >= 0 && wetter.nc_mm[aktuell] >= SCHWELLE) {
+      int ende = -1;   // erster trockener Slot danach
+      for (int i = aktuell + 1; i < wetter.nc_n; i++) if (wetter.nc_mm[i] < SCHWELLE) { ende = i; break; }
+      if (ende < 0) snprintf(buf, sizeof(buf), "Es regnet");
+      else {
+        int min = (int)((wetter.nc_start[ende] - jetzt + 59) / 60);
+        snprintf(buf, sizeof(buf), "Regen noch %d Min.", min < 1 ? 1 : min);
+      }
+    } else {
+      int erster = -1;
+      for (int i = 0; i < wetter.nc_n; i++) {
+        if (wetter.nc_start[i] + 900 <= jetzt) continue;   // Slot schon vorbei
+        if (wetter.nc_mm[i] >= SCHWELLE) { erster = i; break; }
+      }
+      if (erster >= 0) {
+        int min = (int)((wetter.nc_start[erster] - jetzt + 59) / 60);
+        snprintf(buf, sizeof(buf), "Regen in %d Min.", min < 1 ? 1 : min);
+      }
+    }
+  }
+  if (buf[0]) {
+    lv_label_set_text(objects.labelregen, buf);
+    lv_obj_clear_flag(objects.labelregen, LV_OBJ_FLAG_HIDDEN);
+  } else {
+    lv_obj_add_flag(objects.labelregen, LV_OBJ_FLAG_HIDDEN);
+  }
+}
+
 void aktualisiereUI() {
+  aktualisiereNowcast();
   struct tm ti;
   bool hasTime = getLocalTime(&ti);
   char buf[24];
@@ -2310,12 +2500,10 @@ void aktualisiereUI() {
   }
 
   // ── Pollenwarnung (screenwarnungpollen) ─────────────────────
-  // Basiert auf Open-Meteo naechste Stunde (umgerechnet auf DWD-Skala)
-  float pollenWerte[] = {openMeteoToDwd(pollen.birke), openMeteoToDwd(pollen.erle),
-                         openMeteoToDwd(pollen.graeser), openMeteoToDwd(pollen.beifuss),
-                         openMeteoToDwd(pollen.ambrosia)};
+  // Nur die in der WebUI gewaehlten Allergene; Open-Meteo naechste Stunde (auf DWD-Skala umgerechnet),
+  // fuer Hasel, Esche und Roggen der DWD-Tageswert
   float maxPollen = -1.0f;
-  for (int pi = 0; pi < 5; pi++) maxPollen = max(maxPollen, pollenWerte[pi]);
+  for (int pi = 0; pi < 8; pi++) if (pollenGewaehlt(pi)) maxPollen = max(maxPollen, pollenWertWarnung(pi));
   pollenWarnAktiv = cfg.pollen_warn && (maxPollen > (float)cfg.pollen_schwelle);
   if (pollenWarnAktiv) {
     setLabel(objects.labelpollenwarntitel, "Pollenwarnung !");
@@ -2392,18 +2580,19 @@ void aktualisiereUI() {
       setLabelFmt(objects.labelwstemp, tempColor(wetter.temp), buf);
     }
 
-    // Pollen: Top-4 nach DWD-Tageswert (heute)
-    struct PolEntry { float val; const char* name; };
+    // Pollen: Top-4 nach DWD-Tageswert (heute), nur die in der WebUI gewaehlten Allergene
+    struct PolEntry { float val; const char* name; int idx; };
     PolEntry polAll[] = {
-      {pollen.dwd_birke,    "Birke"},
-      {pollen.dwd_erle,     "Erle"},
-      {pollen.dwd_esche,    "Esche"},
-      {pollen.dwd_hasel,    "Hasel"},
-      {pollen.dwd_graeser,  "Graeser"},
-      {pollen.dwd_roggen,   "Roggen"},
-      {pollen.dwd_beifuss,  "Beifuss"},
-      {pollen.dwd_ambrosia, "Ambrosia"},
+      {pollen.dwd_birke,    "Birke",    3},
+      {pollen.dwd_erle,     "Erle",     1},
+      {pollen.dwd_esche,    "Esche",    2},
+      {pollen.dwd_hasel,    "Hasel",    0},
+      {pollen.dwd_graeser,  "Graeser",  4},
+      {pollen.dwd_roggen,   "Roggen",   5},
+      {pollen.dwd_beifuss,  "Beifuss",  6},
+      {pollen.dwd_ambrosia, "Ambrosia", 7},
     };
+    for (auto& e : polAll) if (!pollenGewaehlt(e.idx)) e.val = -100.0f;   // nicht gewaehlt: ganz nach hinten
     // Sortiere absteigend nach Wert (einfaches Selection-Sort, nur 8 Einträge)
     for (int i = 0; i < 7; i++)
       for (int j = i + 1; j < 8; j++)
@@ -2413,6 +2602,11 @@ void aktualisiereUI() {
     lv_obj_t* polValLabels[4]  = {objects.labelwspol1val,  objects.labelwspol2val,  objects.labelwspol3val,  objects.labelwspol4val};
     for (int i = 0; i < 4; i++) {
       float v = polAll[i].val;
+      if (v <= -99.0f) {   // weniger als 4 Allergene gewaehlt: Platz leer lassen
+        if (polNameLabels[i]) lv_label_set_text(polNameLabels[i], "-");
+        if (polValLabels[i])  lv_label_set_text(polValLabels[i], "");
+        continue;
+      }
       if (polNameLabels[i]) lv_label_set_text(polNameLabels[i], polAll[i].name);
       if (polValLabels[i])  setPollenLabel(polValLabels[i], v);
     }
@@ -3617,10 +3811,7 @@ static void cbWarnTap(lv_event_t* e) {
 
   } else if (src == objects.screenwarnungpollen) {
     String pollenName = ohneUmlaute(schleimsterPollen());
-    float pollenWerte[] = {openMeteoToDwd(pollen.birke), openMeteoToDwd(pollen.erle),
-                           openMeteoToDwd(pollen.graeser), openMeteoToDwd(pollen.beifuss),
-                           openMeteoToDwd(pollen.ambrosia)};
-    float maxP = -1; for (int i=0;i<5;i++) maxP=max(maxP,pollenWerte[i]);
+    float maxP = -1; for (int i=0;i<8;i++) if (pollenGewaehlt(i)) maxP=max(maxP,pollenWertWarnung(i));
     const char* stufe = maxP>=3?"stark":(maxP>=2?"hoch":(maxP>=1?"mittel":"gering"));
     String msg = pollenName + ": " + stufe + " Belastung\n(Stufe " + String((int)maxP) + " von 3)";
     msg += "\nSchwelle: >" + String(cfg.pollen_schwelle);
@@ -3936,6 +4127,7 @@ void loop() {
       strftime(buf, sizeof(buf), "%H:%M", &ti);
       if (objects.labeltime)   lv_label_set_text(objects.labeltime,   buf);
       if (objects.labelwstime) lv_label_set_text(objects.labelwstime, buf);
+      aktualisiereNowcast();
       const char* wt[] = {"So","Mo","Di","Mi","Do","Fr","Sa"};
       char dbuf[24];
       snprintf(dbuf, sizeof(dbuf), "%s. %02d.%02d.%04d",

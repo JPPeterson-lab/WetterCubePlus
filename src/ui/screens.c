@@ -4842,6 +4842,17 @@ void create_screen_screen_1() {
                 }
             }
         }
+        {
+            // labelregen
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.labelregen = obj;
+            lv_obj_set_pos(obj, 4, 4);
+            lv_obj_set_size(obj, 144, 36);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(common_0a5ce0), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text(obj, "Regen in 25 Min.");
+        }
     }
 
     tick_screen_screen_1();
@@ -5453,6 +5464,7 @@ void delete_screen_screen_1() {
     objects.label_28 = 0;
     objects.labelhumidity = 0;
     objects.label_1 = 0;
+    objects.labelregen = 0;
 }
 
 void delete_screen_screenboot() {

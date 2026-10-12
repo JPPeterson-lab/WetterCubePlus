@@ -113,6 +113,12 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
 </div>
 
 <div class="card">
+  <h2>Meine Allergene</h2>
+  <p class="hint">Die Pollenwarnung und der Gesundheitsscreen ber&uuml;cksichtigen nur die gew&auml;hlten Pollen. Hasel, Esche und Roggen kommen aus der DWD-Tagesvorhersage, die &uuml;brigen aus der Stundenvorhersage.</p>
+  %POL_AUSWAHL%
+</div>
+
+<div class="card">
   <h2>Display</h2>
   <label>Helligkeit: <span id="bv">%BRIGHT%</span>%</label>
   <input type="range" name="brightness" min="10" max="100" value="%BRIGHT%"
@@ -200,6 +206,16 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
 </div>
 
 <div class="card">
+  <h2>Einstellungen sichern</h2>
+  <p class="hint">Speichert alle Einstellungen (ohne WLAN-Passwort) als Datei und spielt sie bei Bedarf wieder ein, zum Beispiel nach einer Neuinstallation mit gel&ouml;schtem Speicher.</p>
+  <a href="/backup" class="btn btn-blau">Einstellungen herunterladen</a>
+  <label>Sicherung wiederherstellen</label>
+  <input type="file" id="restore_file" accept=".json,application/json">
+  <button type="button" class="btn btn-rot" onclick="restoreSettings()">Wiederherstellen</button>
+  <div id="restore_status" class="status"></div>
+</div>
+
+<div class="card">
   <h2>WLAN-Zugangsdaten aendern</h2>
   <p class="hint">SSID/Passwort aendern ohne neu zu flashen.</p>
   <a href="/wlan" class="btn btn-blau">WLAN aendern</a>
@@ -225,6 +241,21 @@ function checkOta(){
       document.getElementById('ota_status').textContent='Bereits aktuell ('+d.latest+')';
     }
   }).catch(function(){document.getElementById('ota_status').textContent='Fehler beim Pruefen';});
+}
+function restoreSettings(){
+  var f=document.getElementById('restore_file').files[0];
+  var st=document.getElementById('restore_status');
+  if(!f){st.textContent='Bitte zuerst eine Datei waehlen.';return;}
+  if(!confirm('Die Einstellungen aus der Datei jetzt einspielen? Das Geraet startet danach neu.')) return;
+  var r=new FileReader();
+  r.onload=function(){
+    st.textContent='Wird eingespielt ...';
+    fetch('/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:r.result})
+      .then(function(x){return x.text().then(function(tx){return {ok:x.ok,t:tx};});})
+      .then(function(o){st.textContent=o.ok?'Eingespielt. Das Geraet startet neu (Seite in ca. 30 Sekunden neu laden).':'Fehler: '+o.t;})
+      .catch(function(){st.textContent='Verbindung beendet. Wenn das Geraet gerade neu startet, ist das normal.';});
+  };
+  r.readAsText(f);
 }
 function doUpdate(){
   if(!confirm('Update jetzt installieren?\n\nDas Geraet NICHT vom Strom trennen. Es startet danach selbst neu (ca. 1 Minute).')) return;

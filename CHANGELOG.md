@@ -2,6 +2,15 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.4.0 (2026-10-12)
+
+### Neu
+- **Regen-Nowcast auf dem Hauptscreen:** Oben links steht jetzt, wann es regnet: „Regen in 25 Min.“, „Regen noch 10 Min.“ oder „Es regnet“. Die Daten kommen aus Open-Meteo im 15-Minuten-Raster (nächste 3 Stunden, weltweit verfügbar); ist kein Regen in Sicht, bleibt das Feld leer. Der Text wird jede Minute neu berechnet
+- **Meine Allergene:** In der WebUI lassen sich die Allergene wählen (Hasel, Erle, Esche, Birke, Gräser, Roggen, Beifuß, Ambrosia), auf die du reagierst. Die Pollenwarnung und die Pollenliste im Gesundheitsscreen berücksichtigen nur diese; nicht gewählte erscheinen dort als „-“. Standard: alle
+- **Einstellungen sichern und wiederherstellen:** Die WebUI bietet jetzt „Einstellungen herunterladen“ (Datei `wettercubeplus-einstellungen.json`) und „Wiederherstellen“. Die Sicherung enthält alle Einstellungen, aber **nicht** das WLAN-Passwort. Beim Wiederherstellen werden Werte geprüft und auf sinnvolle Bereiche begrenzt, danach startet das Gerät neu
+
+---
+
 ## v1.3.1 (2026-10-12)
 
 ### Geändert
