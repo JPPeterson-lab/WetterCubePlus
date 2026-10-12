@@ -2,6 +2,13 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.6.3 (2026-10-12)
+
+### Neu
+- **„Log ansehen“ in der Web-Oberfläche:** In der Karte *Firmware-Update* öffnet ein neuer Knopf das Diagnose-Log (`/log`) in einem neuen Tab. Bisher musste man die Adresse selbst eintippen
+
+---
+
 ## v1.6.2 (2026-10-12)
 
 ### Neu

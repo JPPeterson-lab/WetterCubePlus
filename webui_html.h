@@ -241,6 +241,7 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
   <h2>Firmware-Update</h2>
   <div class="status">Aktuelle Version: %VERSION%</div>
   <button type="button" class="btn btn-blau" onclick="checkOta()">Auf Updates pruefen</button>
+  <a href="/log" target="_blank" class="btn btn-blau" style="text-decoration:none">Log ansehen</a>
   <div id="ota_status" class="status"></div>
   <div class="status" style="margin-top:10px">Hinweis: Waehrend des Updates zeigt das Display einen Fortschrittsbalken. Das Geraet dabei <b>nicht vom Strom trennen</b> &ndash; es startet danach selbst neu (ca. 1 Minute). Das Geraet prueft ausserdem selbst regelmaessig auf Updates und zeigt oben rechts auf dem Hauptscreen ein Update-Symbol.</div>
 </div>

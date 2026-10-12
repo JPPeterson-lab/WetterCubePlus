@@ -2,6 +2,13 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.6.3 (2026-10-12)
+
+### New
+- **"Log ansehen" in the web interface:** In the *Firmware-Update* card a new button opens the diagnostic log (`/log`) in a new tab. Before, you had to type the address yourself
+
+---
+
 ## v1.6.2 (2026-10-12)
 
 ### New

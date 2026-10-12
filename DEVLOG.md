@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.6.3
+
+### Knopf „Log ansehen“ in der WebUI
+
+Ein Link-Knopf (`<a href="/log" target="_blank" class="btn btn-blau">`) neben „Auf Updates pruefen“ in der Karte Firmware-Update, wie schon beim WetterCube. Reine Änderung an `webui_html.h`; `/log` liefert bereits `text/plain; charset=utf-8`, Umlaute und `°` erscheinen korrekt.
+
+---
+
 ## 2026-10-12 – v1.6.2
 
 ### Ausführlicheres Diagnose-Log
