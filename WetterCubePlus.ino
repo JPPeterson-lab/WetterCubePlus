@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.6.0"
+#define FIRMWARE_VERSION "1.6.1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -134,6 +134,9 @@ struct Config {
   float  lon = 0.0f;
   int    dwd_region = 31;       // 31 = Berlin; vollständige Liste siehe unten
   bool   pollen_warn = true;
+  bool   hinweis_regen = true;   // Hinweis-Kachel auf Screen 1: Regen / Frost / UV
+  bool   hinweis_frost = true;
+  bool   hinweis_uv    = true;
   int    pollen_schwelle = 2;   // 0=gering 1=mittel 2=hoch 3=stark
   int    pollen_auswahl  = 0xFF; // gewaehlte Allergene, Bit i = POLLEN_ANZEIGE[i] (Standard: alle)
   int    dim_timeout = 3;       // Minuten; 0 = aus
@@ -225,6 +228,10 @@ struct WetterDaten {
   int    wmo_code    = 0;
   float  uv_index    = 0.0f;
   float  uv_next3h   = 0.0f;  // Max UV der nächsten 3 Stunden
+  float  uv_hinweis  = 0.0f;  // Max UV von jetzt bis in 3 Stunden (fuer den UV-Hinweis)
+  float  frost_min   = 99.0f; // tiefste Temperatur der naechsten 12 Stunden (99 = keine Daten)
+  bool   frost_jetzt = false; // schon jetzt <= 0 Grad
+  String frost_ab;            // Uhrzeit der ersten Stunde mit <= 0 Grad
   float  temp_min    = 0.0f;
   float  temp_max    = 0.0f;
   bool   is_day      = true;
@@ -596,6 +603,9 @@ void ladeCfg() {
   cfg.lon             = prefs.getFloat ("lon",         0.0f);
   cfg.dwd_region      = prefs.getInt   ("dwd_region",  31);
   cfg.pollen_warn     = prefs.getBool  ("pollen_warn", true);
+  cfg.hinweis_regen   = prefs.getBool  ("hw_regen", true);
+  cfg.hinweis_frost   = prefs.getBool  ("hw_frost", true);
+  cfg.hinweis_uv      = prefs.getBool  ("hw_uv", true);
   cfg.pollen_schwelle = prefs.getInt   ("pol_schw",    2);
   cfg.pollen_auswahl  = prefs.getInt   ("pol_ausw",    0xFF);
   cfg.dim_timeout       = prefs.getInt   ("dim_time",    3);
@@ -629,6 +639,9 @@ void speichereCfg() {
   prefs.putFloat ("lon",        cfg.lon);
   prefs.putInt   ("dwd_region", cfg.dwd_region);
   prefs.putBool  ("pollen_warn",cfg.pollen_warn);
+  prefs.putBool  ("hw_regen",   cfg.hinweis_regen);
+  prefs.putBool  ("hw_frost",   cfg.hinweis_frost);
+  prefs.putBool  ("hw_uv",      cfg.hinweis_uv);
   prefs.putInt   ("pol_schw",   cfg.pollen_schwelle);
   prefs.putInt   ("pol_ausw",   cfg.pollen_auswahl);
   prefs.putInt   ("dim_time",    cfg.dim_timeout);
@@ -838,6 +851,9 @@ void handleWebRoot() {
   html.replace("%LOCATION%",    cfg.location);
   html.replace("%DWD_REGIONEN%",baueDwdRegionenOptions(cfg.dwd_region));
   html.replace("%PW%",          cfg.pollen_warn   ? "checked" : "");
+  html.replace("%HR%",          cfg.hinweis_regen ? "checked" : "");
+  html.replace("%HF%",          cfg.hinweis_frost ? "checked" : "");
+  html.replace("%HU%",          cfg.hinweis_uv    ? "checked" : "");
   html.replace("%WR%",          cfg.warn_region   ? "checked" : "");
   html.replace("%BRIGHT%",      String(cfg.brightness));
   html.replace("%DTT%", (cfg.dim_timeout == -1) ? "selected" : "");
@@ -886,6 +902,9 @@ void handleWebSave() {
   if (server.hasArg("location"))   cfg.location        = server.arg("location");
   if (server.hasArg("dwd_region")) cfg.dwd_region      = server.arg("dwd_region").toInt();
   cfg.pollen_warn     = server.hasArg("pollen_warn");
+  cfg.hinweis_regen   = server.hasArg("hw_regen");
+  cfg.hinweis_frost   = server.hasArg("hw_frost");
+  cfg.hinweis_uv      = server.hasArg("hw_uv");
   cfg.warn_region     = server.hasArg("warn_region");
   cfg.night_mode      = server.hasArg("night_mode");
   if (server.hasArg("night_from"))   cfg.night_from       = server.arg("night_from").toInt();
@@ -922,6 +941,9 @@ void handleWebBackup() {
   doc["lon"]              = cfg.lon;
   doc["dwd_region"]       = cfg.dwd_region;
   doc["pollen_warn"]      = cfg.pollen_warn;
+  doc["hinweis_regen"]    = cfg.hinweis_regen;
+  doc["hinweis_frost"]    = cfg.hinweis_frost;
+  doc["hinweis_uv"]       = cfg.hinweis_uv;
   doc["pollen_schwelle"]  = cfg.pollen_schwelle;
   doc["pollen_auswahl"]   = cfg.pollen_auswahl;
   doc["warn_region"]      = cfg.warn_region;
@@ -965,6 +987,9 @@ void handleWebRestore() {
   #define RS_BOOL(key, feld)         if (!doc[key].isNull()) { cfg.feld = doc[key].as<bool>(); n++; }
   RS_INT ("dwd_region",       dwd_region,       0, 255);
   RS_BOOL("pollen_warn",      pollen_warn);
+  RS_BOOL("hinweis_regen",    hinweis_regen);
+  RS_BOOL("hinweis_frost",    hinweis_frost);
+  RS_BOOL("hinweis_uv",       hinweis_uv);
   RS_INT ("pollen_schwelle",  pollen_schwelle,  0, 3);
   RS_INT ("pollen_auswahl",   pollen_auswahl,   0, 255);
   RS_BOOL("warn_region",      warn_region);
@@ -1481,6 +1506,28 @@ static bool fetchWetterEinmal() {
         if (v > uvMax) uvMax = v;
       }
       wetter.uv_next3h = uvMax;
+      // UV-Hinweis (jetzt bis +3 h) und Frost (jetzt bis +12 h); fehlende Werte nicht als 0 werten
+      float uvH = 0.0f;
+      for (int i = 0; i <= 3; i++) {
+        JsonVariantConst v = doc["hourly"]["uv_index"][min(h + i, 47)];
+        if (!v.isNull() && v.as<float>() > uvH) uvH = v.as<float>();
+      }
+      wetter.uv_hinweis = uvH;
+      float fMin = 99.0f; int frostIdx = -1;
+      for (int i = 0; i <= 12 && h + i < 48; i++) {
+        JsonVariantConst v = doc["hourly"]["temperature_2m"][h + i];
+        if (v.isNull()) continue;
+        float tv = v.as<float>();
+        if (tv < fMin) fMin = tv;
+        if (frostIdx < 0 && tv <= 0.0f) frostIdx = i;
+      }
+      wetter.frost_min   = fMin;
+      wetter.frost_jetzt = (frostIdx == 0);
+      wetter.frost_ab    = "";
+      if (frostIdx > 0) {
+        String ft = doc["hourly"]["time"][h + frostIdx].as<String>();
+        if (ft.length() >= 16) wetter.frost_ab = ft.substring(11, 16);
+      }
       // Regen-Nowcast: 15-Min-Slots der naechsten 3 Stunden
       JsonArray ncT = doc["minutely_15"]["time"].as<JsonArray>();
       JsonArray ncP = doc["minutely_15"]["precipitation"].as<JsonArray>();
@@ -2323,55 +2370,139 @@ static void ampelBerechnen(const char*& active, const char*& modus, String& deta
 }
 
 
-// Regen-Nowcast fuer Screen 1: "Regen in 25 Min." / "Regen noch ca. 15 Min." / ausgeblendet
-static void aktualisiereNowcast() {
-  if (!objects.labelregen) return;
+// ── Hinweis-Kachel auf Screen 1 (Regen / Frost / UV) ─────────────────────────
+// Neuer Hinweis: Kachel blinkt, Antippen bestaetigt (danach Dauerleuchten, solange die Bedingung gilt).
+// Mehrere Hinweise: unbestaetigte zuerst (Regen, Frost, UV), danach Dauerleuchten des wichtigsten (gleiche Reihenfolge);
+// Antippen im Dauerleuchten schaltet zum naechsten aktiven Hinweis. Ein bestaetigter Hinweis blinkt erst wieder,
+// wenn seine Bedingung mindestens 20 Minuten lang weg war.
+enum { HW_REGEN = 0, HW_FROST = 1, HW_UV = 2, HW_ANZAHL = 3 };
+struct Hinweis { bool aktiv = false; bool bestaetigt = false; unsigned long inaktivSeit = 0; char text[48] = ""; };
+static Hinweis hinweise[HW_ANZAHL];
+static const uint32_t HW_FARBE[HW_ANZAHL] = {0x0A5CE0, 0x0E7490, 0xB45309};   // Blau, Petrol, Orangebraun (weisse Schrift)
+static const float    HW_UV_SCHWELLE = 6.0f;                                  // UV-Index "hoch"
+static int  hinweisAngezeigt = -1;
+static int  hinweisManuell   = -1;
+static bool hinweisBlinkt    = false;
+static bool hinweisPhase     = false;
+
+// Regen-Nowcast: "Regen in 25 Min." / "Regen noch 10 Min." / "Es regnet"
+static bool hinweisRegen(char* buf, size_t n) {
   const float SCHWELLE = 0.1f;   // mm je 15 Min. (ab hier zaehlt ein Slot als Regen)
   time_t jetzt = time(nullptr);
-  char buf[40] = "";
-  if (wetter.nc_n > 0 && jetzt > 1700000000L && jetzt - wetter.nc_start[0] < 6 * 3600L) {
-    int aktuell = -1;   // Slot, in dem wir gerade sind
-    for (int i = 0; i < wetter.nc_n; i++) {
-      if (jetzt >= wetter.nc_start[i] && jetzt < wetter.nc_start[i] + 900) { aktuell = i; break; }
+  if (wetter.nc_n <= 0 || jetzt < 1700000000L || jetzt - wetter.nc_start[0] >= 6 * 3600L) return false;
+  int aktuell = -1;   // Slot, in dem wir gerade sind
+  for (int i = 0; i < wetter.nc_n; i++) {
+    if (jetzt >= wetter.nc_start[i] && jetzt < wetter.nc_start[i] + 900) { aktuell = i; break; }
+  }
+  if (aktuell >= 0 && wetter.nc_mm[aktuell] >= SCHWELLE) {
+    int ende = -1;   // erster trockener Slot danach
+    for (int i = aktuell + 1; i < wetter.nc_n; i++) if (wetter.nc_mm[i] < SCHWELLE) { ende = i; break; }
+    if (ende < 0) { snprintf(buf, n, "Es regnet"); return true; }
+    int min = (int)((wetter.nc_start[ende] - jetzt + 59) / 60);
+    snprintf(buf, n, "Regen noch %d Min.", min < 1 ? 1 : min);
+    return true;
+  }
+  for (int i = 0; i < wetter.nc_n; i++) {
+    if (wetter.nc_start[i] + 900 <= jetzt) continue;   // Slot schon vorbei
+    if (wetter.nc_mm[i] >= SCHWELLE) {
+      int min = (int)((wetter.nc_start[i] - jetzt + 59) / 60);
+      snprintf(buf, n, "Regen in %d Min.", min < 1 ? 1 : min);
+      return true;
     }
-    if (aktuell >= 0 && wetter.nc_mm[aktuell] >= SCHWELLE) {
-      int ende = -1;   // erster trockener Slot danach
-      for (int i = aktuell + 1; i < wetter.nc_n; i++) if (wetter.nc_mm[i] < SCHWELLE) { ende = i; break; }
-      if (ende < 0) snprintf(buf, sizeof(buf), "Es regnet");
-      else {
-        int min = (int)((wetter.nc_start[ende] - jetzt + 59) / 60);
-        snprintf(buf, sizeof(buf), "Regen noch %d Min.", min < 1 ? 1 : min);
-      }
+  }
+  return false;
+}
+
+// Frost: tiefste Temperatur der naechsten 12 Stunden <= 0 Grad
+static bool hinweisFrost(char* buf, size_t n) {
+  if (wetter.frost_min > 0.0f) return false;   // auch 99 = keine Daten
+  int t = (int)floorf(wetter.frost_min + 0.5f);
+  if (wetter.frost_jetzt)               snprintf(buf, n, "Frost, bis %d °C", t);
+  else if (wetter.frost_ab.length())    snprintf(buf, n, "Frost ab %s, %d °C", wetter.frost_ab.c_str(), t);
+  else                                  snprintf(buf, n, "Frost, %d °C", t);
+  return true;
+}
+
+// UV: Index jetzt oder in den naechsten 3 Stunden ab der Schwelle
+static bool hinweisUv(char* buf, size_t n) {
+  if (wetter.uv_hinweis < HW_UV_SCHWELLE) return false;
+  int uv = (int)floorf(wetter.uv_hinweis + 0.5f);
+  const char* stufe = wetter.uv_hinweis >= 11.0f ? "extrem" : wetter.uv_hinweis >= 8.0f ? "sehr hoch" : "hoch";
+  snprintf(buf, n, "UV %s (%d), Sonnenschutz", stufe, uv);
+  return true;
+}
+
+static void zeichneHinweisFarbe() {
+  if (!objects.labelregen || hinweisAngezeigt < 0) return;
+  lv_color_t c = lv_color_hex(HW_FARBE[hinweisAngezeigt]);
+  if (hinweisBlinkt && !hinweisPhase) c = lv_color_mix(lv_color_black(), c, 120);   // dunklere Phase beim Blinken
+  lv_obj_set_style_bg_color(objects.labelregen, c, LV_PART_MAIN);
+}
+
+static void aktualisiereHinweise() {
+  if (!objects.labelregen) return;
+  char buf[HW_ANZAHL][48];
+  bool akt[HW_ANZAHL];
+  akt[HW_REGEN] = cfg.hinweis_regen && hinweisRegen(buf[HW_REGEN], sizeof(buf[0]));
+  akt[HW_FROST] = cfg.hinweis_frost && hinweisFrost(buf[HW_FROST], sizeof(buf[0]));
+  akt[HW_UV]    = cfg.hinweis_uv    && hinweisUv   (buf[HW_UV],    sizeof(buf[0]));
+  unsigned long jetzt = millis();
+  for (int i = 0; i < HW_ANZAHL; i++) {
+    Hinweis& h = hinweise[i];
+    if (akt[i]) {
+      strlcpy(h.text, buf[i], sizeof(h.text));
+      h.aktiv = true;
+      h.inaktivSeit = 0;
     } else {
-      int erster = -1;
-      for (int i = 0; i < wetter.nc_n; i++) {
-        if (wetter.nc_start[i] + 900 <= jetzt) continue;   // Slot schon vorbei
-        if (wetter.nc_mm[i] >= SCHWELLE) { erster = i; break; }
-      }
-      if (erster >= 0) {
-        int min = (int)((wetter.nc_start[erster] - jetzt + 59) / 60);
-        snprintf(buf, sizeof(buf), "Regen in %d Min.", min < 1 ? 1 : min);
-      }
+      if (h.aktiv) { h.aktiv = false; h.inaktivSeit = jetzt ? jetzt : 1; }
+      if (h.bestaetigt && h.inaktivSeit && jetzt - h.inaktivSeit >= 1200000UL) { h.bestaetigt = false; h.inaktivSeit = 0; }
     }
   }
-  if (buf[0]) {
-    // Farbige Kachel mit weisser Schrift, damit der Hinweis auffaellt
-    lv_obj_set_style_bg_color(objects.labelregen, lv_color_hex(0x0A5CE0), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(objects.labelregen, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_style_text_color(objects.labelregen, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_style_radius(objects.labelregen, 10, LV_PART_MAIN);
-    lv_obj_set_style_pad_ver(objects.labelregen, 5, LV_PART_MAIN);
-    lv_obj_set_style_pad_hor(objects.labelregen, 6, LV_PART_MAIN);
-    lv_obj_set_height(objects.labelregen, LV_SIZE_CONTENT);
-    lv_label_set_text(objects.labelregen, buf);
-    lv_obj_clear_flag(objects.labelregen, LV_OBJ_FLAG_HIDDEN);
-  } else {
-    lv_obj_add_flag(objects.labelregen, LV_OBJ_FLAG_HIDDEN);
+  int zeige = -1;
+  hinweisBlinkt = false;
+  for (int i = 0; i < HW_ANZAHL; i++) if (hinweise[i].aktiv && !hinweise[i].bestaetigt) { zeige = i; hinweisBlinkt = true; break; }
+  if (zeige < 0) {
+    if (hinweisManuell >= 0 && hinweise[hinweisManuell].aktiv) zeige = hinweisManuell;
+    else for (int i = 0; i < HW_ANZAHL; i++) if (hinweise[i].aktiv) { zeige = i; break; }
   }
+  hinweisAngezeigt = zeige;
+  if (zeige < 0) {
+    lv_obj_add_flag(objects.labelregen, LV_OBJ_FLAG_HIDDEN);
+    return;
+  }
+  // Farbige Kachel mit weisser Schrift
+  lv_obj_set_style_bg_opa(objects.labelregen, LV_OPA_COVER, LV_PART_MAIN);
+  lv_obj_set_style_text_color(objects.labelregen, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+  lv_obj_set_style_radius(objects.labelregen, 10, LV_PART_MAIN);
+  lv_obj_set_style_pad_ver(objects.labelregen, 5, LV_PART_MAIN);
+  lv_obj_set_style_pad_hor(objects.labelregen, 6, LV_PART_MAIN);
+  lv_obj_set_height(objects.labelregen, LV_SIZE_CONTENT);
+  lv_label_set_text(objects.labelregen, hinweise[zeige].text);
+  zeichneHinweisFarbe();
+  lv_obj_clear_flag(objects.labelregen, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void cbHinweisBlink(lv_timer_t*) {
+  hinweisPhase = !hinweisPhase;
+  if (hinweisBlinkt) zeichneHinweisFarbe();
+}
+
+static void cbHinweisTap(lv_event_t*) {
+  if (hinweisAngezeigt < 0) return;
+  if (hinweisBlinkt) {
+    hinweise[hinweisAngezeigt].bestaetigt = true;   // bestaetigen: naechster unbestaetigter Hinweis oder Dauerleuchten
+    hinweisManuell = -1;
+  } else {
+    for (int k = 1; k < HW_ANZAHL; k++) {            // Dauerleuchten: zum naechsten aktiven Hinweis wechseln
+      int c = (hinweisAngezeigt + k) % HW_ANZAHL;
+      if (hinweise[c].aktiv) { hinweisManuell = c; break; }
+    }
+  }
+  aktualisiereHinweise();
 }
 
 void aktualisiereUI() {
-  aktualisiereNowcast();
+  aktualisiereHinweise();
   struct tm ti;
   bool hasTime = getLocalTime(&ti);
   char buf[24];
@@ -3903,6 +4034,14 @@ void setup() {
   // Warn-Blink-Timer (läuft immer, wirkt nur wenn Warnscreen aktiv)
   lv_timer_create(cbWarnBlink, 500, nullptr);
 
+  // Hinweis-Kachel (Regen/Frost/UV) auf Screen 1: antippbar, blinkt bis zur Bestaetigung
+  if (objects.labelregen) {
+    lv_obj_add_flag(objects.labelregen, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_ext_click_area(objects.labelregen, 8);
+    lv_obj_add_event_cb(objects.labelregen, cbHinweisTap, LV_EVENT_CLICKED, nullptr);
+  }
+  lv_timer_create(cbHinweisBlink, 500, nullptr);
+
   // Warnkarte-Screen programmatisch anlegen
   erstelleWarnkarteScreen();
   erstelleWarnkarte2Screen();
@@ -4131,7 +4270,7 @@ void loop() {
       strftime(buf, sizeof(buf), "%H:%M", &ti);
       if (objects.labeltime)   lv_label_set_text(objects.labeltime,   buf);
       if (objects.labelwstime) lv_label_set_text(objects.labelwstime, buf);
-      aktualisiereNowcast();
+      aktualisiereHinweise();
       const char* wt[] = {"So","Mo","Di","Mi","Do","Fr","Sa"};
       char dbuf[24];
       snprintf(dbuf, sizeof(dbuf), "%s. %02d.%02d.%04d",

@@ -1,7 +1,7 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.6.0-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.6.1-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -70,7 +70,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌙 | **Dark Mode** | Vollständiges dunkles Farbthema für alle Screens, Hintergründe und Bedienelemente – Umschalter direkt im Menü-Screen |
 | 🎛️ | **Menü-Screen** | Helligkeit, Pollenwarnung und DWD-Warnungen direkt am Gerät ein-/ausschalten – kein WebUI nötig |
 | 🎮 | **Mini-Spiel: Bubblebreaker** | Bunte Bubble-Puzzle direkt auf dem Cube – zusammenhängende Farbgruppen antippen und auflösen, Undo für den letzten Zug, wählbar zwischen Modus "Normal" und "Laufend" (Feld füllt sich automatisch nach), persistente Bestenliste (Top 5); Start über den Menü-Screen |
-| 🌧️ | **Regen-Nowcast** | Hauptscreen zeigt oben links in einer blauen Kachel, wann es regnet („Regen in 25 Min.“, „Regen noch 10 Min.“ oder „Es regnet“), Daten im 15-Minuten-Raster von Open-Meteo; ersetzt die frühere Regenwarnung |
+| 🌧️ | **Hinweis-Kachel (Regen, Frost, UV)** | Kachel oben links auf dem Hauptscreen: „Regen in 25 Min.“ (15-Minuten-Raster von Open-Meteo), „Frost ab 03:00, -2 °C“, „UV hoch (7), Sonnenschutz“. Neue Hinweise blinken bis zum Antippen, danach leuchtet die Kachel dauerhaft; mehrere Hinweise werden nacheinander bestätigt (Regen vor Frost vor UV). Ersetzt die frühere Regenwarnung; in der WebUI einzeln abschaltbar |
 | 🤧 | **Meine Allergene** | In der WebUI die eigenen Allergene wählen; Pollenwarnung und Gesundheitsscreen berücksichtigen nur diese |
 | 💾 | **Einstellungen sichern** | Alle Einstellungen (ohne WLAN-Passwort) als Datei herunterladen und wieder einspielen |
 | 🧮 | **Taschenrechner** | Bunter Taschenrechner mit Grundrechenarten, Prozent, Vorzeichen-Wechsel und Rückschritt; Start über den Menü-Screen |
@@ -131,6 +131,7 @@ Beim Booten Finger auf das Display halten bis „Neukalibrierung" erscheint, dan
 | | Dimm-Timeout: Aus / 1 / 3 / 5 / 10 Minuten |
 | | Nachtmodus: Von/Bis (15-Min-Schritte), eigene Nacht-Helligkeit 0–50 % |
 | **Warnungen** | Pollenwarnung ein/aus |
+| **Hinweise** | Regen-, Frost- und UV-Hinweis auf dem Hauptscreen je ein/aus |
 | | Pollen-Schwellwert: Gering / Mittel / Hoch / Sehr hoch |
 | **DWD-Region** | Bundesland-Auswahl für Wetterwarnungen & Radarkarte |
 | **Biowetter** | DWD-Zone (A–J) für Biowetter-Daten |
@@ -308,7 +309,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.6.0-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.6.1-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -372,7 +373,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🌙 | **Dark Mode** | Full dark color theme for all screens, backgrounds, and controls – toggle right on the menu screen |
 | 🎛️ | **Menu screen** | Adjust brightness, toggle pollen warnings and DWD alerts directly on the device – no WebUI needed |
 | 🎮 | **Mini-game: Bubblebreaker** | Colorful bubble puzzle right on the cube – tap connected color groups to clear them, undo your last move, choose between "Normal" and "Endless" mode (board auto-refills), persistent high-score table (top 5); launch from the menu screen |
-| 🌧️ | **Rain nowcast** | The main screen shows at the top left, in a blue tile, when it rains ("Regen in 25 Min.", "Regen noch 10 Min." or "Es regnet"), based on Open-Meteo 15-minute data; replaces the former rain warning |
+| 🌧️ | **Hint tile (rain, frost, UV)** | Tile at the top left of the main screen: "Regen in 25 Min." (rain in 25 min, Open-Meteo 15-minute data), "Frost ab 03:00, -2 °C" (frost from 03:00), "UV hoch (7), Sonnenschutz" (high UV). New hints blink until tapped, then the tile stays lit; several hints are acknowledged one after another (rain before frost before UV). Replaces the former rain warning; each can be switched off in the WebUI |
 | 🤧 | **My allergens** | Choose your own allergens in the WebUI; the pollen warning and the health screen consider only those |
 | 💾 | **Settings backup** | Download all settings (without the Wi-Fi password) as a file and restore them later |
 | 🧮 | **Calculator** | Colorful pocket calculator with basic arithmetic, percent, sign toggle and backspace; launch from the menu screen |
@@ -432,6 +433,7 @@ Hold your finger on the display during boot until "Neukalibrierung" appears, the
 | | Dimming timeout: Off / 1 / 3 / 5 / 10 minutes |
 | | Night mode: From/To (15-min steps), separate night brightness 0–50 % |
 | **Warnings** | Pollen warning on/off |
+| **Hints** | Rain, frost and UV hint on the main screen, each on/off |
 | | Pollen threshold: Low / Moderate / High / Very High |
 | **DWD region** | Select federal state for weather warnings & radar map |
 | **Firmware** | OTA update: install new firmware over Wi-Fi – no USB needed |

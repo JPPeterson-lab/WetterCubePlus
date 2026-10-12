@@ -2,6 +2,15 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.6.1 (2026-10-12)
+
+### Neu
+- **Frost- und UV-Hinweis:** Die Kachel oben links auf dem Hauptscreen zeigt jetzt neben dem Regen auch **Frost** (0 °C oder darunter in den nächsten 12 Stunden, z. B. „Frost ab 03:00, -2 °C“) und **starke UV-Strahlung** (UV-Index 6 oder höher in den nächsten 3 Stunden, z. B. „UV hoch (7), Sonnenschutz“). Frost ist eisblau-petrol, UV orange-braun, Regen weiterhin blau
+- **Blinken bis zur Bestätigung:** Ein neuer Hinweis lässt die Kachel blinken. Antippen bestätigt ihn, danach leuchtet die Kachel dauerhaft, solange der Hinweis gilt. Sind mehrere Hinweise aktiv, kommen die unbestätigten nacheinander (Regen, Frost, UV); jedes Antippen bestätigt den gezeigten und zeigt den nächsten. Danach bleibt der wichtigste dauerhaft sichtbar (Regen vor Frost vor UV), und ein weiteres Antippen wechselt zum nächsten aktiven Hinweis. Ein bestätigter Hinweis blinkt erst wieder, wenn seine Bedingung mindestens 20 Minuten lang weg war
+- Die WebUI hat eine neue Karte **Hinweise auf dem Hauptscreen** mit je einem Schalter für Regen, Frost und UV (alle standardmäßig an). Die Schalter sind Teil der Einstellungssicherung
+
+---
+
 ## v1.6.0 (2026-10-12)
 
 ### Neu

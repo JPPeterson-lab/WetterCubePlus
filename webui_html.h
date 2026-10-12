@@ -111,6 +111,17 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
 </div>
 
 <div class="card">
+  <h2>Hinweise auf dem Hauptscreen</h2>
+  <p class="hint">Eine Kachel oben links zeigt Regen, Frost und starke UV-Strahlung. Neue Hinweise blinken, bis du die Kachel antippst; danach leuchtet sie dauerhaft, solange der Hinweis gilt. Bei mehreren Hinweisen hat Regen Vorrang, dann Frost, dann UV.</p>
+  <div class="row"><span>Regen</span>
+    <label class="toggle"><input type="checkbox" name="hw_regen" %HR%><span class="slider"></span></label></div>
+  <div class="row"><span>Frost (0 &deg;C oder darunter in den n&auml;chsten 12 Stunden)</span>
+    <label class="toggle"><input type="checkbox" name="hw_frost" %HF%><span class="slider"></span></label></div>
+  <div class="row"><span>UV-Index 6 oder h&ouml;her</span>
+    <label class="toggle"><input type="checkbox" name="hw_uv" %HU%><span class="slider"></span></label></div>
+</div>
+
+<div class="card">
   <h2>Meine Allergene</h2>
   <p class="hint">Die Pollenwarnung und der Gesundheitsscreen ber&uuml;cksichtigen nur die gew&auml;hlten Pollen. Hasel, Esche und Roggen kommen aus der DWD-Tagesvorhersage, die &uuml;brigen aus der Stundenvorhersage.</p>
   %POL_AUSWAHL%

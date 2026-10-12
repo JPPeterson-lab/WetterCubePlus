@@ -2,6 +2,15 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.6.1 (2026-10-12)
+
+### New
+- **Frost and UV hints:** Besides rain, the tile at the top left of the main screen now also shows **frost** (0 °C or below within the next 12 hours, e.g. "Frost ab 03:00, -2 °C") and **strong UV radiation** (UV index 6 or higher within the next 3 hours, e.g. "UV hoch (7), Sonnenschutz"). Frost is icy teal, UV orange-brown, rain stays blue
+- **Blinking until acknowledged:** A new hint makes the tile blink. Tapping acknowledges it, after which the tile stays lit as long as the hint applies. If several hints are active, the unacknowledged ones come one after another (rain, frost, UV); each tap acknowledges the one shown and shows the next. After that the most important one stays visible (rain before frost before UV), and another tap switches to the next active hint. An acknowledged hint only blinks again after its condition has been gone for at least 20 minutes
+- The WebUI has a new card **Hinweise auf dem Hauptscreen** (hints on the main screen) with one switch each for rain, frost and UV (all on by default). The switches are part of the settings backup
+
+---
+
 ## v1.6.0 (2026-10-12)
 
 ### New

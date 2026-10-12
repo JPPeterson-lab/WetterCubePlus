@@ -1,5 +1,21 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.6.1
+
+### Hinweis-Kachel: Regen, Frost, UV mit Bestätigung
+
+Das Label `LabelRegen` (oben links auf Screen 1) ist jetzt eine allgemeine Hinweis-Kachel; neue PicoPixel-Objekte waren dafür nicht nötig. `aktualisiereNowcast()` wurde durch `aktualisiereHinweise()` ersetzt, mit je einer Prüffunktion pro Hinweis (`hinweisRegen`, `hinweisFrost`, `hinweisUv`) und einem Zustand je Hinweis (`aktiv`, `bestaetigt`, `inaktivSeit`, Text).
+
+**Auswahl:** Gibt es unbestätigte aktive Hinweise, wird der mit der höchsten Priorität (Regen, Frost, UV) blinkend gezeigt (500-ms-Timer wechselt zwischen Farbe und abgedunkelter Farbe). Sonst leuchtet der wichtigste aktive Hinweis dauerhaft, oder der per Tippen gewählte. Tippen: beim Blinken bestätigen, im Dauerleuchten zum nächsten aktiven Hinweis wechseln. Ein bestätigter Hinweis wird erst wieder „neu“, wenn er 20 Minuten inaktiv war, damit kurze Regenpausen keinen neuen Alarm auslösen. Aufruf bei jedem `aktualisiereUI()` und jede Minute (damit „in 25 Min.“ herunterzählt).
+
+**Daten:** `fetchWetter()` berechnet aus dem stündlichen Verlauf `frost_min` (nächste 12 Stunden, Uhrzeit des ersten Frostwerts) und `uv_hinweis` (jetzt bis +3 h). Fehlende Werte (`null`) werden übersprungen, damit sie nicht als 0 °C zählen. Schwellen: Frost ≤ 0 °C, UV ≥ 6 (WHO „hoch“). Bei UV 3 würde die Kachel im Sommer fast den ganzen Tag stehen; die Schwelle ist die Konstante `HW_UV_SCHWELLE`.
+
+**Einstellungen:** `hw_regen`, `hw_frost`, `hw_uv` (Preferences, Standard an), WebUI-Karte, Einstellungssicherung. Das Label wird in `setup()` klickbar gemacht (`LV_OBJ_FLAG_CLICKABLE`, größere Tippfläche); es bleibt ein reines Code-Objekt.
+
+Die UV-Funktion lässt sich im Herbst nicht am Gerät prüfen (Index meist unter 3); der Frost-Hinweis bei den ersten Nachtfrösten.
+
+---
+
 ## 2026-10-12 – v1.6.0
 
 ### Regenwarnung entfernt, Nowcast als Kachel
