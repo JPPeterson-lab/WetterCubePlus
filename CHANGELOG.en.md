@@ -2,6 +2,13 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.5.1 (2026-10-12)
+
+### Fixes
+- **Weather values after a failed startup fetch:** If the first weather request at startup failed (e.g. because Open-Meteo briefly answered with 503), temperature, pressure and wind stayed at 0 for up to 10 minutes. After a failure the cube now retries after 60 seconds
+
+---
+
 ## v1.5.0 (2026-10-12)
 
 ### New

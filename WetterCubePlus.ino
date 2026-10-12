@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.5.0"
+#define FIRMWARE_VERSION "1.5.1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1435,8 +1435,10 @@ const char* windRichtung(int deg) {
 }
 
 // -- Wetterdaten (Open-Meteo) --
-void fetchWetter() {
-  if (WiFi.status() != WL_CONNECTED || cfg.lat == 0.0f) return;
+// Rueckgabe: true = Daten aktualisiert. Bei einem Fehlschlag wird frueher erneut versucht (siehe loop), sonst blieben die Werte bis zu 10 Min. leer.
+bool fetchWetter() {
+  bool ok = false;
+  if (WiFi.status() != WL_CONNECTED || cfg.lat == 0.0f) return false;
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
   String url = "https://api.open-meteo.com/v1/forecast";
@@ -1518,6 +1520,7 @@ void fetchWetter() {
         logDiag("[Wetter] Fetch erfolgreich nach Unterbrechung (freeHeap=%u)", (unsigned)ESP.getFreeHeap());
       }
       letzterWetterFetchErfolg = millis();
+      ok = true;
     } else {
       logDiag("[Wetter] JSON-Parse fehlgeschlagen: %s (freeHeap=%u)", jsonErr.c_str(), (unsigned)ESP.getFreeHeap());
     }
@@ -1525,6 +1528,7 @@ void fetchWetter() {
     logDiag("[Wetter] HTTP-Fetch fehlgeschlagen: Code %d (freeHeap=%u)", httpCode, (unsigned)ESP.getFreeHeap());
   }
   http.end();
+  return ok;
 }
 
 // -- DWD Pollen (Stufenwarnung) --
@@ -4104,7 +4108,7 @@ void setup() {
 
   zeigeBootScreen("Lade Wetterdaten...");
   setzeBootFortschritt(70);
-  fetchWetter();
+  bool ersterWetterFetchOk = fetchWetter();
   setzeBootFortschritt(80);
   zeigeBootScreen("Lade Pollenflug...");
   fetchDwdPollen();
@@ -4136,7 +4140,8 @@ void setup() {
   logDiag("[Boot] Heap frei %u, PSRAM frei %u von %u", (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getFreePsram(), (unsigned)ESP.getPsramSize());
 
   letztesTouchZeit    = millis();
-  letztesDatenUpdate  = millis();
+  // Beim Fehlschlag des ersten Abrufs nach 60 s statt 10 Min. erneut versuchen
+  letztesDatenUpdate  = millis() - (ersterWetterFetchOk ? 0UL : 540000UL);
   letztesPollenUpdate = millis();
   letztesWarnUpdate   = millis();
   letzteUhrzeit       = millis();
@@ -4184,7 +4189,7 @@ void loop() {
   // Wetterdaten alle 10 Minuten
   if (millis() - letztesDatenUpdate >= 600000UL) {
     letztesDatenUpdate = millis();
-    fetchWetter();
+    if (!fetchWetter()) letztesDatenUpdate -= 540000UL;   // Fehlschlag: nach 60 s erneut versuchen
     aktualisiereUI();
   }
 

@@ -2,6 +2,13 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.5.1 (2026-10-12)
+
+### Fixes
+- **Wetterwerte nach einem fehlgeschlagenen Start-Abruf:** Scheiterte der erste Wetterabruf beim Start (z. B. weil Open-Meteo kurz mit 503 antwortete), blieben Temperatur, Luftdruck und Wind bis zu 10 Minuten auf 0. Jetzt versucht der Cube es nach einem Fehlschlag schon nach 60 Sekunden erneut
+
+---
+
 ## v1.5.0 (2026-10-12)
 
 ### Neu

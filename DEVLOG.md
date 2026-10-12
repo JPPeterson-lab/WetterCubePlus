@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.5.1
+
+### Wetterabruf: früherer Wiederholversuch
+
+**Anlass:** Nach dem Update auf v1.5.0 standen alle Wetterwerte auf 0. Das `/log` zeigte genau einen Eintrag: `[Wetter] HTTP-Fetch fehlgeschlagen: Code 503` sieben Sekunden nach dem Start. Biowetter und Pollen (DWD) liefen, Open-Meteo antwortete wenig später wieder normal (per curl mit der vollständigen URL geprüft). Das Gerät erholte sich nach 10 Minuten selbst, weil erst dann der nächste Abruf anstand.
+
+**Fix:** `fetchWetter()` liefert jetzt `bool`; bei einem Fehlschlag (Start oder Schleife) wird `letztesDatenUpdate` so zurückgesetzt, dass der nächste Versuch nach 60 s statt 10 Min. folgt. Keine Änderung an der Abfrage selbst.
+
+**Nebenbefund Build:** Nach dem LVGL-Upgrade auf 8.4.0 lagen im Bibliotheksordner `~/Documents/Arduino/libraries/lvgl` rund 1160 iCloud-Duplikate der alten Version 8.3.11 (`lv_disp 2.c` usw.), die den Linker mit „multiple definition“ abbrechen ließen. Die Duplikate wurden aus dem Ordner entfernt (die Dateien ohne „ 2“ sind die 8.4.0). Wiederkehrendes Muster (siehe auch LovyanGFX): Bibliotheksordner in iCloud erzeugen bei Updates Konfliktkopien.
+
+---
+
 ## 2026-10-12 – v1.5.0
 
 ### Ampel-Modi
