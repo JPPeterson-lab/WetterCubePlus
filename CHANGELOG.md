@@ -2,6 +2,14 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.3.1 (2026-10-12)
+
+### Geändert
+- **Kräftigere Temperaturfarben:** Blau, Grün, Gelb und Rot der Temperaturanzeigen (Hauptscreen, Vorhersage, Sonne und Mond, Gesundheitsscreen) sind satter und besser lesbar. Auf dem hellen Thema sind sie dunkler und kräftiger (vor allem das bisher blasse Gelb und Blau), auf dem dunklen Thema bleiben sie hell, aber ebenfalls satter. Die Farben wechseln mit dem Hell/Dunkel-Umschalter mit
+- UI-Feinjustierung (PicoPixel-Re-Export)
+
+---
+
 ## v1.3.0 (2026-10-12)
 
 ### Geändert

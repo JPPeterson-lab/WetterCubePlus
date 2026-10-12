@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.3.1
+
+### Temperaturfarben kräftiger, themenabhängig
+
+Die Farben in `tempColor()` (blau 0x00AAFF, grün 0x00CC44, gelb 0xFFCC00, rot 0xFF3300) wirkten auf weißem Grund blass; gemessen am WCAG-Kontrast zu Weiß waren es nur 2,6 (blau), 2,2 (grün), **1,5 (gelb)** und 3,7 (rot). Im hellen Thema sind sie jetzt tiefer und satter (blau 0x0A5CE0 → 5,8, grün 0x00A040 → 3,4, gelb 0xEE9B00 → ca. 2,4, rot 0xE01E0A → 4,8), im dunklen Thema (Marineblau 0x06203B) heller als zuvor satt (0x3FA0FF, 0x1FD46A, 0xFFC41A, 0xFF4A2E, Kontrast jeweils 4,9 bis 10). Ein einziger Farbsatz ging nicht, weil dunkleres Gelb auf Marineblau schlecht lesbar wäre. `tempColor()` liest dafür `active_theme_index` (Include `src/ui/colors.h`); beim Umschalten des Themas ruft der Klick-Handler `aktualisiereUI()` auf, die Farben ziehen also sofort nach.
+
+Unverändert blieben die Farben der Luftqualität, Pollen und Biowetter (eigene Skalen); falls gewünscht, lassen sie sich genauso kräftiger machen.
+
+---
+
 ## 2026-10-12 – v1.3.0
 
 ### LVGL-Pool in den PSRAM verlegt

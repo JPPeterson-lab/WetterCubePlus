@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.3.0"
+#define FIRMWARE_VERSION "1.3.1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -43,6 +43,7 @@
 #include <LovyanGFX.hpp>
 #include <lvgl.h>
 #include "src/ui/ui.h"
+#include "src/ui/colors.h"
 #include "src/ui/images.h"
 #include "src/ui/fonts/fonts.h"
 #include <WiFi.h>
@@ -1251,11 +1252,13 @@ lv_color_t pollenColor(float v) {
   return               lv_color_hex(0xFF3300);
 }
 
+// Temperaturfarben: kraeftig auf hellem Grund, etwas heller auf dunklem Grund (sonst zu wenig Kontrast)
 lv_color_t tempColor(float t) {
-  if (t < 8)   return lv_color_hex(0x00AAFF);  // blau
-  if (t < 15)  return lv_color_hex(0x00CC44);  // grün
-  if (t < 24)  return lv_color_hex(0xFFCC00);  // gelb
-  return              lv_color_hex(0xFF3300);   // rot
+  const bool dunkel = (active_theme_index == THEME_DARK);
+  if (t < 8)   return lv_color_hex(dunkel ? 0x3FA0FF : 0x0A5CE0);  // blau
+  if (t < 15)  return lv_color_hex(dunkel ? 0x1FD46A : 0x00A040);  // grün
+  if (t < 24)  return lv_color_hex(dunkel ? 0xFFC41A : 0xEE9B00);  // gelb
+  return              lv_color_hex(dunkel ? 0xFF4A2E : 0xE01E0A);   // rot
 }
 
 const lv_img_dsc_t* wmoZuImage(int wmo, bool day) {

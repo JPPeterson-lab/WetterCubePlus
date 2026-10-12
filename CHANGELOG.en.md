@@ -2,6 +2,14 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.3.1 (2026-10-12)
+
+### Changed
+- **Stronger temperature colors:** Blue, green, yellow and red in the temperature displays (main screen, forecast, sun and moon, health screen) are more saturated and easier to read. On the light theme they are darker and stronger (especially the previously pale yellow and blue); on the dark theme they stay bright but are also more saturated. The colors follow the light/dark switch
+- UI fine-tuning (PicoPixel re-export)
+
+---
+
 ## v1.3.0 (2026-10-12)
 
 ### Changed
