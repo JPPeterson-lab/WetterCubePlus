@@ -2,6 +2,14 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.5.2 (2026-10-12)
+
+### Fixes
+- **Wetterwerte direkt nach dem Start:** Der erste Wetterabruf nach dem Start scheiterte mehrfach mit „503“. Der Cube wiederholt ihn jetzt schon nach 3 Sekunden (und danach, falls nötig, nach 60 Sekunden), sodass die Werte meist sofort da sind
+- Schlägt ein Abruf fehl, steht im `/log` jetzt auch der Anfang der Server-Antwort. Damit lässt sich die Ursache der 503-Antworten genauer eingrenzen
+
+---
+
 ## v1.5.1 (2026-10-12)
 
 ### Fixes

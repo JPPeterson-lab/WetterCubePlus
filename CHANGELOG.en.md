@@ -2,6 +2,14 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.5.2 (2026-10-12)
+
+### Fixes
+- **Weather values right after startup:** The first weather request after startup failed repeatedly with "503". The cube now repeats it after 3 seconds (and, if needed, after 60 seconds), so the values are usually there immediately
+- If a request fails, `/log` now also shows the beginning of the server's answer, which helps to narrow down the cause of the 503 responses
+
+---
+
 ## v1.5.1 (2026-10-12)
 
 ### Fixes

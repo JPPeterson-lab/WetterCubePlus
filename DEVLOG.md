@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.5.2
+
+### 503 beim ersten Wetterabruf nach dem Start
+
+Nach v1.5.1 zeigte das `/log` bei einem weiteren Neustart (08:37) wieder „Code 503“, eine Sekunde nach dem WLAN-Aufbau; der 60-s-Wiederholversuch aus v1.5.1 holte die Daten wie vorgesehen nach. Die Ursache ist damit **nicht geklärt**: Die Abfrage funktioniert per curl mit derselben URL zuverlässig, und der Fehler tritt nur direkt nach dem Start auf. Offen ist, ob der 503 von Open-Meteo kommt (Last, Begrenzung) oder von etwas auf dem Weg. Deshalb: `fetchWetter()` wiederholt einmal nach 3 s (`fetchWetterEinmal()` + Wrapper), und beim Fehlschlag steht der Anfang der Antwort (60 Zeichen) im `/log`. Beim nächsten Auftreten zeigt das Log, wer den 503 liefert.
+
+**Build-Hinweis:** Zwei gleichzeitige `arduino-cli`-Builds auf demselben Cache beschädigen die Objektdateien („file truncated“, „objs.a: file format not recognized“); dann hilft ein einzelner `--clean`-Build.
+
+---
+
 ## 2026-10-12 – v1.5.1
 
 ### Wetterabruf: früherer Wiederholversuch

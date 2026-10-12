@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.5.1"
+#define FIRMWARE_VERSION "1.5.2"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1436,7 +1436,7 @@ const char* windRichtung(int deg) {
 
 // -- Wetterdaten (Open-Meteo) --
 // Rueckgabe: true = Daten aktualisiert. Bei einem Fehlschlag wird frueher erneut versucht (siehe loop), sonst blieben die Werte bis zu 10 Min. leer.
-bool fetchWetter() {
+static bool fetchWetterEinmal() {
   bool ok = false;
   if (WiFi.status() != WL_CONNECTED || cfg.lat == 0.0f) return false;
   WiFiClientSecure sc; sc.setInsecure();
@@ -1525,10 +1525,20 @@ bool fetchWetter() {
       logDiag("[Wetter] JSON-Parse fehlgeschlagen: %s (freeHeap=%u)", jsonErr.c_str(), (unsigned)ESP.getFreeHeap());
     }
   } else {
-    logDiag("[Wetter] HTTP-Fetch fehlgeschlagen: Code %d (freeHeap=%u)", httpCode, (unsigned)ESP.getFreeHeap());
+    String antwort = httpCode > 0 ? http.getString() : String();
+    antwort.replace("\n", " ");
+    logDiag("[Wetter] HTTP-Fetch fehlgeschlagen: Code %d (freeHeap=%u) %s", httpCode, (unsigned)ESP.getFreeHeap(), antwort.substring(0, 60).c_str());
   }
   http.end();
   return ok;
+}
+
+// Direkt nach dem Start antwortet der Server gelegentlich mit 503: ein zweiter Versuch nach 3 s holt die Daten meist sofort nach
+bool fetchWetter() {
+  if (fetchWetterEinmal()) return true;
+  if (WiFi.status() != WL_CONNECTED) return false;
+  delay(3000);
+  return fetchWetterEinmal();
 }
 
 // -- DWD Pollen (Stufenwarnung) --
