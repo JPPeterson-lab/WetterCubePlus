@@ -2,6 +2,16 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.5.0 (2026-10-12)
+
+### Neu
+- **Ampel-Modi:** Die WetterAmpel zeigt wahlweise die **Temperatur** (wie bisher), die **Pollenbelastung** oder die **Luftqualität** an. Die Auswahl steht in der WebUI unter *Ampel-Konfiguration*. Pollen: Es zählt der schlimmste deiner gewählten Allergene; Grün für keine bis geringe, Gelb für mittlere bis hohe, Rot für starke Belastung. Luftqualität (europäischer AQI): Grün bis 40, Gelb bis 60, Rot darüber. Die DWD-Warnung lässt die Ampel in jedem Modus wie bisher blinken
+- Die WebUI zeigt neben der Ampelfarbe jetzt, wodurch sie ausgelöst wird (z. B. „Birke (Stufe 2.5 von 3)“ oder „AQI 32 (Mittel)“)
+- `/api/ampel` liefert zusätzlich `mode` (`temperature`, `pollen`, `air`) und `detail`. Die bisherigen Felder bleiben unverändert, die **Ampel-Firmware muss nicht aktualisiert werden**
+- Der Ampel-Modus ist Teil der Einstellungssicherung
+
+---
+
 ## v1.4.0 (2026-10-12)
 
 ### Neu

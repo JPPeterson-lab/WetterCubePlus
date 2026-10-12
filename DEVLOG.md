@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.5.0
+
+### Ampel-Modi
+
+Die Ampel-Firmware (ESP32-C3) wertet nur `active` und `dwd_warning` aus, die ganze Logik liegt im Cube. Darum betrifft die Änderung nur den S3: `cfg.ampel_modus` (0 Temperatur, 1 Pollen, 2 Luftqualität, Preferences `amp_modus`), neue Funktion `ampelBerechnen()` (nach `aqiStatusText()`, mit Vorwärtsdeklaration, weil die Pollen-Hilfen weiter unten stehen), `/api/ampel` ergänzt um `mode` und `detail`. Alte Ampeln laufen ohne Neu-Flashen weiter (Temperatur ist Standard, die Felder bleiben).
+
+**Schwellen:** Pollen nutzt die gewählten Allergene (Skala 0–3) mit denselben Stufen wie die Anzeige am Display (`pollenText()`): Grün bei keine/gering (≤ 1), Gelb bei mittel/hoch (> 1 bis ≤ 2,5), Rot bei stark (> 2,5). Bewusst unabhängig von der Pollen-Warnschwelle. AQI fest: ≤ 40 grün, ≤ 60 gelb, darüber rot (die EU-Stufen „gut“ und „mittel“ gelten als grün). Ohne Daten bleibt die Ampel aus (`none`).
+
+---
+
 ## 2026-10-12 – v1.4.0
 
 ### Regen-Nowcast, Allergen-Auswahl, Sichern/Wiederherstellen

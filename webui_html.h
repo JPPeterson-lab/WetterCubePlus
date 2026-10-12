@@ -169,8 +169,15 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
 
 <div class="card">
   <h2>Ampel-Konfiguration</h2>
-  <p class="hint">Temperaturschwellen fuer das Hardware-Addon (Ampel). Aktuelle Temperatur: <strong id="amp_t">…</strong> °C &nbsp;|&nbsp; Aktiv: <strong id="amp_a">…</strong></p>
+  <p class="hint">Einstellungen fuer das Hardware-Addon (Ampel). Aktuell: <strong id="amp_d">…</strong> &nbsp;|&nbsp; Aktiv: <strong id="amp_a">…</strong></p>
   <form action="/api/ampel_save" method="post">
+  <label>Was die Ampel anzeigt</label>
+  <select name="amp_modus">
+    <option value="0" %AMP_M0%>Temperatur</option>
+    <option value="1" %AMP_M1%>Pollen (meine Allergene)</option>
+    <option value="2" %AMP_M2%>Luftqualit&auml;t</option>
+  </select>
+  <p class="hint">Pollen: Gr&uuml;n f&uuml;r keine bis geringe, Gelb f&uuml;r mittlere bis hohe, Rot f&uuml;r starke Belastung. Luftqualit&auml;t (europ&auml;ischer AQI): Gr&uuml;n bis 40, Gelb bis 60, Rot dar&uuml;ber. Die Temperaturschwellen unten gelten nur im Modus Temperatur.</p>
   <div class="row">
     <div class="col">
       <label>Gruen min (°C)</label>
@@ -268,7 +275,7 @@ function doUpdate(){
 }
 function ladeAmpel(){
   fetch('/api/ampel').then(function(r){return r.json();}).then(function(d){
-    document.getElementById('amp_t').textContent=d.temperature.toFixed(1);
+    document.getElementById('amp_d').textContent=d.detail||(d.temperature.toFixed(1)+' °C');
     var farben={'green':'Gruen','yellow':'Gelb','red':'Rot','none':'keine'};
     document.getElementById('amp_a').textContent=farben[d.active]||d.active;
   }).catch(function(){});

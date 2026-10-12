@@ -2,6 +2,16 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.5.0 (2026-10-12)
+
+### New
+- **Traffic-light modes:** The WetterAmpel now shows either the **temperature** (as before), the **pollen load** or the **air quality**. You choose it in the WebUI under *Ampel-Konfiguration*. Pollen: the worst of your selected allergens counts; green for none to low, yellow for medium to high, red for strong load. Air quality (European AQI): green up to 40, yellow up to 60, red above. A DWD warning still makes the light blink in every mode
+- Next to the light color the WebUI now shows what triggers it (e.g. "Birke (Stufe 2.5 von 3)" or "AQI 32 (Mittel)")
+- `/api/ampel` additionally returns `mode` (`temperature`, `pollen`, `air`) and `detail`. The existing fields are unchanged, so the **traffic-light firmware does not need an update**
+- The traffic-light mode is part of the settings backup
+
+---
+
 ## v1.4.0 (2026-10-12)
 
 ### New

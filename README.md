@@ -1,7 +1,7 @@
 # 🌦️ WetterCubePlus
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.4.0-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.5.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -58,7 +58,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌿 | **Pollenflug** | Top-3 Allergene stündlich (Open-Meteo), 3-Tage-Forecast für 8 Allergene (DWD) |
 | 🌧️ | **Regenwarnung** | Blinkendes Warn-Screen 60 Min. vor erwartetem Regen |
 | ⚠️ | **DWD Wetterwarnungen** | Bis zu 5 aktive Warnungen als farbige Karten (DWD-Warnstufe), tippbar für Details; blinkender Indikator auf dem Hauptscreen |
-| 🚦 | **Ampel-Addon API** | HTTP-JSON-Endpunkt `/api/ampel` für ESP32-C3 Hardware-Addon: Temperatur, Ampelfarbe, DWD-Warnstatus, konfigurierbare Schwellwerte |
+| 🚦 | **Ampel-Addon API** | HTTP-JSON-Endpunkt `/api/ampel` für ESP32-C3 Hardware-Addon: Temperatur, Ampelfarbe, DWD-Warnstatus, konfigurierbare Schwellwerte; Modus wählbar (Temperatur, Pollen, Luftqualität) |
 | 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert, mit Standort-Marker |
 | ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang, Tages-Min/Max-Temperatur |
 | 🌫️ | **Luftqualität (AQI)** | Europäischer AQI (Arc-Anzeige), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten (Open-Meteo Air Quality API) |
@@ -204,7 +204,7 @@ Die Firmware liegt unter [`WetterAmpel/WetterAmpel.ino`](WetterAmpel/WetterAmpel
 | 🔴 Rot | Temperatur im roten Bereich (Standard: 25–99 °C) |
 | Alle blinken | DWD-Wetterwarnung vorhanden, noch nicht am Cube bestätigt |
 
-Die Schwellwerte sind in der WebUI des WetterCubePlus unter **Ampel-Konfiguration** einstellbar.
+Die Schwellwerte sind in der WebUI des WetterCubePlus unter **Ampel-Konfiguration** einstellbar. Dort lässt sich auch der **Modus** wählen: neben der Temperatur kann die Ampel die **Pollenbelastung** (schlimmster deiner Allergene; Grün für keine bis geringe, Gelb für mittlere bis hohe, Rot für starke Belastung) oder die **Luftqualität** (europäischer AQI: Grün bis 40, Gelb bis 60, Rot darüber) anzeigen. Die DWD-Warnung lässt die Ampel in jedem Modus blinken. Die Ampel-Firmware bleibt dieselbe.
 
 ### Hardware
 
@@ -233,6 +233,8 @@ Der C3 fragt `GET http://wettercubeplus.local/api/ampel` ab. Beide Geräte müss
   "temperature": 22.4,
   "dwd_warning": false,
   "active": "yellow",
+  "mode": "temperature",
+  "detail": "22.4 °C",
   "thresholds": {
     "green":  { "min": 15, "max": 19 },
     "yellow": { "min": 20, "max": 24 },
@@ -241,7 +243,7 @@ Der C3 fragt `GET http://wettercubeplus.local/api/ampel` ab. Beide Geräte müss
 }
 ```
 
-`dwd_warning: true` bedeutet: es gibt aktive DWD-Warnungen, die am Cube noch nicht durch Öffnen der Warnkarte bestätigt wurden → alle drei LEDs blinken.
+`mode` ist `temperature`, `pollen` oder `air`, `detail` ein Klartext zur aktuellen Anzeige. `dwd_warning: true` bedeutet: es gibt aktive DWD-Warnungen, die am Cube noch nicht durch Öffnen der Warnkarte bestätigt wurden → alle drei LEDs blinken.
 
 ---
 
@@ -308,7 +310,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.4.0-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.5.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -361,7 +363,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🌿 | **Pollen** | Top-3 allergens hourly (Open-Meteo), 3-day forecast for 8 allergens (DWD) |
 | 🌧️ | **Rain warning** | Flashing warning screen 60 min before expected rainfall |
 | ⚠️ | **DWD weather warnings** | Up to 5 active warnings as color-coded cards (DWD severity level), tap for details; blinking indicator on main screen |
-| 🚦 | **Traffic light addon API** | HTTP JSON endpoint `/api/ampel` for ESP32-C3 hardware addon: temperature, active color, DWD warning status, configurable thresholds |
+| 🚦 | **Traffic light addon API** | HTTP JSON endpoint `/api/ampel` for ESP32-C3 hardware addon: temperature, active color, DWD warning status, configurable thresholds; selectable mode (temperature, pollen, air quality) |
 | 🗺️ | **Precipitation radar** | Federal-state radar map (DWD WMS), updated every 10 min, with location marker |
 | ☀️ | **Sun & Moon** | UV index (daily max), sunrise & sunset times, daily min/max temperature |
 | 🌫️ | **Air Quality (AQI)** | European AQI (arc display), PM2.5, PM10, NO₂, ozone – color-coded by EU thresholds (Open-Meteo Air Quality API) |
@@ -503,7 +505,7 @@ The firmware is located at [`WetterAmpel/WetterAmpel.ino`](WetterAmpel/WetterAmp
 | 🔴 Red | Temperature in the red range (default: 25–99 °C) |
 | All blinking | Active DWD weather warning, not yet acknowledged on the Cube |
 
-Thresholds are configurable in the WetterCubePlus WebUI under **Ampel-Konfiguration**.
+Thresholds are configurable in the WetterCubePlus WebUI under **Ampel-Konfiguration**, where you can also choose the **mode**: besides temperature the light can show the **pollen load** (worst of your allergens; green for none to low, yellow for medium to high, red for strong load) or the **air quality** (European AQI: green up to 40, yellow up to 60, red above). A DWD warning makes the light blink in every mode. The traffic-light firmware stays the same.
 
 ### Hardware
 
@@ -532,6 +534,8 @@ The C3 polls `GET http://wettercubeplus.local/api/ampel`. Both devices must be o
   "temperature": 22.4,
   "dwd_warning": false,
   "active": "yellow",
+  "mode": "temperature",
+  "detail": "22.4 °C",
   "thresholds": {
     "green":  { "min": 15, "max": 19 },
     "yellow": { "min": 20, "max": 24 },
@@ -540,7 +544,7 @@ The C3 polls `GET http://wettercubeplus.local/api/ampel`. Both devices must be o
 }
 ```
 
-`dwd_warning: true` means: there are active DWD warnings that have not yet been acknowledged by opening the warning screen on the Cube → all three LEDs blink.
+`mode` is `temperature`, `pollen` or `air`, `detail` a plain-text description of the current display. `dwd_warning: true` means: there are active DWD warnings that have not yet been acknowledged by opening the warning screen on the Cube → all three LEDs blink.
 
 ---
 

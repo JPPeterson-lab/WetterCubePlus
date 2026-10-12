@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.4.0"
+#define FIRMWARE_VERSION "1.5.0"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -151,6 +151,7 @@ struct Config {
   int    ampel_gelb_max   = 24;
   int    ampel_rot_min    = 25;
   int    ampel_rot_max    = 99;
+  int    ampel_modus      = 0;   // 0 = Temperatur, 1 = Pollen, 2 = Luftqualitaet
   String bio_zone = "A";        // DWD Biowetter-Zone A–J
   // Biowetter-Kategorien (Index 0–6): 0=Allg.Befinden, 1=Hypotonie, 2=Bluthochdruck, 3=Rheuma entz., 4=Rheuma deg., 5=Asthma, 6=Wärmebelast.
   int ws_cat0 = 0;
@@ -616,6 +617,7 @@ void ladeCfg() {
   cfg.ampel_gelb_max    = prefs.getInt   ("amp_ge_max",  24);
   cfg.ampel_rot_min     = prefs.getInt   ("amp_ro_min",  25);
   cfg.ampel_rot_max     = prefs.getInt   ("amp_ro_max",  99);
+  cfg.ampel_modus       = prefs.getInt   ("amp_modus",   0);
   cfg.bio_zone          = prefs.getString("bio_zone",    "A");
   cfg.ws_cat0           = prefs.getInt   ("ws_cat0",     0);
   cfg.ws_cat1           = prefs.getInt   ("ws_cat1",     1);
@@ -649,6 +651,7 @@ void speichereCfg() {
   prefs.putInt   ("amp_ge_max",  cfg.ampel_gelb_max);
   prefs.putInt   ("amp_ro_min",  cfg.ampel_rot_min);
   prefs.putInt   ("amp_ro_max",  cfg.ampel_rot_max);
+  prefs.putInt   ("amp_modus",   cfg.ampel_modus);
   prefs.putString("bio_zone",    cfg.bio_zone);
   prefs.putInt   ("ws_cat0",     cfg.ws_cat0);
   prefs.putInt   ("ws_cat1",     cfg.ws_cat1);
@@ -782,6 +785,7 @@ static void portalWlanRetry() {
 // Vorwärts-Deklarationen
 void handleWebRoot();
 void handleWebSave();
+static void ampelBerechnen(const char*& active, const char*& modus, String& detail);
 void handleApiAmpel();
 void handleApiAmpelSave();
 void handleApiLog();
@@ -875,6 +879,7 @@ void handleWebRoot() {
   html.replace("%AMP_GE_MAX%", String(cfg.ampel_gelb_max));
   html.replace("%AMP_RO_MIN%", String(cfg.ampel_rot_min));
   html.replace("%AMP_RO_MAX%", String(cfg.ampel_rot_max));
+  for (int i = 0; i < 3; i++) html.replace("%AMP_M" + String(i) + "%", cfg.ampel_modus == i ? "selected" : "");
   html.replace("%POL_AUSWAHL%",       bauePollenAuswahl());
   html.replace("%BIO_ZONE_OPTIONS%",  baueBioZoneOptions(cfg.bio_zone));
   html.replace("%WS_CAT_OPTIONS0%",   baueWsCatOptions(cfg.ws_cat0));
@@ -942,6 +947,7 @@ void handleWebBackup() {
   doc["ampel_gelb_max"]   = cfg.ampel_gelb_max;
   doc["ampel_rot_min"]    = cfg.ampel_rot_min;
   doc["ampel_rot_max"]    = cfg.ampel_rot_max;
+  doc["ampel_modus"]      = cfg.ampel_modus;
   doc["bio_zone"]         = cfg.bio_zone;
   doc["ws_cat0"]          = cfg.ws_cat0;
   doc["ws_cat1"]          = cfg.ws_cat1;
@@ -985,6 +991,7 @@ void handleWebRestore() {
   RS_INT ("ampel_gelb_max",   ampel_gelb_max,   -50, 120);
   RS_INT ("ampel_rot_min",    ampel_rot_min,    -50, 120);
   RS_INT ("ampel_rot_max",    ampel_rot_max,    -50, 120);
+  RS_INT ("ampel_modus",      ampel_modus,      0, 2);
   RS_INT ("ws_cat0",          ws_cat0,          0, 6);
   RS_INT ("ws_cat1",          ws_cat1,          0, 6);
   RS_INT ("ws_cat2",          ws_cat2,          0, 6);
@@ -1012,10 +1019,8 @@ void handleApiAmpel() {
   letzteAmpelAnfrage = millis();
 
   float t = wetter.temp;
-  const char* active = "none";
-  if      (t >= cfg.ampel_rot_min)   active = "red";
-  else if (t >= cfg.ampel_gelb_min)  active = "yellow";
-  else if (t >= cfg.ampel_gruen_min) active = "green";
+  const char* active; const char* modus; String detail;
+  ampelBerechnen(active, modus, detail);
 
   bool dwd_warn = (anzahl_warnungen > 0 && !dwdWarnBestaetigt);
 
@@ -1029,6 +1034,8 @@ void handleApiAmpel() {
   json += "\"data_age_min\":" + String(dataAgeMin) + ",";
   json += "\"dwd_warning\":"  + String(dwd_warn ? "true" : "false") + ",";
   json += "\"active\":\""     + String(active) + "\",";
+  json += "\"mode\":\""       + String(modus) + "\",";
+  json += "\"detail\":\""     + detail + "\",";
   json += "\"thresholds\":{";
   json += "\"green\":{\"min\":"  + String(cfg.ampel_gruen_min) + ",\"max\":" + String(cfg.ampel_gruen_max) + "},";
   json += "\"yellow\":{\"min\":" + String(cfg.ampel_gelb_min)  + ",\"max\":" + String(cfg.ampel_gelb_max)  + "},";
@@ -1045,6 +1052,7 @@ void handleApiAmpelSave() {
   if (server.hasArg("amp_ge_max")) cfg.ampel_gelb_max  = server.arg("amp_ge_max").toInt();
   if (server.hasArg("amp_ro_min")) cfg.ampel_rot_min   = server.arg("amp_ro_min").toInt();
   if (server.hasArg("amp_ro_max")) cfg.ampel_rot_max   = server.arg("amp_ro_max").toInt();
+  if (server.hasArg("amp_modus"))  cfg.ampel_modus     = constrain(server.arg("amp_modus").toInt(), 0, 2);
   speichereCfg();
   server.sendHeader("Location", "/"); server.send(302);
 }
@@ -2284,6 +2292,42 @@ static const char* aqiStatusText(int aqi) {
   if (aqi <= 100) return "Sehr schlecht";
   return "Extrem";
 }
+
+// Ampelfarbe je nach Modus (Temperatur / Pollen / Luftqualitaet); detail = Klartext fuer die WebUI
+static void ampelBerechnen(const char*& active, const char*& modus, String& detail) {
+  float t = wetter.temp;
+  active = "none";
+  modus  = "temperature";
+  detail = String(t, 1) + " °C";
+  if (cfg.ampel_modus == 1) {
+    // Pollen: schlimmster der gewaehlten Allergene (Skala 0-3), Stufen wie pollenText(): Gruen = keine/gering (<= 1), Gelb = mittel/hoch (<= 2,5), Rot = stark (> 2,5)
+    modus = "pollen";
+    float v = -1.0f; const char* name = "";
+    for (int i = 0; i < 8; i++) {
+      if (!pollenGewaehlt(i)) continue;
+      float w = pollenWertWarnung(i);
+      if (w > v) { v = w; name = POLLEN_ANZEIGE[i]; }
+    }
+    if (v >= 0.0f) {
+      active = (v > 2.5f) ? "red" : (v > 1.0f) ? "yellow" : "green";
+      detail = String(name) + " (Stufe " + String(v, 1) + " von 3)";
+    } else detail = "keine Pollendaten";
+  } else if (cfg.ampel_modus == 2) {
+    // Luftqualitaet: Europaeischer AQI, Gruen bis 40 (gut/mittel), Gelb bis 60 (maessig), Rot darueber
+    modus = "air";
+    int a = pollen.aqi;
+    if (a >= 0) {
+      active = (a <= 40) ? "green" : (a <= 60) ? "yellow" : "red";
+      detail = "AQI " + String(a) + " (" + aqiStatusText(a) + ")";
+    } else detail = "keine Luftqualitaetsdaten";
+  } else {
+    if      (t >= cfg.ampel_rot_min)   active = "red";
+    else if (t >= cfg.ampel_gelb_min)  active = "yellow";
+    else if (t >= cfg.ampel_gruen_min) active = "green";
+  }
+
+}
+
 
 // Regen-Nowcast fuer Screen 1: "Regen in 25 Min." / "Regen noch ca. 15 Min." / ausgeblendet
 static void aktualisiereNowcast() {
