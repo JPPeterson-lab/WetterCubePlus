@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-12 – v1.6.2
+
+### Ausführlicheres Diagnose-Log
+
+Anlass: Das Wiki des Schwesterprojekts WetterCube zeigt ein deutlich detaillierteres `/log` (Geo-Suche, Pollen/Luft, WLAN jetzt, Standort, Zeit des letzten erfolgreichen Abrufs). Beim WetterCubePlus stand bisher nur der Wetterabruf im Log; DWD-Pollen, Open-Meteo-Pollen/Luft, Warnungen, Biowetter und Radar schrieben ihre Fehler nur auf Serial.
+
+Umsetzung: `abrufErfolg[]` mit Hilfsfunktion `abrufOk()` je Datenquelle (Zeitpunkt des letzten Erfolgs, für den Kopf des `/log`), jede Abruffunktion meldet Fehlschläge per `logDiag()` mit HTTP-Code oder JSON-Fehler. Erfolge stehen bewusst nicht als Zeilen im Log: 25 Zeilen waren bei einem Abruf alle 10 Minuten schon nach vier Stunden überschrieben. Der Ringpuffer hat jetzt 40 Zeilen (5 KB RAM). Neu im Kopf: `WLAN jetzt`, `Standort`, `Letzter erfolgreicher Abruf`. Neu als Ereignisse: `[Geo]`, `[Start]` (mDNS, Web-UI), `[Portal]`, `[Config]`, `[Update] Pruefung`.
+
+---
+
 ## 2026-10-12 – v1.6.1
 
 ### Hinweis-Kachel: Regen, Frost, UV mit Bestätigung

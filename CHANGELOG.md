@@ -2,6 +2,15 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.6.2 (2026-10-12)
+
+### Neu
+- **Ausführlicheres `/log`:** Der Kopf zeigt jetzt zusätzlich **WLAN jetzt** (Netzwerk, Signalstärke, IP), den **Standort** mit Koordinaten (0,0000 heißt: noch nicht gefunden) und **wann der letzte erfolgreiche Abruf** je Datenquelle war (Wetter, DWD-Pollen, Pollen/Luft, DWD-Warnungen, Radar, Biowetter)
+- Fehlschläge stehen jetzt mit Grund im Log, auch für DWD-Pollen, Pollen/Luftqualität (Open-Meteo), DWD-Warnungen, Biowetter und Radar (bisher nur beim Wetter). Dazu kommen Einträge für die Standortsuche (`[Geo]`), den Start von mDNS und Web-Oberfläche, das Einrichtungsportal, gespeicherte Einstellungen, Standortwechsel und die Versionsprüfung
+- Das Log hält jetzt die letzten 40 statt 25 Einträge. Erfolgreiche Abrufe werden bewusst nicht einzeln protokolliert, damit der Platz für Fehler reicht
+
+---
+
 ## v1.6.1 (2026-10-12)
 
 ### Neu

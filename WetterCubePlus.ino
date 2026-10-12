@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.6.1"
+#define FIRMWARE_VERSION "1.6.2"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -352,7 +352,7 @@ unsigned long letzteAmpelAnfrage = 0;        // millis() der letzten bedienten /
 //  Diagnose-Log (Ring-Puffer im RAM, per Browser unter /log abrufbar)
 //  — nötig weil das Gerät nur per OTA/WLAN erreichbar ist, kein USB/Serial vor Ort.
 // ============================================================
-#define LOG_RING_SIZE 25
+#define LOG_RING_SIZE 40
 #define LOG_LINE_LEN  128
 static char logRing[LOG_RING_SIZE][LOG_LINE_LEN];
 static int  logRingPos   = 0;
@@ -377,6 +377,13 @@ void logDiag(const char* fmt, ...) {
 
   Serial.println(slot);  // weiterhin auch auf Serial, falls doch mal USB dran ist
 }
+
+// Zeitpunkt des letzten erfolgreichen Abrufs je Datenquelle (fuer den Kopf von /log). Erfolge werden nicht einzeln
+// protokolliert, damit der Ringpuffer fuer Fehler frei bleibt; Fehlschlaege stehen mit Grund im Log.
+enum { AB_WETTER = 0, AB_DWD_POLLEN, AB_POLLEN_OM, AB_WARNUNGEN, AB_RADAR, AB_BIO, AB_ANZAHL };
+static const char* const AB_NAME[AB_ANZAHL] = {"Wetter", "DWD-Pollen", "Pollen/Luft", "DWD-Warnungen", "Radar", "Biowetter"};
+static unsigned long abrufErfolg[AB_ANZAHL] = {0};
+static void abrufOk(int quelle) { abrufErfolg[quelle] = millis() ? millis() : 1; }
 
 // Start-Diagnose: warum wurde neu gestartet, wie lief die WLAN-Verbindung (Anzeige im /log)
 String          resetGrundText = "";
@@ -674,6 +681,7 @@ bool geocodeLocation(const String& city) {
   HTTPClient http;
   String url = "https://geocoding-api.open-meteo.com/v1/search?name=";
   url += city + "&count=1&language=de&format=json";
+  logDiag("[Geo] Suche '%s'", city.c_str());
   http.begin(sc, url);
   int code = http.GET();
   if (code == 200) {
@@ -682,9 +690,15 @@ bool geocodeLocation(const String& city) {
       if (doc["results"].size() > 0) {
         cfg.lat = doc["results"][0]["latitude"].as<float>();
         cfg.lon = doc["results"][0]["longitude"].as<float>();
+        logDiag("[Geo] Gefunden: %.4f, %.4f", cfg.lat, cfg.lon);
         http.end(); return true;
       }
+      logDiag("[Geo] Fehlgeschlagen fuer '%s': kein Treffer", city.c_str());
+    } else {
+      logDiag("[Geo] Fehlgeschlagen fuer '%s': JSON-Fehler", city.c_str());
     }
+  } else {
+    logDiag("[Geo] Fehlgeschlagen fuer '%s': HTTP %d", city.c_str(), code);
   }
   http.end();
   return false;
@@ -753,6 +767,7 @@ void startePortal() {
   zeigeBootScreen("WLAN: WetterCubePlus-Setup");
   setzeBootFortschritt(0);
   Serial.println("[Portal] AP gestartet: WetterCubePlus-Setup");
+  logDiag("[Portal] Einrichtungsmodus offen: WLAN 'WetterCubePlus-Setup', http://192.168.4.1/");
 }
 
 // Einrichtungsmodus nach fehlgeschlagener Verbindung: alle 60 s erneut mit den gespeicherten Daten
@@ -924,8 +939,9 @@ void handleWebSave() {
   if (server.hasArg("ws_cat2"))    cfg.ws_cat2         = server.arg("ws_cat2").toInt();
   if (server.hasArg("ws_cat3"))    cfg.ws_cat3         = server.arg("ws_cat3").toInt();
   // Geocoding nur neu anstoßen wenn Location tatsächlich geändert
-  if (cfg.location != prevLocation) { cfg.lat = 0.0f; cfg.lon = 0.0f; }
+  if (cfg.location != prevLocation) { cfg.lat = 0.0f; cfg.lon = 0.0f; logDiag("[Config] Standort geaendert: '%s' -> '%s'", prevLocation.c_str(), cfg.location.c_str()); }
   speichereCfg();
+  logDiag("[Config] gespeichert");
   setBrightness(cfg.brightness);
   aktualisiereUI();
   server.sendHeader("Location", "/"); server.send(302);
@@ -1083,6 +1099,18 @@ void handleApiLog() {
   out += "LVGL-Speicher: " + lvglSpeicherText() + "\n";
   out += "Letzter Neustart: " + (resetGrundText.length() ? resetGrundText : String("-")) + "\n";
   out += "WLAN beim Start: " + (wifiStartInfo.length() ? wifiStartInfo : String("-")) + "\n";
+  if (WiFi.status() == WL_CONNECTED)
+    out += "WLAN jetzt: '" + WiFi.SSID() + "', Signal " + String(WiFi.RSSI()) + " dBm, IP " + WiFi.localIP().toString() + "\n";
+  else
+    out += "WLAN jetzt: nicht verbunden\n";
+  out += "Standort: " + (cfg.location.length() ? cfg.location : String("-")) + " (" + String(cfg.lat, 4) + ", " + String(cfg.lon, 4) +
+         (cfg.lat == 0.0f ? " = noch nicht gefunden" : "") + ")\n";
+  out += "Letzter erfolgreicher Abruf:";
+  for (int i = 0; i < AB_ANZAHL; i++) {
+    out += String(i ? "," : "") + " " + AB_NAME[i] + " ";
+    out += abrufErfolg[i] ? "vor " + String((millis() - abrufErfolg[i]) / 60000UL) + " Min." : String("noch nie");
+  }
+  out += "\n";
   out += "Update: installiert " + String(FIRMWARE_VERSION) + ", neueste bekannte " +
          (updateNeueVersion.length() ? updateNeueVersion : String("-")) +
          (updateVerfuegbar ? " (Update verfuegbar)" : "") + ", letzte Pruefung " +
@@ -1151,6 +1179,7 @@ static void pruefeUpdate() {
   bool neu = versionNeuer(latest, FIRMWARE_VERSION);
   if (neu && (!updateVerfuegbar || updateNeueVersion != latest))
     logDiag("[Update] Neue Version verfuegbar: %s (installiert: %s)", latest.c_str(), FIRMWARE_VERSION);
+  logDiag("[Update] Pruefung: installiert %s, verfuegbar %s", FIRMWARE_VERSION, latest.c_str());
   updateVerfuegbar  = neu;
   updateNeueVersion = latest;
 }
@@ -1548,6 +1577,7 @@ static bool fetchWetterEinmal() {
         logDiag("[Wetter] Fetch erfolgreich nach Unterbrechung (freeHeap=%u)", (unsigned)ESP.getFreeHeap());
       }
       letzterWetterFetchErfolg = millis();
+      abrufOk(AB_WETTER);
       ok = true;
     } else {
       logDiag("[Wetter] JSON-Parse fehlgeschlagen: %s (freeHeap=%u)", jsonErr.c_str(), (unsigned)ESP.getFreeHeap());
@@ -1577,6 +1607,7 @@ void fetchDwdPollen() {
   http.begin(sc, "https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json");
   int httpCode = http.GET();
   Serial.printf("[Pollen] HTTP %d, region=%d\n", httpCode, cfg.dwd_region);
+  if (httpCode != 200) logDiag("[Pollen] DWD-Abruf fehlgeschlagen: HTTP %d", httpCode);
   if (httpCode == 200) {
     StaticJsonDocument<128> filter;
     JsonArray fc = filter.createNestedArray("content");
@@ -1587,6 +1618,7 @@ void fetchDwdPollen() {
     Serial.printf("[Pollen] Body %u Bytes\n", body.length());
     DeserializationError err = deserializeJson(doc, body, DeserializationOption::Filter(filter));
     Serial.printf("[Pollen] JSON: %s\n", err.c_str());
+    if (err != DeserializationError::Ok) logDiag("[Pollen] DWD JSON-Fehler: %s", err.c_str());
     if (err == DeserializationError::Ok) {
       bool found = false;
       for (JsonObject region : doc["content"].as<JsonArray>()) {
@@ -1621,7 +1653,8 @@ void fetchDwdPollen() {
         pollen.dwd_ambrosia_da  = parseDwdWert(p["Ambrosia"]["dayafter_to"]| "");
         break;
       }
-      if (!found) Serial.printf("[Pollen] Region %d nicht gefunden!\n", cfg.dwd_region);
+      if (!found) { Serial.printf("[Pollen] Region %d nicht gefunden!\n", cfg.dwd_region); logDiag("[Pollen] DWD-Region %d nicht gefunden", cfg.dwd_region); }
+      else abrufOk(AB_DWD_POLLEN);
     }
   }
   http.end();
@@ -1680,6 +1713,7 @@ void fetchDwdWarnungen() {
   int code = http.GET();
   anzahl_warnungen = 0;
   Serial.printf("[DWD-Warn] HTTP %d\n", code);
+  if (code != 200) logDiag("[Warnungen] DWD-Abruf fehlgeschlagen: HTTP %d", code);
 
   if (code == 200) {
     String body = http.getString();
@@ -1690,7 +1724,9 @@ void fetchDwdWarnungen() {
     DeserializationError err = deserializeJson(doc, body);
     body = String();
     Serial.printf("[DWD-Warn] parse: %s\n", err.c_str());
+    if (err != DeserializationError::Ok && err != DeserializationError::NoMemory) logDiag("[Warnungen] JSON-Fehler: %s", err.c_str());
     if (err == DeserializationError::Ok || err == DeserializationError::NoMemory) {
+      abrufOk(AB_WARNUNGEN);
       int count = 0;
       for (JsonObject feat : doc["features"].as<JsonArray>()) {
         if (count >= 5) break;
@@ -1757,7 +1793,7 @@ void fetchWmsRadar() {
   http.collectHeaders(hdrs, 1);
   int httpCode = http.GET();
   Serial.printf("[Radar] HTTP %d\n", httpCode);
-  if (httpCode != 200) { http.end(); return; }
+  if (httpCode != 200) { logDiag("[Radar] Abruf fehlgeschlagen: HTTP %d", httpCode); http.end(); return; }
   unsigned long tStart = millis();
   String body = http.getString();
   http.end();
@@ -1782,7 +1818,7 @@ void fetchWmsRadar() {
     const char* hdrs2[] = {"Content-Type"};
     http2.collectHeaders(hdrs2, 1);
     int c2 = http2.GET();
-    if (c2 != 200) { http2.end(); return; }
+    if (c2 != 200) { logDiag("[Radar] Abruf (ohne Grenzen) fehlgeschlagen: HTTP %d", c2); http2.end(); return; }
     body = http2.getString();
     ct   = http2.header("Content-Type");
     http2.end();
@@ -1790,7 +1826,7 @@ void fetchWmsRadar() {
     Serial.printf("[Radar] Fallback: %u Bytes, CT: %s\n", got, ct.c_str());
     if (!ct.startsWith("image/png")) { Serial.println("[Radar] Fallback fehlgeschlagen"); return; }
   }
-  if (got < 512) { Serial.printf("[Radar] Zu wenig Daten: %u\n", got); return; }
+  if (got < 512) { Serial.printf("[Radar] Zu wenig Daten: %u\n", got); logDiag("[Radar] zu wenig Daten: %u Bytes", (unsigned)got); return; }
   const uint8_t* pngBuf = (const uint8_t*)body.c_str();
   Serial.printf("[Radar] %u Bytes geladen, dekodiere PNG\n", got);
 
@@ -1801,6 +1837,7 @@ void fetchWmsRadar() {
 
   if (err || !rgba) {
     Serial.printf("[Radar] lodepng Fehler %u\n", err);
+    logDiag("[Radar] PNG-Fehler %u (freeHeap=%u)", err, (unsigned)ESP.getFreeHeap());
     if (rgba) free(rgba);
     return;
   }
@@ -1814,6 +1851,7 @@ void fetchWmsRadar() {
   uint8_t* decoded = (uint8_t*)ps_malloc(totalSize);
   if (!decoded) {
     Serial.println("[Radar] ps_malloc decoded fehlgeschlagen");
+    logDiag("[Radar] zu wenig PSRAM fuer das Bild");
     free(rgba); return;
   }
 
@@ -1839,6 +1877,7 @@ void fetchWmsRadar() {
   warnkarteDsc.data_size          = totalSize;
   warnkarteDsc.data               = warnkarteBuf;
 
+  abrufOk(AB_RADAR);
   if (imgWarnkarte) {
     lv_img_set_src(imgWarnkarte, &warnkarteDsc);
     lv_img_set_zoom(imgWarnkarte, 256);  // 1:1, WMS liefert 480x280 passend
@@ -2109,7 +2148,8 @@ void fetchOpenMeteoPollen() {
   url += ",european_aqi,pm2_5,pm10,nitrogen_dioxide,ozone";
   url += "&timezone=auto&forecast_days=1";
   http.begin(sc, url);
-  if (http.GET() == 200) {
+  int omCode = http.GET();
+  if (omCode == 200) {
     DynamicJsonDocument doc(10240);
     if (deserializeJson(doc, http.getString()) == DeserializationError::Ok) {
       struct tm ti; getLocalTime(&ti);
@@ -2148,7 +2188,12 @@ void fetchOpenMeteoPollen() {
         pollen.h_esche[i]   = pollen.dwd_esche;
         pollen.h_hasel[i]   = pollen.dwd_hasel;
       }
+      abrufOk(AB_POLLEN_OM);
+    } else {
+      logDiag("[Pollen] Open-Meteo: JSON-Fehler (freeHeap=%u)", (unsigned)ESP.getFreeHeap());
     }
+  } else {
+    logDiag("[Pollen] Open-Meteo-Abruf fehlgeschlagen: HTTP %d (freeHeap=%u)", omCode, (unsigned)ESP.getFreeHeap());
   }
   http.end();
 }
@@ -2196,6 +2241,7 @@ void fetchBioWetter() {
   int code = http.GET();
   if (code != 200) {
     Serial.printf("[Bio] HTTP %d\n", code);
+    logDiag("[Biowetter] DWD-Abruf fehlgeschlagen: HTTP %d", code);
     http.end(); return;
   }
   int contentLen = http.getSize();
@@ -2205,7 +2251,7 @@ void fetchBioWetter() {
   String body = http.getString();
   http.end();
   Serial.printf("[Bio] Body geladen: %d Bytes\n", body.length());
-  if (body.length() < 1000) { Serial.println("[Bio] Body zu kurz"); return; }
+  if (body.length() < 1000) { Serial.println("[Bio] Body zu kurz"); logDiag("[Biowetter] Antwort zu kurz: %u Bytes", (unsigned)body.length()); return; }
 
   const char* perioden[] = {"today_afternoon","tomorrow_morning","tomorrow_afternoon","dayafter_to_morning"};
   DynamicJsonDocument filter(1024);
@@ -2225,6 +2271,7 @@ void fetchBioWetter() {
   DeserializationError err = deserializeJson(doc, body, DeserializationOption::Filter(filter));
   if (err != DeserializationError::Ok) {
     Serial.printf("[Bio] JSON Fehler: %s\n", err.c_str());
+    logDiag("[Biowetter] JSON-Fehler: %s (freeHeap=%u)", err.c_str(), (unsigned)ESP.getFreeHeap());
     return;
   }
 
@@ -2245,7 +2292,8 @@ void fetchBioWetter() {
     bio.geladen = true;
     break;
   }
-  if (!bio.geladen) Serial.printf("[Bio] Zone %s nicht gefunden\n", cfg.bio_zone.c_str());
+  if (!bio.geladen) { Serial.printf("[Bio] Zone %s nicht gefunden\n", cfg.bio_zone.c_str()); logDiag("[Biowetter] Zone %s nicht gefunden", cfg.bio_zone.c_str()); }
+  else abrufOk(AB_BIO);
 }
 
 // ============================================================
@@ -4182,6 +4230,9 @@ void setup() {
   if (MDNS.begin(MDNS_NAME)) {
     MDNS.addService("http", "tcp", 80);
     Serial.println("[mDNS] wettercubeplus.local aktiv");
+    logDiag("[Start] mDNS: %s.local", MDNS_NAME);
+  } else {
+    logDiag("[Start] mDNS konnte nicht gestartet werden (Zugriff nur per IP-Adresse)");
   }
 
   configTime(0, 0, "pool.ntp.org", "time.cloudflare.com", "time.google.com");
@@ -4192,6 +4243,7 @@ void setup() {
   { struct tm ti; int r = 0; while (!getLocalTime(&ti) && r++ < 30) { delay(300); lv_timer_handler(); } }
 
   starteWebUI();
+  logDiag("[Start] Web-UI laeuft: http://%s/", WiFi.localIP().toString().c_str());
   setzeBootFortschritt(55);
 
   if (cfg.lat == 0.0f && !cfg.location.isEmpty()) {

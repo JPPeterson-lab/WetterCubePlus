@@ -2,6 +2,15 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.6.2 (2026-10-12)
+
+### New
+- **More detailed `/log`:** The header now also shows **WLAN jetzt** (network, signal strength, IP), the **location** with coordinates (0.0000 means: not found yet) and **when the last successful request** per data source happened (weather, DWD pollen, pollen/air, DWD warnings, radar, biowetter)
+- Failures are now listed with their reason for DWD pollen, pollen/air quality (Open-Meteo), DWD warnings, biowetter and radar too (previously only for the weather). New entries cover the location search (`[Geo]`), start of mDNS and web interface, the setup portal, saved settings, location changes and the version check
+- The log now keeps the last 40 instead of 25 entries. Successful requests are deliberately not logged one by one so that there is room for errors
+
+---
+
 ## v1.6.1 (2026-10-12)
 
 ### New
