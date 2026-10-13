@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.6.3"
+#define FIRMWARE_VERSION "1.6.4"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -2590,24 +2590,22 @@ void aktualisiereUI() {
     lv_label_set_text(objects.labelairpressur, buf);
   }
 
-  // screen_1: Top-3 Pollen (Open-Meteo, naechste Stunde, auf DWD-Skala umgerechnet)
+  // screen_1: die zwei staerksten Pollen unter "Meine Allergene" (gleiche Werte wie Pollenwarnung und Gesundheitsscreen)
   {
     struct PE { float v; const char* n; };
-    PE pe[] = {
-      {openMeteoToDwd(pollen.birke),    "Birke"},
-      {openMeteoToDwd(pollen.erle),     "Erle"},
-      {openMeteoToDwd(pollen.graeser),  "Gräser"},
-      {openMeteoToDwd(pollen.beifuss),  "Beifuß"},
-      {openMeteoToDwd(pollen.ambrosia), "Ambrosia"},
-    };
-    for (int i = 0; i < 4; i++)
-      for (int j = i+1; j < 5; j++)
+    PE pe[8];
+    int pn_ = 0;
+    for (int i = 0; i < 8; i++)
+      if (pollenGewaehlt(i)) pe[pn_++] = {pollenWertWarnung(i), POLLEN_ANZEIGE[i]};
+    for (int i = 0; i < pn_ - 1; i++)
+      for (int j = i+1; j < pn_; j++)
         if (pe[j].v > pe[i].v) { PE tmp = pe[i]; pe[i] = pe[j]; pe[j] = tmp; }
     lv_obj_t* pn[] = {objects.labelpollenforecast1main,      objects.labelpollenforecast2main};
     lv_obj_t* pv[] = {objects.labelpollenforecast1mainvalue, objects.labelpollenforecast2mainvalue};
     for (int i = 0; i < 2; i++) {
-      setLabel(pn[i], pe[i].v >= 0 ? pe[i].n : "--");
-      setPollenLabel(pv[i], pe[i].v);
+      float v = (i < pn_) ? pe[i].v : -1.0f;   // weniger als zwei gewaehlt: "--"
+      setLabel(pn[i], v >= 0 ? pe[i].n : "--");
+      setPollenLabel(pv[i], v);
     }
   }
 

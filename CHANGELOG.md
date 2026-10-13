@@ -2,6 +2,16 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.6.4 (2026-10-13)
+
+### Geändert
+- **Pollen auf dem Hauptscreen nach „Meine Allergene“:** Die zwei angezeigten Pollen sind jetzt die stärksten unter den in der WebUI gewählten Allergenen (bisher immer die stärksten von fünf festen Pollen). Sie zeigen dieselben Werte wie Pollenwarnung und Gesundheitsscreen, also auch Hasel, Esche und Roggen aus der DWD-Tagesvorhersage. Sind weniger als zwei Allergene gewählt, steht „--“
+
+### Doku
+- Das Werbefoto steht jetzt als Teaser oben in der README
+
+---
+
 ## v1.6.3 (2026-10-12)
 
 ### Neu

@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-13 – v1.6.4
+
+### Top-2-Pollen nach Allergen-Auswahl
+
+Die Anzeige auf Screen 1 nutzte fünf feste Open-Meteo-Pollen. Jetzt läuft sie über dieselben Helfer wie die Pollenwarnung (`pollenGewaehlt()`, `pollenWertWarnung()`, `POLLEN_ANZEIGE`), sortiert die gewählten Allergene und zeigt die zwei stärksten. Damit widersprechen sich Warnung und Hauptscreen nicht mehr (die Warnung berücksichtigte Hasel, Esche und Roggen schon). Nebeneffekt: Diese drei erscheinen im Kästchen „in der nächsten Stunde“ mit ihrem DWD-Tageswert. Weniger als zwei gewählte Allergene ergeben „--“.
+
+README: Werbefoto `screenshots/werbefoto.jpg` (886 × 886, 176 KB) als zentrierter Teaser unter der Überschrift.
+
+---
+
 ## 2026-10-12 – v1.6.3
 
 ### Knopf „Log ansehen“ in der WebUI

@@ -2,6 +2,16 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.6.4 (2026-10-13)
+
+### Changed
+- **Pollen on the main screen follow "My allergens":** The two pollen shown are now the strongest among the allergens selected in the WebUI (before, always the strongest of five fixed pollen). They show the same values as the pollen warning and the health screen, so hazel, ash and rye from the DWD daily forecast are included. If fewer than two allergens are selected, "--" is shown
+
+### Docs
+- The promotional photo is now the teaser at the top of the README
+
+---
+
 ## v1.6.3 (2026-10-12)
 
 ### New
