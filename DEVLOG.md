@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-10-15 – v1.6.6
+
+### Wetter-Icon gekachelt: Zoom aus der Widget-Breite
+
+`setWetterIcon()` setzte den Zoom fest auf 83 px (`83 * 256 / Bildbreite`). Sobald das Widget in PicoPixel größer als 83 px war (117 px auf Screen 1, 106 px in der Vorhersage), war das gezoomte Bild kleiner als das Widget, und LVGL kachelt ein `lv_img` im Modus `LV_IMG_SIZE_MODE_REAL` dann (sichtbar als Wolken-Fragmente rechts und unten). Jetzt: `zoom = lv_obj_get_width(obj) * 256 / Bildbreite`, die Größe ergibt sich aus der UI. Die Meteocons füllen ihre 128 px nur zu 62 bis 75 %; eine zugeschnittene Variante (alle Icons gemeinsam auf den belegten Bereich 16..112 beschnitten, per SVG-`viewBox` neu gerendert, +33 %) liegt bereit (`~/Desktop/icons/meteocons_128_gross/`), wurde aber noch nicht eingebaut.
+
+---
+
 ## 2026-10-15 – v1.6.5
 
 ### Wetter-Icons: Dovora → Meteocons (Lizenz)

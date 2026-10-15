@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.6.5"
+#define FIRMWARE_VERSION "1.6.6"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1469,7 +1469,9 @@ const lv_img_dsc_t* wmoZuImage(int wmo, bool day) {
 static void setWetterIcon(lv_obj_t* obj, const lv_img_dsc_t* dsc) {
   if (!obj || !dsc) return;
   lv_img_set_src(obj, dsc);
-  lv_img_set_zoom(obj, (uint16_t)(83UL * 256UL / dsc->header.w));
+  // Darstellungsgroesse = Breite des Widgets (in PicoPixel einstellbar); sonst wuerde LVGL das Bild kacheln oder abschneiden
+  int w = lv_obj_get_width(obj);
+  lv_img_set_zoom(obj, (uint16_t)((w > 0 ? (unsigned long)w : 83UL) * 256UL / dsc->header.w));
 }
 
 const char* windRichtung(int deg) {

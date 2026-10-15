@@ -2,6 +2,16 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.6.6 (2026-10-15)
+
+### Fixes
+- **Wetter-Icon auf dem Hauptscreen zerrissen:** Die Firmware hat das Icon immer auf 83 Pixel Breite gezeichnet, auch wenn der Rahmen in der UI größer eingestellt war; dann erschien das Bild gekachelt (Wolken-Stücke rechts und unten). Die Darstellungsgröße richtet sich jetzt nach der Größe des Rahmens (Hauptscreen 117, Vorhersage 106 Pixel)
+
+### Geändert
+- Die Wetter-Icons auf dem Hauptscreen sind dadurch deutlich größer, die Rahmen der Icons in der Vorhersage wurden an die Icon-Größe angepasst
+
+---
+
 ## v1.6.5 (2026-10-15)
 
 ### Geändert

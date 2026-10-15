@@ -2,6 +2,16 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.6.6 (2026-10-15)
+
+### Fixes
+- **Weather icon on the main screen torn apart:** The firmware always drew the icon at 83 pixels wide, even if the frame was set larger in the UI; the image then appeared tiled (cloud fragments on the right and below). The display size now follows the size of the frame (main screen 117, forecast 106 pixels)
+
+### Changed
+- The weather icons on the main screen are therefore noticeably larger, the icon frames in the forecast were adjusted to the icon size
+
+---
+
 ## v1.6.5 (2026-10-15)
 
 ### Changed
