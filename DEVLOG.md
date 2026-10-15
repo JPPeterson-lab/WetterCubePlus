@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-10-15 – v1.6.5
+
+### Wetter-Icons: Dovora → Meteocons (Lizenz)
+
+**Anlass:** Dovora steht ausschließlich unter CC BY-SA 4.0. Das ShareAlike verlangt für Abwandlungen dieselbe oder eine als kompatibel gelistete Lizenz; CC BY-NC 4.0 gehört nicht dazu, und ein NC-Zusatz wäre eine unzulässige zusätzliche Einschränkung. Die Projektlizenz CC BY-NC 4.0 ließ sich deshalb mit den umgewandelten Dovora-Icons nicht sauber vereinbaren (für das fertige Binary bleibt unklar, ob es eine Sammlung oder eine Abwandlung ist).
+
+**Lösung:** [Meteocons](https://github.com/basmilius/weather-icons) (MIT). Paket `@meteocons/svg-static` 0.1.0, Stil „fill“, 17 SVGs (`clear-day` → `day_clear`, `partly-cloudy-night-rain` → `night_full_moon_rain`, `thunderstorms-rain` → `rain_thunder`, `weather-alert` → `alert` usw.). Gerastert wurden sie ohne Zusatzprogramme im Browserfenster (SVG → Canvas 128 × 128 → PNG, per kleinem lokalem Server gespeichert), Ergebnis in `~/Desktop/icons/meteocons_128/`. Die Wolken sind im Original fast weiß (`#E6EFFC`) und auf dem hellen Thema kaum sichtbar; die Umrandungen der Wolken und der Nebelstreifen wurden auf `#94A3B8` gesetzt.
+
+**PicoPixel:** Die PNGs lädt man in den Assets hoch (die MCP-Schnittstelle kann das nicht), Löschen von Assets geht dort ebenfalls nicht. Beim Umstellen blieb das Warn-Icon `ImageAlert` auf dem Pollenwarnung-Screen am alten Dovora-Bild hängen (zwei Dateien `alert` und `alert_1`, +49 KB); per `bind_widget_image` auf das neue Asset gelegt, danach genau eine `alert.inc`. Firmware 2,77 MB.
+
+**Credits:** `CREDITS.md`, `LICENSE`, README und Wiki auf Meteocons, Icons8, Montserrat (SIL OFL 1.1) und die Bibliotheken ergänzt; die Aussage „Quellcode unter MIT“ in `CREDITS.md` war veraltet und widersprach der `LICENSE` (CC BY-NC 4.0) und wurde korrigiert. Frühere Releases bis 1.6.4 enthalten weiterhin die Dovora-Icons.
+
+---
+
 ## 2026-10-13 – v1.6.4
 
 ### Top-2-Pollen nach Allergen-Auswahl

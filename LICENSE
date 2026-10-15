@@ -23,11 +23,16 @@ Full license text: https://creativecommons.org/licenses/by-nc/4.0/legalcode
 
 THIRD-PARTY COMPONENTS
 
-The weather icons included in this project are from Dovora Weather Icons
-and are licensed under CC BY-SA 4.0:
-https://creativecommons.org/licenses/by-sa/4.0/
-Source: https://www.dovora.com/resources/weather-icons/
+The license above covers the original work of this project. The following
+third-party components keep their own licenses (details and license texts in
+CREDITS.md):
 
-All other third-party libraries (LVGL, LovyanGFX, ArduinoJson, lodepng, FastLED)
-are licensed under their respective open-source licenses (MIT, zlib).
-See CREDITS.md for details.
+- Weather icons: Meteocons by Bas Milius, MIT License
+  https://github.com/basmilius/weather-icons
+- UI control icons: Icons8 Flat Color Icons, MIT License or Good Boy License
+  https://github.com/icons8/flat-color-icons
+- Font: Montserrat, SIL Open Font License 1.1
+  https://github.com/JulietaUla/Montserrat
+- Libraries used when building (LVGL, LovyanGFX, ArduinoJson, FastLED,
+  Arduino-ESP32, ESP-IDF) are licensed under their respective open-source
+  licenses (MIT, BSD-2-Clause, zlib, LGPL 2.1, Apache 2.0).

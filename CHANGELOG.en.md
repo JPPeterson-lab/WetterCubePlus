@@ -2,6 +2,18 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.6.5 (2026-10-15)
+
+### Changed
+- **New weather icons:** All weather icons (day and night, rain, snow, fog, thunderstorm, overcast …) and the warning icon on the pollen warning screen are now the [Meteocons](https://github.com/basmilius/weather-icons) by Bas Milius (MIT license). They replace the previous icons by Dovora (CC BY-SA 4.0), whose license does not fit the project license CC BY-NC 4.0. The clouds have an outline so that they are easy to see on the light theme as well. The frames in the forecast were adjusted to the new icons
+- The firmware is the same size as before (128 × 128 pixels per icon)
+
+### Docs
+- **Licenses and credits completed:** `CREDITS.md`, `LICENSE` and the README now name Meteocons (MIT), Icons8 (MIT or Good Boy License), the Montserrat font (SIL OFL 1.1) and the libraries used. The statement about the project license in `CREDITS.md` was also corrected (CC BY-NC 4.0 instead of MIT)
+- Note: earlier versions (up to 1.6.4) still contain the Dovora icons
+
+---
+
 ## v1.6.4 (2026-10-13)
 
 ### Changed

@@ -2197,11 +2197,10 @@ void create_screen_screensunmoon() {
                     // image_2
                     lv_obj_t *obj = lv_img_create(parent_obj);
                     objects.image_2 = obj;
-                    lv_obj_set_pos(obj, 28, 32);
-                    lv_obj_set_size(obj, 100, 100);
+                    lv_obj_set_pos(obj, 14, 19);
+                    lv_obj_set_size(obj, 128, 128);
                     lv_img_set_src(obj, &day_clear);
                     lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-                    lv_img_set_zoom(obj, 200);
                     lv_img_set_antialias(obj, true);
                 }
                 {
@@ -2262,11 +2261,10 @@ void create_screen_screensunmoon() {
                     // image_3
                     lv_obj_t *obj = lv_img_create(parent_obj);
                     objects.image_3 = obj;
-                    lv_obj_set_pos(obj, 28, 32);
-                    lv_obj_set_size(obj, 100, 100);
+                    lv_obj_set_pos(obj, 14, 19);
+                    lv_obj_set_size(obj, 128, 128);
                     lv_img_set_src(obj, &night_full_moon_clear);
                     lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-                    lv_img_set_zoom(obj, 200);
                     lv_img_set_antialias(obj, true);
                 }
             }
@@ -2378,146 +2376,173 @@ void create_screen_lagerscreen() {
     {
         lv_obj_t *parent_obj = obj;
         {
-            // image_1
+            // night_full_moon_clear
             lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.image_1 = obj;
-            lv_obj_set_pos(obj, 199, 33);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &overcast);
+            objects.night_full_moon_clear = obj;
+            lv_obj_set_pos(obj, 115, 181);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &night_full_moon_clear);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
             lv_img_set_antialias(obj, true);
         }
         {
-            // fog
+            // alert
             lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.fog = obj;
-            lv_obj_set_pos(obj, 17, 55);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &fog);
+            objects.alert = obj;
+            lv_obj_set_pos(obj, 69, 34);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &alert);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // rain
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.rain = obj;
+            lv_obj_set_pos(obj, -2, 181);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &rain);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
             lv_img_set_antialias(obj, true);
         }
         {
             // day_partial_cloud
             lv_obj_t *obj = lv_img_create(parent_obj);
             objects.day_partial_cloud = obj;
-            lv_obj_set_pos(obj, 181, 140);
-            lv_obj_set_size(obj, 83, 83);
+            lv_obj_set_pos(obj, 190, 89);
+            lv_obj_set_size(obj, 128, 128);
             lv_img_set_src(obj, &day_partial_cloud);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
             lv_img_set_antialias(obj, true);
         }
         {
-            // snow
+            // day_clear
             lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.snow = obj;
-            lv_obj_set_pos(obj, 332, 14);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &snow);
+            objects.day_clear = obj;
+            lv_obj_set_pos(obj, 296, 89);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &day_clear);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
-            lv_img_set_antialias(obj, true);
-        }
-        {
-            // night_full_moon_partial_cloud
-            lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.night_full_moon_partial_cloud = obj;
-            lv_obj_set_pos(obj, 162, 99);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &night_full_moon_partial_cloud);
-            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
-            lv_img_set_antialias(obj, true);
-        }
-        {
-            // sleet
-            lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.sleet = obj;
-            lv_obj_set_pos(obj, 96, 87);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &sleet);
-            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
-            lv_img_set_antialias(obj, true);
-        }
-        {
-            // day_rain
-            lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.day_rain = obj;
-            lv_obj_set_pos(obj, 27, 202);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &day_rain);
-            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
-            lv_img_set_antialias(obj, true);
-        }
-        {
-            // night_full_moon_rain
-            lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.night_full_moon_rain = obj;
-            lv_obj_set_pos(obj, 127, 202);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &night_full_moon_rain);
-            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
-            lv_img_set_antialias(obj, true);
-        }
-        {
-            // rain_thunder
-            lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.rain_thunder = obj;
-            lv_obj_set_pos(obj, 227, 202);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &rain_thunder);
-            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
-            lv_img_set_antialias(obj, true);
-        }
-        {
-            // day_snow
-            lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.day_snow = obj;
-            lv_obj_set_pos(obj, 300, 110);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &day_snow);
-            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
-            lv_img_set_antialias(obj, true);
-        }
-        {
-            // night_full_moon_snow
-            lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.night_full_moon_snow = obj;
-            lv_obj_set_pos(obj, 385, 110);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &night_full_moon_snow);
-            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
             lv_img_set_antialias(obj, true);
         }
         {
             // mist
             lv_obj_t *obj = lv_img_create(parent_obj);
             objects.mist = obj;
-            lv_obj_set_pos(obj, 385, 205);
-            lv_obj_set_size(obj, 83, 83);
+            lv_obj_set_pos(obj, 156, 5);
+            lv_obj_set_size(obj, 128, 128);
             lv_img_set_src(obj, &mist);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
             lv_img_set_antialias(obj, true);
         }
         {
-            // imagewarnregen
+            // day_rain
             lv_obj_t *obj = lv_img_create(parent_obj);
-            objects.imagewarnregen = obj;
-            lv_obj_set_pos(obj, 66, 0);
-            lv_obj_set_size(obj, 83, 83);
-            lv_img_set_src(obj, &rain);
+            objects.day_rain = obj;
+            lv_obj_set_pos(obj, 90, 133);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &day_rain);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // fog
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.fog = obj;
+            lv_obj_set_pos(obj, 218, 103);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &fog);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // day_snow
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.day_snow = obj;
+            lv_obj_set_pos(obj, 241, 34);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &day_snow);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // night_full_moon_partial_cloud
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.night_full_moon_partial_cloud = obj;
+            lv_obj_set_pos(obj, 122, 89);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &night_full_moon_partial_cloud);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // night_full_moon_snow
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.night_full_moon_snow = obj;
+            lv_obj_set_pos(obj, 331, 11);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &night_full_moon_snow);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // night_full_moon_rain
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.night_full_moon_rain = obj;
+            lv_obj_set_pos(obj, 154, 83);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &night_full_moon_rain);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // rain_thunder
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.rain_thunder = obj;
+            lv_obj_set_pos(obj, 202, 12);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &rain_thunder);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // overcast
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.overcast = obj;
+            lv_obj_set_pos(obj, 55, 147);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &overcast);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // sleet
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.sleet = obj;
+            lv_obj_set_pos(obj, 124, 89);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &sleet);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // snow
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.snow = obj;
+            lv_obj_set_pos(obj, 227, 165);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &snow);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
+            lv_img_set_antialias(obj, true);
+        }
+        {
+            // thunder
+            lv_obj_t *obj = lv_img_create(parent_obj);
+            objects.thunder = obj;
+            lv_obj_set_pos(obj, 209, 55);
+            lv_obj_set_size(obj, 128, 128);
+            lv_img_set_src(obj, &thunder);
+            lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
             lv_img_set_antialias(obj, true);
         }
     }
@@ -2846,11 +2871,11 @@ void create_screen_screenforecastwetter() {
                     // imageh2
                     lv_obj_t *obj = lv_img_create(parent_obj);
                     objects.imageh2 = obj;
-                    lv_obj_set_pos(obj, 12, 51);
-                    lv_obj_set_size(obj, 83, 83);
-                    lv_img_set_src(obj, &thunder);
+                    lv_obj_set_pos(obj, 2, 42);
+                    lv_obj_set_size(obj, 106, 106);
+                    lv_img_set_src(obj, &rain);
                     lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-                    lv_img_set_zoom(obj, 166);
+                    lv_img_set_zoom(obj, 212);
                     lv_img_set_antialias(obj, true);
                 }
                 {
@@ -2947,11 +2972,11 @@ void create_screen_screenforecastwetter() {
                     // imageh1
                     lv_obj_t *obj = lv_img_create(parent_obj);
                     objects.imageh1 = obj;
-                    lv_obj_set_pos(obj, 12, 51);
-                    lv_obj_set_size(obj, 83, 83);
-                    lv_img_set_src(obj, &rain);
+                    lv_obj_set_pos(obj, 2, 42);
+                    lv_obj_set_size(obj, 106, 106);
+                    lv_img_set_src(obj, &day_rain);
                     lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-                    lv_img_set_zoom(obj, 166);
+                    lv_img_set_zoom(obj, 212);
                     lv_img_set_antialias(obj, true);
                 }
                 {
@@ -3024,11 +3049,11 @@ void create_screen_screenforecastwetter() {
                     // imageh3
                     lv_obj_t *obj = lv_img_create(parent_obj);
                     objects.imageh3 = obj;
-                    lv_obj_set_pos(obj, 12, 51);
-                    lv_obj_set_size(obj, 83, 83);
-                    lv_img_set_src(obj, &snow);
+                    lv_obj_set_pos(obj, 2, 42);
+                    lv_obj_set_size(obj, 106, 106);
+                    lv_img_set_src(obj, &fog);
                     lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-                    lv_img_set_zoom(obj, 166);
+                    lv_img_set_zoom(obj, 212);
                     lv_img_set_antialias(obj, true);
                 }
                 {
@@ -3113,11 +3138,11 @@ void create_screen_screenforecastwetter() {
                     // imageh4
                     lv_obj_t *obj = lv_img_create(parent_obj);
                     objects.imageh4 = obj;
-                    lv_obj_set_pos(obj, 12, 51);
-                    lv_obj_set_size(obj, 83, 83);
-                    lv_img_set_src(obj, &overcast);
+                    lv_obj_set_pos(obj, 2, 42);
+                    lv_obj_set_size(obj, 106, 106);
+                    lv_img_set_src(obj, &snow);
                     lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-                    lv_img_set_zoom(obj, 166);
+                    lv_img_set_zoom(obj, 212);
                     lv_img_set_antialias(obj, true);
                 }
                 {
@@ -4450,11 +4475,10 @@ void create_screen_screen_1() {
             // imagewetter
             lv_obj_t *obj = lv_img_create(parent_obj);
             objects.imagewetter = obj;
-            lv_obj_set_pos(obj, 198, 112);
-            lv_obj_set_size(obj, 83, 83);
+            lv_obj_set_pos(obj, 176, 71);
+            lv_obj_set_size(obj, 128, 128);
             lv_img_set_src(obj, &day_clear);
             lv_img_set_size_mode(obj, LV_IMG_SIZE_MODE_REAL);
-            lv_img_set_zoom(obj, 166);
             lv_img_set_antialias(obj, true);
         }
         {
@@ -5143,19 +5167,23 @@ void delete_screen_lagerscreen() {
         lv_obj_del(objects.lagerscreen);
     }
     objects.lagerscreen = 0;
-    objects.image_1 = 0;
-    objects.fog = 0;
+    objects.night_full_moon_clear = 0;
+    objects.alert = 0;
+    objects.rain = 0;
     objects.day_partial_cloud = 0;
-    objects.snow = 0;
-    objects.night_full_moon_partial_cloud = 0;
-    objects.sleet = 0;
+    objects.day_clear = 0;
+    objects.mist = 0;
     objects.day_rain = 0;
+    objects.fog = 0;
+    objects.day_snow = 0;
+    objects.night_full_moon_partial_cloud = 0;
+    objects.night_full_moon_snow = 0;
     objects.night_full_moon_rain = 0;
     objects.rain_thunder = 0;
-    objects.day_snow = 0;
-    objects.night_full_moon_snow = 0;
-    objects.mist = 0;
-    objects.imagewarnregen = 0;
+    objects.overcast = 0;
+    objects.sleet = 0;
+    objects.snow = 0;
+    objects.thunder = 0;
 }
 
 void delete_screen_screenwarnkarte2() {

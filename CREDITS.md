@@ -7,22 +7,50 @@ sind nachfolgend aufgeführt.
 
 ## Wetter-Icons
 
-**Quelle:** [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/)
+**Quelle:** [Meteocons](https://github.com/basmilius/weather-icons) von Bas Milius
 
-**Lizenz:** [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/)
+**Lizenz:** MIT License (Copyright (c) 2020-present Bas Milius)
 
-Verwendete Icons (128×128 Pixel, als RGB565A8-Arrays für LVGL eingebettet, Dateien unter `src/ui/images/`):
+Verwendete Icons (Stil „Fill“, statische Variante, als PNG mit 128×128 Pixeln in PicoPixel eingebunden und als Arrays für LVGL eingebettet; Dateien unter `src/ui/images/`):
 - `day_clear`, `day_partial_cloud`, `day_rain`, `day_snow` – Tag: klar, teilweise bewölkt, Regenschauer, Schneeschauer
 - `night_full_moon_clear`, `night_full_moon_partial_cloud`, `night_full_moon_rain`, `night_full_moon_snow` – Nacht (Mond) mit denselben Wetterlagen
 - `overcast` – bedeckt, `fog` – Nebel, `mist` – Dunst
 - `rain` – Regen und Nieselregen, `rain_thunder` – Regen mit Gewitter, `thunder` – Gewitter
 - `sleet` – Schneeregen, `snow` – Schnee
-- `alert` – Warn-Icon
+- `alert` – Warn-Icon (Pollenwarnung)
 
-Gemäß CC BY-SA 4.0 gilt:
-- Die Icons wurden als RGB565A8-Arrays für LVGL 8.x konvertiert und eingebettet
-- Der Urheber (Dovora) wird hiermit ausdrücklich genannt
-- Weitergabe dieser Icons muss ebenfalls unter CC BY-SA 4.0 erfolgen
+Änderung gegenüber dem Original: Die Umrandung der Wolken und der Nebelstreifen wurde auf ein mittleres Blaugrau (`#94A3B8`) gesetzt, damit sie auch auf dem hellen Farbthema sichtbar sind.
+
+Lizenztext der Meteocons (MIT):
+
+```
+MIT License
+
+Copyright (c) 2020-present Bas Milius
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+Bis einschließlich Version 1.6.4 nutzte das Projekt stattdessen Wetter-Icons von
+[Dovora](https://www.dovora.com/resources/weather-icons/) (CC BY-SA 4.0). Diese sind
+seit Version 1.6.5 nicht mehr enthalten; in älteren Versionen (Git-Verlauf, frühere
+Releases) stecken sie noch und bleiben dort unter CC BY-SA 4.0 (Urheber: Dovora).
 
 ---
 
@@ -45,10 +73,10 @@ Verwendete Icons (als PNG in PicoPixel eingebunden, als Arrays für LVGL eingebe
 
 ## Wetterdaten
 
-**Quelle:** [Open-Meteo](https://open-meteo.com)
+**Quelle:** [Open-Meteo](https://open-meteo.com) – Wetter, Pollen, Luftqualität, Standortsuche
 
-Open-Meteo ist eine kostenlose Wetter-API für nicht-kommerzielle Nutzung.
-Kein API-Key erforderlich.
+**Lizenz der Daten:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (Namensnennung). Die Nutzung der kostenlosen API ist für nicht-kommerzielle
+Zwecke vorgesehen, ein API-Key ist nicht erforderlich.
 
 ---
 
@@ -61,11 +89,33 @@ bereitgestellt. Nutzung gemäß den [DWD-Nutzungsbedingungen](https://www.dwd.de
 
 ---
 
-## UI-Framework
+## Schrift
 
-**Quelle:** [LVGL](https://lvgl.io) – Light and Versatile Graphics Library
+**Quelle:** [Montserrat](https://github.com/JulietaUla/Montserrat) – © The Montserrat Project Authors
 
-**Lizenz:** MIT License
+**Lizenz:** [SIL Open Font License 1.1](https://openfontlicense.org)
+
+Die Montserrat-Schrift ist in mehreren Größen (14 bis 52 Pixel) als umgewandelte C-Dateien
+(`src/ui/fonts/`) im Projekt enthalten. Die OFL erlaubt das Einbetten in Software; die Schrift selbst
+darf nicht einzeln verkauft werden.
+
+---
+
+## Bibliotheken und Framework
+
+Diese Bibliotheken werden beim Selbstbauen über den Arduino-Bibliotheksverwalter installiert und stecken
+kompiliert in den veröffentlichten Firmware-Dateien. Ihre Quellen liegen nicht in diesem Repository.
+
+| Bibliothek | Lizenz |
+|---|---|
+| [LVGL](https://lvgl.io) (Light and Versatile Graphics Library), enthält [LodePNG](https://lodev.org/lodepng/) | MIT; LodePNG: zlib |
+| [LovyanGFX](https://github.com/lovyan03/LovyanGFX) (Display- und Touch-Treiber) | MIT und BSD-2-Clause |
+| [ArduinoJson](https://arduinojson.org) | MIT |
+| [FastLED](https://fastled.io) (nur WetterAmpel) | MIT |
+| [Arduino-ESP32](https://github.com/espressif/arduino-esp32) (Framework) | LGPL 2.1 |
+| [ESP-IDF](https://github.com/espressif/esp-idf) (darunter) | Apache 2.0 |
+
+Die Quellen dieses Projekts sind vollständig öffentlich; die Firmware lässt sich damit jederzeit selbst bauen.
 
 ---
 
@@ -75,4 +125,5 @@ Dieses Projekt steht unter der **Creative Commons Attribution-NonCommercial 4.0
 International (CC BY-NC 4.0)** – siehe [LICENSE](LICENSE).
 
 Die oben genannten Drittanbieter-Ressourcen unterliegen ihren jeweiligen Lizenzen
-(Dovora: CC BY-SA 4.0, Icons8: MIT oder Good Boy License, LVGL: MIT).
+(Meteocons: MIT, Icons8: MIT oder Good Boy License, Montserrat: SIL OFL 1.1, Bibliotheken siehe oben)
+und sind von der CC BY-NC 4.0 dieses Projekts nicht erfasst.

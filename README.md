@@ -5,7 +5,7 @@
 </p>
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.6.4-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.6.5-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -287,7 +287,8 @@ Der C3 fragt `GET http://wettercubeplus.local/api/ampel` ab. Beide Geräte müss
 
 | Ressource | Urheber | Lizenz |
 |---|---|---|
-| Wetter-Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| Wetter-Icons | [Meteocons](https://github.com/basmilius/weather-icons) (Bas Milius) | MIT |
+| Schrift | [Montserrat](https://github.com/JulietaUla/Montserrat) | SIL OFL 1.1 |
 | Bedienelemente-Icons | [Icons8 Flat Color Icons](https://github.com/icons8/flat-color-icons) | MIT oder [Good Boy License](https://icons8.com/good-boy-license/) |
 | LVGL Editor | [PicoPixel](https://picopixel.io/) | PicoPixel (kostenlos) |
 | Wetterdaten | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (kostenlos) |
@@ -306,7 +307,7 @@ Dieses Projekt steht unter der **Creative Commons Attribution-NonCommercial 4.0 
 - ❌ Kommerzielle Nutzung durch Dritte **nicht** gestattet
 - Der Urheber (JPPeterson-lab) behält sich das Recht vor, das Projekt jederzeit auch kommerziell zu nutzen.
 
-Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) und unterliegen der **CC BY-SA 4.0**-Lizenz (siehe [CREDITS.md](CREDITS.md)).
+Icons, Schrift und Bibliotheken von Dritten (Wetter-Icons: [Meteocons](https://github.com/basmilius/weather-icons), MIT) behalten ihre eigenen Lizenzen und sind von der CC BY-NC 4.0 nicht erfasst – Details in [CREDITS.md](CREDITS.md).
 
 ---
 ---
@@ -314,7 +315,7 @@ Die enthaltenen Wetter-Icons stammen von [Dovora Weather Icons](https://www.dovo
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.6.4-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.6.5-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -588,7 +589,8 @@ The C3 polls `GET http://wettercubeplus.local/api/ampel`. Both devices must be o
 
 | Resource | Author | License |
 |---|---|---|
-| Weather Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| Weather Icons | [Meteocons](https://github.com/basmilius/weather-icons) (Bas Milius) | MIT |
+| Font | [Montserrat](https://github.com/JulietaUla/Montserrat) | SIL OFL 1.1 |
 | UI control icons | [Icons8 Flat Color Icons](https://github.com/icons8/flat-color-icons) | MIT or [Good Boy License](https://icons8.com/good-boy-license/) |
 | LVGL Editor | [PicoPixel](https://picopixel.io/) | PicoPixel (free) |
 | Weather Data | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (free) |
@@ -607,4 +609,4 @@ This project is licensed under **Creative Commons Attribution-NonCommercial 4.0 
 - ❌ Commercial use by third parties **not** permitted
 - The author (JPPeterson-lab) reserves the right to use this project for commercial purposes at their own discretion.
 
-The included weather icons are from [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) and licensed under **CC BY-SA 4.0** (see [CREDITS.md](CREDITS.md)).
+Third-party icons, font and libraries (weather icons: [Meteocons](https://github.com/basmilius/weather-icons), MIT) keep their own licenses and are not covered by CC BY-NC 4.0 – see [CREDITS.md](CREDITS.md) for details.
