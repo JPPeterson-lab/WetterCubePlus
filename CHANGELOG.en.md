@@ -15,7 +15,7 @@
 ## v1.6.5 (2026-10-15)
 
 ### Changed
-- **New weather icons:** All weather icons (day and night, rain, snow, fog, thunderstorm, overcast …) and the warning icon on the pollen warning screen are now the [Meteocons](https://github.com/basmilius/weather-icons) by Bas Milius (MIT license). They replace the previous icons by Dovora (CC BY-SA 4.0), whose license does not fit the project license CC BY-NC 4.0. The clouds have an outline so that they are easy to see on the light theme as well. The frames in the forecast were adjusted to the new icons
+- **New weather icons:** All weather icons (day and night, rain, snow, fog, thunderstorm, overcast …) and the warning icon on the pollen warning screen are now the [Meteocons](https://github.com/basmilius/weather-icons) by Bas Milius (MIT license). They replace the previous icons. The clouds have an outline so that they are easy to see on the light theme as well. The frames in the forecast were adjusted to the new icons
 - The firmware is the same size as before (128 × 128 pixels per icon)
 
 ### Docs

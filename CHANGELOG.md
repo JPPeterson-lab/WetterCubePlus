@@ -15,7 +15,7 @@
 ## v1.6.5 (2026-10-15)
 
 ### Geändert
-- **Neue Wetter-Icons:** Alle Wetter-Icons (Tag und Nacht, Regen, Schnee, Nebel, Gewitter, bedeckt …) und das Warn-Icon auf dem Pollenwarnung-Screen sind jetzt die [Meteocons](https://github.com/basmilius/weather-icons) von Bas Milius (MIT-Lizenz). Sie ersetzen die bisherigen Icons von Dovora (CC BY-SA 4.0), deren Lizenz nicht zur Projektlizenz CC BY-NC 4.0 passt. Die Wolken haben eine Umrandung, damit sie auch auf dem hellen Thema gut zu sehen sind. Die Rahmen in der Vorhersage wurden an die neuen Icons angepasst
+- **Neue Wetter-Icons:** Alle Wetter-Icons (Tag und Nacht, Regen, Schnee, Nebel, Gewitter, bedeckt …) und das Warn-Icon auf dem Pollenwarnung-Screen sind jetzt die [Meteocons](https://github.com/basmilius/weather-icons) von Bas Milius (MIT-Lizenz). Sie ersetzen die bisherigen Icons. Die Wolken haben eine Umrandung, damit sie auch auf dem hellen Thema gut zu sehen sind. Die Rahmen in der Vorhersage wurden an die neuen Icons angepasst
 - Die Firmware hat dieselbe Größe wie zuvor (128 × 128 Pixel je Icon)
 
 ### Doku
