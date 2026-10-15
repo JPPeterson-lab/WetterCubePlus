@@ -288,6 +288,7 @@ Der C3 fragt `GET http://wettercubeplus.local/api/ampel` ab. Beide Geräte müss
 | Ressource | Urheber | Lizenz |
 |---|---|---|
 | Wetter-Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| Bedienelemente-Icons | [Icons8 Flat Color Icons](https://github.com/icons8/flat-color-icons) | MIT oder [Good Boy License](https://icons8.com/good-boy-license/) |
 | LVGL Editor | [PicoPixel](https://picopixel.io/) | PicoPixel (kostenlos) |
 | Wetterdaten | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (kostenlos) |
 | DWD-Daten | [Deutscher Wetterdienst](https://opendata.dwd.de) | DWD Opendata |
@@ -588,6 +589,7 @@ The C3 polls `GET http://wettercubeplus.local/api/ampel`. Both devices must be o
 | Resource | Author | License |
 |---|---|---|
 | Weather Icons | [Dovora Weather Icons](https://www.dovora.com/resources/weather-icons/) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| UI control icons | [Icons8 Flat Color Icons](https://github.com/icons8/flat-color-icons) | MIT or [Good Boy License](https://icons8.com/good-boy-license/) |
 | LVGL Editor | [PicoPixel](https://picopixel.io/) | PicoPixel (free) |
 | Weather Data | [Open-Meteo](https://open-meteo.com) | Open-Meteo API (free) |
 | DWD Data | [Deutscher Wetterdienst](https://opendata.dwd.de) | DWD Opendata |
