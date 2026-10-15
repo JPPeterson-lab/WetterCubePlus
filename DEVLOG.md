@@ -10,7 +10,7 @@
 
 ## 2026-10-15 – v1.6.5
 
-### Wetter-Icons: Dovora → Meteocons (Lizenz)
+### Wetter-Icons: Dovora → Meteocons
 
 **Anlass:** Die Wetter-Icons wurden durch ein anderes Set ersetzt.
 
