@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.8.0"
+#define FIRMWARE_VERSION "1.8.1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -395,6 +395,16 @@ static void abrufOk(int quelle) { abrufErfolg[quelle] = millis() ? millis() : 1;
 
 // Start-Diagnose: warum wurde neu gestartet, wie lief die WLAN-Verbindung (Anzeige im /log)
 String          resetGrundText = "";
+
+// Absturz-Spur: letzte Tätigkeit steht im RTC-Speicher und bleibt bei einem Panic/Watchdog-Neustart erhalten.
+// Nach einem Absturz steht sie im /log ("Zuletzt aktiv vor dem Absturz").
+static RTC_NOINIT_ATTR char     spurText[48];
+static RTC_NOINIT_ATTR uint32_t spurMagic;
+static String spurVorAbsturz = "";
+static inline void spur(const char* was) {
+  strlcpy(spurText, was, sizeof(spurText));
+  spurMagic = 0x5350554Cu;
+}
 String          wifiStartInfo  = "";
 volatile uint8_t wifiLetzterGrund = 0;   // letzter Disconnect-Grund des WLAN-Treibers
 
@@ -1504,6 +1514,7 @@ const char* windRichtung(int deg) {
 // Rueckgabe: true = Daten aktualisiert. Bei einem Fehlschlag wird frueher erneut versucht (siehe loop), sonst blieben die Werte bis zu 10 Min. leer.
 static bool fetchWetterEinmal() {
   bool ok = false;
+  spur("Wetter: Abruf");
   if (WiFi.status() != WL_CONNECTED || cfg.lat == 0.0f) return false;
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
@@ -1639,6 +1650,7 @@ bool fetchWetter() {
 // -- DWD Pollen (Stufenwarnung) --
 void fetchDwdPollen() {
   if (WiFi.status() != WL_CONNECTED) return;
+  spur("DWD-Pollen: Abruf");
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
   http.begin(sc, "https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json");
@@ -1731,6 +1743,7 @@ static bool agsMatchesRegion(const char* ags, int region) {
 // -- DWD Wetterwarnungen via GeoServer WFS mit BBOX-Filter --
 void fetchDwdWarnungen() {
   if (WiFi.status() != WL_CONNECTED || !cfg.warn_region) return;
+  spur("DWD-Warnungen: Abruf");
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
 
@@ -1810,6 +1823,7 @@ void fetchDwdWarnungen() {
 // -- DWD WMS Niederschlagsradar (PNG → RGB565A8 im PSRAM, bundeslandbezogen) --
 void fetchWmsRadar() {
   if (WiFi.status() != WL_CONNECTED) return;
+  spur("Radar: Abruf");
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
 
@@ -1870,6 +1884,7 @@ void fetchWmsRadar() {
   // PNG → RGBA8888 (lodepng nutzt malloc; mit PSRAM als Heap-Erweiterung reicht der Speicher)
   unsigned char* rgba = nullptr;
   unsigned imgW = 0, imgH = 0;
+  spur("Radar: PNG dekodieren");
   unsigned err = lodepng_decode32(&rgba, &imgW, &imgH, pngBuf, got);
 
   if (err || !rgba) {
@@ -1915,6 +1930,7 @@ void fetchWmsRadar() {
   warnkarteDsc.data               = warnkarteBuf;
 
   abrufOk(AB_RADAR);
+  spur("Radar: Bild anzeigen");
   if (imgWarnkarte) {
     lv_img_set_src(imgWarnkarte, &warnkarteDsc);
     lv_img_set_zoom(imgWarnkarte, 256);  // 1:1, WMS liefert 480x280 passend
@@ -2176,6 +2192,7 @@ void erstelleWarnkarte2Screen() {
 // -- Open-Meteo Pollen --
 void fetchOpenMeteoPollen() {
   if (WiFi.status() != WL_CONNECTED || cfg.lat == 0.0f) return;
+  spur("Pollen/Luft: Abruf");
   WiFiClientSecure sc; sc.setInsecure();
   HTTPClient http;
   String url = "https://air-quality-api.open-meteo.com/v1/air-quality";
@@ -2269,6 +2286,7 @@ static const char* bioWertKurz(int v) {
 }
 
 void fetchBioWetter() {
+  spur("Biowetter: Abruf");
   if (WiFi.status() != WL_CONNECTED) { Serial.println("[Bio] Kein WiFi"); return; }
   Serial.printf("[Bio] Lade Zone %s...\n", cfg.bio_zone.c_str());
   WiFiClientSecure sc; sc.setInsecure();
@@ -2617,6 +2635,7 @@ static void verlaufAchse(lv_obj_t* ch, bool mitZeit, int yMarken) {
 }
 
 static void aktualisiereVerlauf() {
+  spur("UI: Temperaturverlauf");
   lv_obj_t* tc = objects.chartverlauf;
   lv_obj_t* rc = objects.chartregen;
   if (!tc || !rc) return;
@@ -2691,7 +2710,7 @@ static void aktualisiereVerlauf() {
   lv_chart_set_div_line_count(tc, 3, 5);
   int rtop = (int)ceilf(rmax); if (rtop < 1) rtop = 1;
   lv_chart_set_range(rc, LV_CHART_AXIS_PRIMARY_Y, 0, rtop * 10);
-  lv_chart_set_div_line_count(rc, 1, 5);
+  lv_chart_set_div_line_count(rc, 2, 5);   // mindestens 2 waagerechte Linien: LVGL teilt durch (Anzahl - 1)
   for (int i = 0; i < 25; i++) {
     if (i < n) { vlT[i] = (lv_coord_t)rundeInt(wetter.vl_temp[i] * 10.0f); vlR[i] = (lv_coord_t)rundeInt(wetter.vl_regen[i] * 10.0f); }
     else       { vlT[i] = LV_CHART_POINT_NONE; vlR[i] = LV_CHART_POINT_NONE; }
@@ -2720,6 +2739,7 @@ static void mainBoxTitel3Zentrieren() {
 }
 
 static void aktualisiereMainBox() {
+  spur("UI: Hauptscreen-Feld");
   static const char* const BIO_KAT[7] = {"Allg. Befinden","Hypotonie","Bluthochdruck","Rheuma entz.","Rheuma deg.","Asthma","Waermebelast."};
   lv_obj_t* pn[] = {objects.labelpollenforecast1main,      objects.labelpollenforecast2main};
   lv_obj_t* pv[] = {objects.labelpollenforecast1mainvalue, objects.labelpollenforecast2mainvalue};
@@ -2770,6 +2790,7 @@ static void aktualisiereMainBox() {
 }
 
 void aktualisiereUI() {
+  spur("UI: aktualisieren");
   aktualisiereHinweise();
   struct tm ti;
   bool hasTime = getLocalTime(&ti);
@@ -4222,8 +4243,15 @@ void setup() {
   Serial.println("\n[WetterCubePlus] Start v" FIRMWARE_VERSION);
   setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);   // frueh setzen, damit Log-Zeitstempel lokal sind (configTime() setzt TZ spaeter zurueck, siehe unten)
   tzset();
+  {
+    esp_reset_reason_t rr = esp_reset_reason();
+    bool absturz = (rr == ESP_RST_PANIC || rr == ESP_RST_INT_WDT || rr == ESP_RST_TASK_WDT || rr == ESP_RST_WDT || rr == ESP_RST_BROWNOUT);
+    if (absturz && spurMagic == 0x5350554Cu && spurText[0]) { spurText[sizeof(spurText) - 1] = 0; spurVorAbsturz = spurText; }
+    spurMagic = 0; spurText[0] = 0;
+  }
   resetGrundText = resetGrundName(esp_reset_reason());
   logDiag("[Boot] v%s, Neustart-Grund: %s", FIRMWARE_VERSION, resetGrundText.c_str());
+  if (spurVorAbsturz.length()) logDiag("[Boot] Zuletzt aktiv vor dem Neustart: %s", spurVorAbsturz.c_str());
 
   // Konfiguration laden
   ladeCfg();
@@ -4513,9 +4541,32 @@ void setup() {
 // ============================================================
 //  LOOP
 // ============================================================
+static const char* aktiverScreenName() {
+  lv_obj_t* a = lv_scr_act();
+  struct { lv_obj_t* o; const char* n; } t[] = {
+    {objects.screen_1, "Hauptscreen"}, {objects.screenforecastwetter, "Vorhersage"}, {objects.screenverlauf, "Temperaturverlauf"},
+    {objects.screenforecastpollen, "Pollen (Tage)"}, {objects.screenforecastpollenhour, "Pollen (Stunden)"},
+    {objects.screenwarnkarte1, "Radarkarte"}, {objects.screenwarnkarte2, "DWD-Warnliste"}, {objects.screensunmoon, "Sonne und Mond"},
+    {objects.screenairquality, "Luftqualitaet"}, {objects.screenbiowetter, "Biowetter 1"}, {objects.screenbiowetter2, "Biowetter 2"},
+    {objects.screenhealth, "Gesundheit"}, {objects.screenmenu, "Menue"}, {objects.screenwarnungpollen, "Pollenwarnung"},
+  };
+  for (auto& e : t) if (e.o && e.o == a) return e.n;
+  return nullptr;
+}
+
 void loop() {
   lv_timer_handler();
   ui_tick();
+  {
+    static lv_obj_t* letzterScreen = nullptr;
+    lv_obj_t* a = lv_scr_act();
+    if (a != letzterScreen) {
+      letzterScreen = a;
+      const char* n = aktiverScreenName();
+      char buf[48]; snprintf(buf, sizeof(buf), "Screen: %s", n ? n : "anderer");
+      spur(buf);
+    }
+  }
 
   // Portal-Modus: DNS + WebServer bedienen
   if (portal_modus) {

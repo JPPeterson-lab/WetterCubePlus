@@ -2,6 +2,16 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.8.1 (2026-10-16)
+
+### Fixes
+- **Neustart beim Öffnen des Temperaturverlaufs:** Das Regendiagramm hatte nur eine waagerechte Gitterlinie, und LVGL teilt beim Zeichnen durch „Anzahl minus eins“ (Division durch null, Absturz mit Neustart). Jetzt sind es zwei Linien. Der Fehler ließ sich auf dem Rechner mit der LVGL-Bibliothek nachstellen und ist damit nachweislich behoben
+
+### Neu
+- **Absturz-Spur im `/log`:** Nach einem Absturz (Panic, Watchdog, Brownout) steht im Log eine Zeile „Zuletzt aktiv vor dem Neustart: …“, zum Beispiel „Radar: PNG dekodieren“ oder „Screen: Temperaturverlauf“. So lässt sich eingrenzen, wo es hakt, ohne USB-Kabel und seriellen Monitor
+
+---
+
 ## v1.8.0 (2026-10-16)
 
 ### Neu

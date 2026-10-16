@@ -1,5 +1,17 @@
 # Entwicklungs-Log
 
+## 2026-10-16 – v1.8.1
+
+### Ursache des Absturzes im Temperaturverlauf: Division durch null in LVGL
+
+`draw_div_lines` im Chart-Widget berechnet die waagerechten Linien mit `h * i / (hdiv_cnt - 1)`. Das Regendiagramm hatte per `lv_chart_set_div_line_count(rc, 1, 5)` nur eine Linie → Division durch null → Panic → Neustart, sobald der Screen zum ersten Mal gezeichnet wird (nicht schon bei der Berechnung im Hintergrund). Gefunden, indem die LVGL-8.4-Quellen mit clang und UBSan/ASan auf dem Mac gebaut wurden (kleines Testprogramm mit denselben Diagrammeinstellungen, ohne Display: `lv_chart.c:816: division by zero`). Mit `hdiv = 2` laufen alle drei Fälle (normal, keine Daten, ohne Regenbalken) ohne Meldung durch. Regel: Bei LVGL-Charts `hdiv_cnt` und `vdiv_cnt` nie auf 1 setzen (0 = keine Linien, sonst mindestens 2).
+
+### Absturz-Spur (RTC_NOINIT)
+
+Nach v1.8.0 meldete der Nutzer einen Absturz „beim Laden der Karte“; im `/log` stand nur „Letzter Neustart: ABSTURZ (Panic)“, ohne Hinweis auf die Stelle (Ringpuffer geht beim Neustart verloren, Backtrace nur über USB). Neu: `spur("…")` schreibt die letzte Tätigkeit in `RTC_NOINIT_ATTR`-Speicher (bleibt bei Panic/Watchdog/Brownout erhalten, nicht bei Stromverlust; Prüfsumme `spurMagic`). Spurpunkte: alle Abruffunktionen (Wetter, DWD-Pollen, Pollen/Luft, Warnungen, Biowetter), Radar in drei Schritten (Abruf, PNG dekodieren, Bild anzeigen), `aktualisiereUI`, `aktualisiereMainBox`, `aktualisiereVerlauf` und jeder Screen-Wechsel (in `loop()` über `lv_scr_act()` beobachtet). Beim Start folgt bei einem Absturz die Log-Zeile „Zuletzt aktiv vor dem Neustart: …“.
+
+---
+
 ## 2026-10-16 – v1.8.0
 
 ### Temperaturverlauf: neuer Screen mit zwei LVGL-Diagrammen

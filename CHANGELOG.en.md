@@ -2,6 +2,16 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.8.1 (2026-10-16)
+
+### Fixes
+- **Restart when opening the temperature chart:** The rain chart had only one horizontal grid line, and LVGL divides by "count minus one" when drawing (division by zero, crash with restart). It now has two lines. The error could be reproduced on a computer with the LVGL library and is demonstrably fixed
+
+### New
+- **Crash trace in `/log`:** After a crash (panic, watchdog, brownout) the log contains a line "Zuletzt aktiv vor dem Neustart: …" (last active before the restart), for example "Radar: PNG dekodieren" or "Screen: Temperaturverlauf". This narrows down where it fails, without a USB cable and the serial monitor
+
+---
+
 ## v1.8.0 (2026-10-16)
 
 ### New
