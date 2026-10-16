@@ -1,5 +1,13 @@
 # Entwicklungs-Log
 
+## 2026-10-16 – v1.7.1
+
+### Biowetter-Titel in drei Zeilen
+
+Foto vom Gerät: „heute Nachmittag“ bricht in `LabelMainBoxTitle2` (139 × 28 px) um, die zweite Zeile ist abgeschnitten. Statt die UI zu ändern, nutzt der Code die dritte Titelzeile (im Pollen-Modus „Stunde“): „Biowetter“ / „heute“ bzw. „morgen“ / „Nachmittag“ bzw. „Vormittag“. `LabelMainBoxTitle3` hat die Größe seines Inhalts mit fester linker Kante; `mainBoxTitel3Zentrieren()` richtet es nach jedem Textwechsel mittig im Feld aus (`lv_obj_update_layout` + `lv_obj_set_x`), auch für „Stunde“ im Pollen-Modus. Keine UI-Änderung nötig.
+
+---
+
 ## 2026-10-16 – v1.7.0
 
 ### Rechtes Feld auf Screen 1: Pollen oder Biowetter

@@ -2,6 +2,13 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.7.1 (2026-10-16)
+
+### Fixes
+- **Biowetter title cut off:** In the right-hand field of the main screen "heute Nachmittag" (this afternoon) was too wide for one line and the second line was cut off. The title now uses three lines ("Biowetter", "heute", "Nachmittag"; from 6 pm "morgen", "Vormittag") and is centered
+
+---
+
 ## v1.7.0 (2026-10-16)
 
 ### New

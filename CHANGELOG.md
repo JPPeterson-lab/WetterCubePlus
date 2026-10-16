@@ -2,6 +2,13 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.7.1 (2026-10-16)
+
+### Fixes
+- **Biowetter-Titel abgeschnitten:** Im rechten Feld des Hauptscreens war „heute Nachmittag“ zu breit für eine Zeile, die zweite Zeile wurde abgeschnitten. Der Titel steht jetzt auf drei Zeilen („Biowetter“, „heute“, „Nachmittag“; ab 18 Uhr „morgen“, „Vormittag“) und ist mittig ausgerichtet
+
+---
+
 ## v1.7.0 (2026-10-16)
 
 ### Neu

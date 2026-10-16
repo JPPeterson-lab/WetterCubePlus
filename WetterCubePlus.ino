@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.7.0"
+#define FIRMWARE_VERSION "1.7.1"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -2561,6 +2561,15 @@ static void cbHinweisTap(lv_event_t*) {
 
 // Rechtes Feld auf Screen 1: die zwei staerksten Pollen unter "Meine Allergene" oder die zwei staerksten Biowetter-Werte
 // der als Favoriten gewaehlten Kategorien (gleiche Auswahl wie auf dem Gesundheitsscreen); Umschalter: WebUI und Menue
+// Die dritte Titelzeile hat die Groesse ihres Inhalts (linke Kante fest): nach einem Textwechsel mittig im Feld ausrichten
+static void mainBoxTitel3Zentrieren() {
+  lv_obj_t* o = objects.labelmainboxtitle3;
+  if (!o) return;
+  lv_obj_t* par = lv_obj_get_parent(o);
+  lv_obj_update_layout(o);
+  lv_obj_set_x(o, (lv_obj_get_width(par) - lv_obj_get_width(o)) / 2);
+}
+
 static void aktualisiereMainBox() {
   static const char* const BIO_KAT[7] = {"Allg. Befinden","Hypotonie","Bluthochdruck","Rheuma entz.","Rheuma deg.","Asthma","Waermebelast."};
   lv_obj_t* pn[] = {objects.labelpollenforecast1main,      objects.labelpollenforecast2main};
@@ -2568,9 +2577,11 @@ static void aktualisiereMainBox() {
   if (cfg.main_box == 1) {
     struct tm ti; getLocalTime(&ti);
     int periode = (ti.tm_hour >= 18) ? 1 : 0;   // wie Gesundheitsscreen: bis 18 Uhr heute Nachmittag, danach morgen Vormittag
+    // drei Titelzeilen: "Biowetter" / "heute" / "Nachmittag" (eine Zeile "heute Nachmittag" waere zu breit und wuerde abgeschnitten)
     setLabel(objects.labelmainboxtitle1, "Biowetter");
-    setLabel(objects.labelmainboxtitle2, periode == 0 ? "heute Nachmittag" : "morgen Vormittag");
-    setLabel(objects.labelmainboxtitle3, "");
+    setLabel(objects.labelmainboxtitle2, periode == 0 ? "heute" : "morgen");
+    setLabel(objects.labelmainboxtitle3, periode == 0 ? "Nachmittag" : "Vormittag");
+    mainBoxTitel3Zentrieren();
     bool leer = !bio.geladen;
     if (!leer) { leer = true; for (int k = 0; k < 7; k++) if (bio.wert[periode][k] != 0) { leer = false; break; } }
     int cats[4] = {cfg.ws_cat0, cfg.ws_cat1, cfg.ws_cat2, cfg.ws_cat3};
@@ -2594,6 +2605,7 @@ static void aktualisiereMainBox() {
   setLabel(objects.labelmainboxtitle1, "Pollenbelastung");
   setLabel(objects.labelmainboxtitle2, "in der nächsten");
   setLabel(objects.labelmainboxtitle3, "Stunde");
+  mainBoxTitel3Zentrieren();
   struct PE { float v; const char* n; };
   PE pe[8];
   int pn_ = 0;
