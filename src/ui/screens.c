@@ -1889,6 +1889,17 @@ void create_screen_screenmenu() {
                     lv_label_set_text(obj, "DWD Warnung");
                 }
                 {
+                    // labelbioboxchange
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelbioboxchange = obj;
+                    lv_obj_set_pos(obj, 2, 179);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_text_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_obj_set_style_text_font(obj, &font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_obj_set_style_text_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text(obj, "Bio statt Pollen");
+                }
+                {
                     // labeltheme
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.labeltheme = obj;
@@ -1942,6 +1953,13 @@ void create_screen_screenmenu() {
                     lv_obj_t *obj = lv_switch_create(parent_obj);
                     objects.dwdswitch = obj;
                     lv_obj_set_pos(obj, 204, 127);
+                    lv_obj_set_size(obj, 50, 26);
+                }
+                {
+                    // bioboxswitch
+                    lv_obj_t *obj = lv_switch_create(parent_obj);
+                    objects.bioboxswitch = obj;
+                    lv_obj_set_pos(obj, 204, 177);
                     lv_obj_set_size(obj, 50, 26);
                 }
                 {
@@ -4645,9 +4663,9 @@ void create_screen_screen_1() {
             {
                 lv_obj_t *parent_obj = obj;
                 {
-                    // label_22
+                    // labelmainboxtitle3
                     lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.label_22 = obj;
+                    objects.labelmainboxtitle3 = obj;
                     lv_obj_set_pos(obj, 47, 56);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_obj_set_style_text_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_HIGHLITE] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -4704,9 +4722,9 @@ void create_screen_screen_1() {
                     lv_label_set_text(obj, "gering");
                 }
                 {
-                    // label_26
+                    // labelmainboxtitle2
                     lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.label_26 = obj;
+                    objects.labelmainboxtitle2 = obj;
                     lv_obj_set_pos(obj, 5, 28);
                     lv_obj_set_size(obj, 139, 28);
                     lv_obj_set_style_text_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_HIGHLITE] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -4716,9 +4734,9 @@ void create_screen_screen_1() {
                     lv_label_set_text(obj, "in der nächsten");
                 }
                 {
-                    // label_17
+                    // labelmainboxtitle1
                     lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.label_17 = obj;
+                    objects.labelmainboxtitle1 = obj;
                     lv_obj_set_pos(obj, 5, 0);
                     lv_obj_set_size(obj, 139, 28);
                     lv_obj_set_style_text_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_HIGHLITE] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -5117,12 +5135,14 @@ void delete_screen_screenmenu() {
     objects.labellightchange = 0;
     objects.container_8 = 0;
     objects.labeldwdchange = 0;
+    objects.labelbioboxchange = 0;
     objects.labeltheme = 0;
     objects.labelpollenchange = 0;
     objects.labelswitchtheme = 0;
     objects.labelswitchtheme_label = 0;
     objects.pollenswitch = 0;
     objects.dwdswitch = 0;
+    objects.bioboxswitch = 0;
     objects.labellightchangevalue = 0;
     objects.labelversion = 0;
     objects.labelbuttonmenu_2 = 0;
@@ -5394,13 +5414,13 @@ void delete_screen_screen_1() {
     objects.labelwindspeed = 0;
     objects.labelwinddirection = 0;
     objects.container_29 = 0;
-    objects.label_22 = 0;
+    objects.labelmainboxtitle3 = 0;
     objects.labelpollenforecast2mainvalue = 0;
     objects.labelpollenforecast1main = 0;
     objects.labelpollenforecast2main = 0;
     objects.labelpollenforecast1mainvalue = 0;
-    objects.label_26 = 0;
-    objects.label_17 = 0;
+    objects.labelmainboxtitle2 = 0;
+    objects.labelmainboxtitle1 = 0;
     objects.container_30 = 0;
     objects.labelairpressur = 0;
     objects.label_28 = 0;

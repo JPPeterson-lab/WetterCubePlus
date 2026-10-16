@@ -111,7 +111,14 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
 </div>
 
 <div class="card">
-  <h2>Hinweise auf dem Hauptscreen</h2>
+  <h2>Hauptscreen</h2>
+  <label>Rechtes Feld</label>
+  <select name="main_box">
+    <option value="0" %MB0%>Pollen (meine Allergene)</option>
+    <option value="1" %MB1%>Biowetter (meine Kategorien)</option>
+  </select>
+  <p class="hint">Zeigt die zwei st&auml;rksten Werte: bei Pollen aus deinen Allergenen (Karte &bdquo;Meine Allergene&ldquo;), beim Biowetter aus den vier Kategorien der Wetterf&uuml;hligkeit (Karte &bdquo;Biowetter&ldquo;). Auch am Ger&auml;t im Men&uuml; umschaltbar.</p>
+  <h3 style="margin:14px 0 4px">Hinweise</h3>
   <p class="hint">Eine Kachel oben links zeigt Regen, Frost und starke UV-Strahlung. Neue Hinweise blinken, bis du die Kachel antippst; danach leuchtet sie dauerhaft, solange der Hinweis gilt. Bei mehreren Hinweisen hat Regen Vorrang, dann Frost, dann UV.</p>
   <div class="row"><span>Regen</span>
     <label class="toggle"><input type="checkbox" name="hw_regen" %HR%><span class="slider"></span></label></div>

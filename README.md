@@ -5,7 +5,7 @@
 </p>
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.6.6-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.7.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -74,6 +74,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🌙 | **Dark Mode** | Vollständiges dunkles Farbthema für alle Screens, Hintergründe und Bedienelemente – Umschalter direkt im Menü-Screen |
 | 🎛️ | **Menü-Screen** | Helligkeit, Pollenwarnung und DWD-Warnungen direkt am Gerät ein-/ausschalten – kein WebUI nötig |
 | 🎮 | **Mini-Spiel: Bubblebreaker** | Bunte Bubble-Puzzle direkt auf dem Cube – zusammenhängende Farbgruppen antippen und auflösen, Undo für den letzten Zug, wählbar zwischen Modus "Normal" und "Laufend" (Feld füllt sich automatisch nach), persistente Bestenliste (Top 5); Start über den Menü-Screen |
+| 🌿 | **Pollen oder Biowetter auf dem Hauptscreen** | Das rechte Feld auf Screen 1 zeigt wahlweise die zwei stärksten Pollen deiner Allergene oder die zwei stärksten Biowetter-Werte deiner Favoriten-Kategorien; umschaltbar in der WebUI und am Gerät im Menü |
 | 🌧️ | **Hinweis-Kachel (Regen, Frost, UV)** | Kachel oben links auf dem Hauptscreen: „Regen in 25 Min.“ (15-Minuten-Raster von Open-Meteo), „Frost ab 03:00, -2 °C“, „UV hoch (7), Sonnenschutz“. Neue Hinweise blinken bis zum Antippen, danach leuchtet die Kachel dauerhaft; mehrere Hinweise werden nacheinander bestätigt (Regen vor Frost vor UV). Ersetzt die frühere Regenwarnung; in der WebUI einzeln abschaltbar |
 | 🤧 | **Meine Allergene** | In der WebUI die eigenen Allergene wählen; Pollenwarnung und Gesundheitsscreen berücksichtigen nur diese |
 | 💾 | **Einstellungen sichern** | Alle Einstellungen (ohne WLAN-Passwort) als Datei herunterladen und wieder einspielen |
@@ -85,7 +86,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 
 | # | Screen | Inhalt |
 |---|---|---|
-| 1 | **Hauptscreen** | Wetter aktuell, Uhrzeit, Datum, Top-3 Pollen (nächste Stunde) |
+| 1 | **Hauptscreen** | Wetter aktuell, Uhrzeit, Datum, die zwei stärksten Pollen (nächste Stunde) oder Biowetter-Werte (umschaltbar) |
 | 2 | **Wettervorhersage** | 4×3-Stunden-Slots mit Icon, Temperatur, Wind |
 | 3 | **Pollenvorhersage (Stunden)** | Pollenbelastung der nächsten 3 Stunden (Open-Meteo, stündlich) |
 | 4 | **Pollenvorhersage (Tage)** | 8 Allergene (DWD), Stufen heute/morgen/übermorgen |
@@ -315,7 +316,7 @@ Icons, Schrift und Bibliotheken von Dritten (Wetter-Icons: [Meteocons](https://g
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.6.6-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.7.0-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -379,6 +380,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 🌙 | **Dark Mode** | Full dark color theme for all screens, backgrounds, and controls – toggle right on the menu screen |
 | 🎛️ | **Menu screen** | Adjust brightness, toggle pollen warnings and DWD alerts directly on the device – no WebUI needed |
 | 🎮 | **Mini-game: Bubblebreaker** | Colorful bubble puzzle right on the cube – tap connected color groups to clear them, undo your last move, choose between "Normal" and "Endless" mode (board auto-refills), persistent high-score table (top 5); launch from the menu screen |
+| 🌿 | **Pollen or biowetter on the main screen** | The right-hand field on screen 1 shows either the two strongest pollen among your allergens or the two strongest biowetter values of your favorite categories; switchable in the WebUI and on the device in the menu |
 | 🌧️ | **Hint tile (rain, frost, UV)** | Tile at the top left of the main screen: "Regen in 25 Min." (rain in 25 min, Open-Meteo 15-minute data), "Frost ab 03:00, -2 °C" (frost from 03:00), "UV hoch (7), Sonnenschutz" (high UV). New hints blink until tapped, then the tile stays lit; several hints are acknowledged one after another (rain before frost before UV). Replaces the former rain warning; each can be switched off in the WebUI |
 | 🤧 | **My allergens** | Choose your own allergens in the WebUI; the pollen warning and the health screen consider only those |
 | 💾 | **Settings backup** | Download all settings (without the Wi-Fi password) as a file and restore them later |
@@ -390,7 +392,7 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 
 | # | Screen | Content |
 |---|---|---|
-| 1 | **Main screen** | Current weather, time, date, top-3 pollen (next hour) |
+| 1 | **Main screen** | Current weather, time, date, the two strongest pollen (next hour) or biowetter values (switchable) |
 | 2 | **Forecast** | 4×3-hour slots with icon, temperature, wind |
 | 3 | **Pollen forecast (hourly)** | Pollen levels for the next 3 hours (Open-Meteo, updated hourly) |
 | 4 | **Pollen forecast (daily)** | 8 allergens (DWD), levels today/tomorrow/day after |

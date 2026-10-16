@@ -2,6 +2,14 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.7.0 (2026-10-16)
+
+### New
+- **Right-hand field on the main screen: pollen or biowetter:** The field on the right of screen 1 shows either the two strongest **pollen** among your allergens (as before) or the two strongest **biowetter values** from the four weather-sensitivity categories you also chose for the health screen. For biowetter the period is shown above ("heute Nachmittag" = this afternoon, from 6 pm "morgen Vormittag" = tomorrow morning). Order: high before low before none before positive
+- **Switching:** in the WebUI (card *Hauptscreen*, option "Rechtes Feld") and on the device in the menu screen (new row "Bio statt Pollen" with a switch, takes effect immediately). The setting is part of the settings backup
+
+---
+
 ## v1.6.6 (2026-10-15)
 
 ### Fixes

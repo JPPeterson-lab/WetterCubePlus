@@ -1,5 +1,15 @@
 # Entwicklungs-Log
 
+## 2026-10-16 – v1.7.0
+
+### Rechtes Feld auf Screen 1: Pollen oder Biowetter
+
+`cfg.main_box` (0 Pollen, 1 Biowetter, Preferences `main_box`). Die Anzeige liegt jetzt in `aktualisiereMainBox()`. Die drei Titel-Labels der Box (vorher `label_17/26/22`) heißen in PicoPixel `LabelMainBoxTitle1–3` und werden vom Code je nach Modus beschrieben; die zwei Zeilen (`labelpollenforecast1/2main` + `…value`) werden für beide Modi genutzt. Biowetter: `bio.wert[periode][kat]` mit der Periode wie im Gesundheitsscreen (vor 18 Uhr 0, danach 1) für die vier Favoriten `ws_cat0–3`, sortiert nach Rang (hoch 3 > gering 2 > kein > positiv), die zwei obersten werden gezeigt. Ohne Biodaten oder bei lauter Nullwerten steht „-“.
+
+Umschalter: WebUI-Karte „Hauptscreen“ (Auswahl `main_box`, in der Einstellungssicherung als `main_box`) und Menü-Screen (`BioBoxSwitch` + `LabelBioBoxChange` per PicoPixel-MCP von der DWD-Zeile dupliziert, an die freie Stelle darunter gesetzt, Callback `cbMenuBioBoxSwitch`). `deploy_ui.sh` prüft die neuen Objekte.
+
+---
+
 ## 2026-10-15 – v1.6.6
 
 ### Wetter-Icon gekachelt: Zoom aus der Widget-Breite

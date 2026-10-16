@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.6.6"
+#define FIRMWARE_VERSION "1.7.0"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -137,6 +137,7 @@ struct Config {
   bool   hinweis_regen = true;   // Hinweis-Kachel auf Screen 1: Regen / Frost / UV
   bool   hinweis_frost = true;
   bool   hinweis_uv    = true;
+  int    main_box      = 0;   // rechtes Feld auf Screen 1: 0 = Pollen, 1 = Biowetter
   int    pollen_schwelle = 2;   // 0=gering 1=mittel 2=hoch 3=stark
   int    pollen_auswahl  = 0xFF; // gewaehlte Allergene, Bit i = POLLEN_ANZEIGE[i] (Standard: alle)
   int    dim_timeout = 3;       // Minuten; 0 = aus
@@ -613,6 +614,7 @@ void ladeCfg() {
   cfg.hinweis_regen   = prefs.getBool  ("hw_regen", true);
   cfg.hinweis_frost   = prefs.getBool  ("hw_frost", true);
   cfg.hinweis_uv      = prefs.getBool  ("hw_uv", true);
+  cfg.main_box        = prefs.getInt   ("main_box", 0);
   cfg.pollen_schwelle = prefs.getInt   ("pol_schw",    2);
   cfg.pollen_auswahl  = prefs.getInt   ("pol_ausw",    0xFF);
   cfg.dim_timeout       = prefs.getInt   ("dim_time",    3);
@@ -649,6 +651,7 @@ void speichereCfg() {
   prefs.putBool  ("hw_regen",   cfg.hinweis_regen);
   prefs.putBool  ("hw_frost",   cfg.hinweis_frost);
   prefs.putBool  ("hw_uv",      cfg.hinweis_uv);
+  prefs.putInt   ("main_box",   cfg.main_box);
   prefs.putInt   ("pol_schw",   cfg.pollen_schwelle);
   prefs.putInt   ("pol_ausw",   cfg.pollen_auswahl);
   prefs.putInt   ("dim_time",    cfg.dim_timeout);
@@ -869,6 +872,8 @@ void handleWebRoot() {
   html.replace("%HR%",          cfg.hinweis_regen ? "checked" : "");
   html.replace("%HF%",          cfg.hinweis_frost ? "checked" : "");
   html.replace("%HU%",          cfg.hinweis_uv    ? "checked" : "");
+  html.replace("%MB0%",         cfg.main_box == 0 ? "selected" : "");
+  html.replace("%MB1%",         cfg.main_box == 1 ? "selected" : "");
   html.replace("%WR%",          cfg.warn_region   ? "checked" : "");
   html.replace("%BRIGHT%",      String(cfg.brightness));
   html.replace("%DTT%", (cfg.dim_timeout == -1) ? "selected" : "");
@@ -920,6 +925,7 @@ void handleWebSave() {
   cfg.hinweis_regen   = server.hasArg("hw_regen");
   cfg.hinweis_frost   = server.hasArg("hw_frost");
   cfg.hinweis_uv      = server.hasArg("hw_uv");
+  if (server.hasArg("main_box"))   cfg.main_box        = constrain(server.arg("main_box").toInt(), 0, 1);
   cfg.warn_region     = server.hasArg("warn_region");
   cfg.night_mode      = server.hasArg("night_mode");
   if (server.hasArg("night_from"))   cfg.night_from       = server.arg("night_from").toInt();
@@ -960,6 +966,7 @@ void handleWebBackup() {
   doc["hinweis_regen"]    = cfg.hinweis_regen;
   doc["hinweis_frost"]    = cfg.hinweis_frost;
   doc["hinweis_uv"]       = cfg.hinweis_uv;
+  doc["main_box"]         = cfg.main_box;
   doc["pollen_schwelle"]  = cfg.pollen_schwelle;
   doc["pollen_auswahl"]   = cfg.pollen_auswahl;
   doc["warn_region"]      = cfg.warn_region;
@@ -1006,6 +1013,7 @@ void handleWebRestore() {
   RS_BOOL("hinweis_regen",    hinweis_regen);
   RS_BOOL("hinweis_frost",    hinweis_frost);
   RS_BOOL("hinweis_uv",       hinweis_uv);
+  RS_INT ("main_box",         main_box,         0, 1);
   RS_INT ("pollen_schwelle",  pollen_schwelle,  0, 3);
   RS_INT ("pollen_auswahl",   pollen_auswahl,   0, 255);
   RS_BOOL("warn_region",      warn_region);
@@ -2551,6 +2559,56 @@ static void cbHinweisTap(lv_event_t*) {
   aktualisiereHinweise();
 }
 
+// Rechtes Feld auf Screen 1: die zwei staerksten Pollen unter "Meine Allergene" oder die zwei staerksten Biowetter-Werte
+// der als Favoriten gewaehlten Kategorien (gleiche Auswahl wie auf dem Gesundheitsscreen); Umschalter: WebUI und Menue
+static void aktualisiereMainBox() {
+  static const char* const BIO_KAT[7] = {"Allg. Befinden","Hypotonie","Bluthochdruck","Rheuma entz.","Rheuma deg.","Asthma","Waermebelast."};
+  lv_obj_t* pn[] = {objects.labelpollenforecast1main,      objects.labelpollenforecast2main};
+  lv_obj_t* pv[] = {objects.labelpollenforecast1mainvalue, objects.labelpollenforecast2mainvalue};
+  if (cfg.main_box == 1) {
+    struct tm ti; getLocalTime(&ti);
+    int periode = (ti.tm_hour >= 18) ? 1 : 0;   // wie Gesundheitsscreen: bis 18 Uhr heute Nachmittag, danach morgen Vormittag
+    setLabel(objects.labelmainboxtitle1, "Biowetter");
+    setLabel(objects.labelmainboxtitle2, periode == 0 ? "heute Nachmittag" : "morgen Vormittag");
+    setLabel(objects.labelmainboxtitle3, "");
+    bool leer = !bio.geladen;
+    if (!leer) { leer = true; for (int k = 0; k < 7; k++) if (bio.wert[periode][k] != 0) { leer = false; break; } }
+    int cats[4] = {cfg.ws_cat0, cfg.ws_cat1, cfg.ws_cat2, cfg.ws_cat3};
+    struct BE { int rang; int v; int cat; };
+    BE be[4];
+    for (int i = 0; i < 4; i++) {
+      int cat = (cats[i] < 0 || cats[i] > 6) ? 0 : cats[i];
+      int v = leer ? 0 : bio.wert[periode][cat];
+      be[i] = { v == 3 ? 3 : v == 2 ? 2 : v == 0 ? 1 : 0, v, cat };   // hoch > gering > kein > positiv
+    }
+    for (int i = 0; i < 3; i++)
+      for (int j = i + 1; j < 4; j++)
+        if (be[j].rang > be[i].rang) { BE t = be[i]; be[i] = be[j]; be[j] = t; }
+    for (int i = 0; i < 2; i++) {
+      setLabel(pn[i], BIO_KAT[be[i].cat]);
+      if (leer) setLabelFmt(pv[i], lv_color_hex(0x444444), "-");
+      else      setLabelFmt(pv[i], bioWertColor(be[i].v), bioWertKurz(be[i].v));
+    }
+    return;
+  }
+  setLabel(objects.labelmainboxtitle1, "Pollenbelastung");
+  setLabel(objects.labelmainboxtitle2, "in der nächsten");
+  setLabel(objects.labelmainboxtitle3, "Stunde");
+  struct PE { float v; const char* n; };
+  PE pe[8];
+  int pn_ = 0;
+  for (int i = 0; i < 8; i++)
+    if (pollenGewaehlt(i)) pe[pn_++] = {pollenWertWarnung(i), POLLEN_ANZEIGE[i]};
+  for (int i = 0; i < pn_ - 1; i++)
+    for (int j = i + 1; j < pn_; j++)
+      if (pe[j].v > pe[i].v) { PE tmp = pe[i]; pe[i] = pe[j]; pe[j] = tmp; }
+  for (int i = 0; i < 2; i++) {
+    float v = (i < pn_) ? pe[i].v : -1.0f;   // weniger als zwei gewaehlt: "--"
+    setLabel(pn[i], v >= 0 ? pe[i].n : "--");
+    setPollenLabel(pv[i], v);
+  }
+}
+
 void aktualisiereUI() {
   aktualisiereHinweise();
   struct tm ti;
@@ -2592,24 +2650,7 @@ void aktualisiereUI() {
     lv_label_set_text(objects.labelairpressur, buf);
   }
 
-  // screen_1: die zwei staerksten Pollen unter "Meine Allergene" (gleiche Werte wie Pollenwarnung und Gesundheitsscreen)
-  {
-    struct PE { float v; const char* n; };
-    PE pe[8];
-    int pn_ = 0;
-    for (int i = 0; i < 8; i++)
-      if (pollenGewaehlt(i)) pe[pn_++] = {pollenWertWarnung(i), POLLEN_ANZEIGE[i]};
-    for (int i = 0; i < pn_ - 1; i++)
-      for (int j = i+1; j < pn_; j++)
-        if (pe[j].v > pe[i].v) { PE tmp = pe[i]; pe[i] = pe[j]; pe[j] = tmp; }
-    lv_obj_t* pn[] = {objects.labelpollenforecast1main,      objects.labelpollenforecast2main};
-    lv_obj_t* pv[] = {objects.labelpollenforecast1mainvalue, objects.labelpollenforecast2mainvalue};
-    for (int i = 0; i < 2; i++) {
-      float v = (i < pn_) ? pe[i].v : -1.0f;   // weniger als zwei gewaehlt: "--"
-      setLabel(pn[i], v >= 0 ? pe[i].n : "--");
-      setPollenLabel(pv[i], v);
-    }
-  }
+  aktualisiereMainBox();
 
   // ── Forecast Wetter (screenforecastwetter) ──────────────────
   lv_obj_t* hzeit[4]  = {objects.labelh1zeit,         objects.labelh2zeit,         objects.labelh3zeit,         objects.labelh4zeit};
@@ -3705,6 +3746,15 @@ static void cbMenuBrightness(lv_event_t* e) {
   prefs.end();
 }
 
+static void cbMenuBioBoxSwitch(lv_event_t* e) {
+  lv_obj_t* sw = lv_event_get_target(e);
+  cfg.main_box = lv_obj_has_state(sw, LV_STATE_CHECKED) ? 1 : 0;
+  Preferences prefs; prefs.begin("wcp", false);
+  prefs.putInt("main_box", cfg.main_box);
+  prefs.end();
+  aktualisiereUI();
+}
+
 static void cbMenuPollenSwitch(lv_event_t* e) {
   lv_obj_t* sw = lv_event_get_target(e);
   cfg.pollen_warn = lv_obj_has_state(sw, LV_STATE_CHECKED);
@@ -3729,6 +3779,10 @@ static void cbMenuDwdSwitch(lv_event_t* e) {
 static void cbMenu(lv_event_t*) {
   loadScreen(SCREEN_ID_SCREENMENU);
   // Switch-Zustände und Arc auf aktuelle cfg-Werte setzen
+  if (objects.bioboxswitch) {
+    if (cfg.main_box == 1) lv_obj_add_state(objects.bioboxswitch, LV_STATE_CHECKED);
+    else                   lv_obj_clear_state(objects.bioboxswitch, LV_STATE_CHECKED);
+  }
   if (objects.pollenswitch) {
     if (cfg.pollen_warn) lv_obj_add_state(objects.pollenswitch, LV_STATE_CHECKED);
     else                 lv_obj_clear_state(objects.pollenswitch, LV_STATE_CHECKED);
@@ -4141,6 +4195,7 @@ void setup() {
   // Menü-Screen Controls
   REG_CB(objects.labellightchangevalue, cbMenuBrightness,   LV_EVENT_VALUE_CHANGED);
   REG_CB(objects.pollenswitch,          cbMenuPollenSwitch, LV_EVENT_VALUE_CHANGED);
+  REG_CB(objects.bioboxswitch,          cbMenuBioBoxSwitch, LV_EVENT_VALUE_CHANGED);
   REG_CB(objects.dwdswitch,             cbMenuDwdSwitch,    LV_EVENT_VALUE_CHANGED);
   // Home-Buttons
   REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);  // forecastpollen

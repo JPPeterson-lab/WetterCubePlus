@@ -2,6 +2,14 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.7.0 (2026-10-16)
+
+### Neu
+- **Rechtes Feld auf dem Hauptscreen: Pollen oder Biowetter:** Das Feld rechts auf Screen 1 zeigt wahlweise die zwei stärksten **Pollen** deiner Allergene (wie bisher) oder die zwei stärksten **Biowetter-Werte** aus den vier Kategorien der Wetterfühligkeit, die du auch für den Gesundheitsscreen gewählt hast. Beim Biowetter steht darüber der Zeitraum („heute Nachmittag“, ab 18 Uhr „morgen Vormittag“). Reihenfolge: hoch vor gering vor kein vor positiv
+- **Umschalten:** in der WebUI (Karte *Hauptscreen*, Auswahl „Rechtes Feld“) und am Gerät im Menü-Screen (neue Zeile „Bio statt Pollen“ mit Schalter, wirkt sofort). Die Einstellung ist Teil der Einstellungssicherung
+
+---
+
 ## v1.6.6 (2026-10-15)
 
 ### Fixes
