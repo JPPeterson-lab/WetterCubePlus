@@ -2,6 +2,15 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.8.0 (2026-10-16)
+
+### Neu
+- **Temperaturverlauf (neuer Screen):** Hinter der Wettervorhersage zeigt ein neuer Screen die Temperatur der nächsten 24 Stunden als Liniendiagramm (Beschriftung alle 4 Stunden, Min/Max oben rechts). Darunter zeigen Balken den Niederschlag je Stunde (in mm), mit einer Zeile „Regen: bis 1.2 mm/h, zusammen 3.4 mm“ oder „keiner erwartet“. Die Reihenfolge der Screens ist jetzt Vorhersage → Temperaturverlauf → Pollen
+- In der WebUI (Karte *Hauptscreen*) lassen sich die **Regenbalken abschalten**; dann wird das Temperaturdiagramm höher
+- Das Diagramm richtet sich nach dem Hell/Dunkel-Thema und skaliert sich automatisch (ganze Grad, 5 Beschriftungen)
+
+---
+
 ## v1.7.2 (2026-10-16)
 
 ### Fixes

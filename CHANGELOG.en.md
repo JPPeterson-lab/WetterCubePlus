@@ -2,6 +2,15 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.8.0 (2026-10-16)
+
+### New
+- **Temperature chart (new screen):** After the forecast, a new screen shows the temperature of the next 24 hours as a line chart (labels every 4 hours, min/max at the top right). Below it, bars show the precipitation per hour (in mm), with a line such as "Regen: bis 1.2 mm/h, zusammen 3.4 mm" (rain: up to 1.2 mm/h, 3.4 mm in total) or "keiner erwartet" (none expected). The screen order is now forecast → temperature chart → pollen
+- In the WebUI (card *Hauptscreen*) the **rain bars can be switched off**; the temperature chart then becomes taller
+- The chart follows the light/dark theme and scales automatically (whole degrees, 5 labels)
+
+---
+
 ## v1.7.2 (2026-10-16)
 
 ### Fixes

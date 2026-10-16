@@ -277,6 +277,16 @@ void change_color_theme(uint32_t theme_index) {
     lv_obj_set_style_text_opa(objects.labelh4zeit, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_HIGHLITE_2] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(objects.labelh4winddirection, lv_color_hex(theme_colors[theme_index][THEME_COLOR_TEXT]), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(objects.labelh4winddirection, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_TEXT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(objects.screenverlauf, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(objects.screenverlauf, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(objects.labelbuttonhomeverlauf, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(objects.labelbuttonhomeverlauf, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(objects.labelbuttonbackwardverlauf, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(objects.labelbuttonbackwardverlauf, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(objects.labelbuttonforwardverlauf, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(objects.labelbuttonforwardverlauf, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(objects.containerverlauf, lv_color_hex(theme_colors[theme_index][THEME_COLOR_BACKGR_CONT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(objects.containerverlauf, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_BACKGR_CONT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(objects.screenwarnkarte1, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(objects.screenwarnkarte1, (lv_opa_t)(theme_colors[theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(objects.labelbuttonbackward_3, lv_color_hex(theme_colors[theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);

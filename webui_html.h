@@ -118,6 +118,8 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
     <option value="1" %MB1%>Biowetter (meine Kategorien)</option>
   </select>
   <p class="hint">Zeigt die zwei st&auml;rksten Werte: bei Pollen aus deinen Allergenen (Karte &bdquo;Meine Allergene&ldquo;), beim Biowetter aus den vier Kategorien der Wetterf&uuml;hligkeit (Karte &bdquo;Biowetter&ldquo;). Auch am Ger&auml;t im Men&uuml; umschaltbar.</p>
+  <div class="row"><span>Regenbalken im Temperaturverlauf</span>
+    <label class="toggle"><input type="checkbox" name="vl_regen" %VR%><span class="slider"></span></label></div>
   <h3 style="margin:14px 0 4px">Hinweise</h3>
   <p class="hint">Eine Kachel oben links zeigt Regen, Frost und starke UV-Strahlung. Neue Hinweise blinken, bis du die Kachel antippst; danach leuchtet sie dauerhaft, solange der Hinweis gilt. Bei mehreren Hinweisen hat Regen Vorrang, dann Frost, dann UV.</p>
   <div class="row"><span>Regen</span>

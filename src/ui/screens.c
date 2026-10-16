@@ -2790,6 +2790,150 @@ void tick_screen_screenwarnkarte1() {
 }
 
 
+void create_screen_screenverlauf() {
+    lv_obj_t *obj = lv_obj_create(0);
+    objects.screenverlauf = obj;
+    lv_obj_set_pos(obj, 0, 0);
+    lv_obj_set_size(obj, 480, 320);
+        lv_obj_set_style_bg_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+    {
+        lv_obj_t *parent_obj = obj;
+        {
+            // labelbuttonhomeverlauf
+            lv_obj_t *obj = lv_btn_create(parent_obj);
+            objects.labelbuttonhomeverlauf = obj;
+            lv_obj_set_pos(obj, 190, 273);
+            lv_obj_set_size(obj, 100, 40);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_line_space(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_img_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &font_montserrat_32, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_img_src(obj, &fc_home, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    // labelbuttonhomeverlauf_label
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelbuttonhomeverlauf_label = obj;
+                    lv_label_set_text(obj, "");
+                    lv_obj_center(obj);
+                }
+            }
+        }
+        {
+            // labelbuttonbackwardverlauf
+            lv_obj_t *obj = lv_btn_create(parent_obj);
+            objects.labelbuttonbackwardverlauf = obj;
+            lv_obj_set_pos(obj, 7, 273);
+            lv_obj_set_size(obj, 100, 40);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_img_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_img_src(obj, &fc_left_60, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    // labelbuttonbackwardverlauf_label
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelbuttonbackwardverlauf_label = obj;
+                    lv_label_set_text(obj, "");
+                    lv_obj_center(obj);
+                }
+            }
+        }
+        {
+            // labelbuttonforwardverlauf
+            lv_obj_t *obj = lv_btn_create(parent_obj);
+            objects.labelbuttonforwardverlauf = obj;
+            lv_obj_set_pos(obj, 372, 273);
+            lv_obj_set_size(obj, 100, 40);
+            lv_obj_set_style_bg_img_src(obj, &fc_right_60, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_img_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_SCREEN] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_SCREEN]), LV_PART_MAIN | LV_STATE_DEFAULT);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    // labelbuttonforwardverlauf_label
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelbuttonforwardverlauf_label = obj;
+                    lv_label_set_text(obj, "");
+                    lv_obj_center(obj);
+                }
+            }
+        }
+        {
+            // containerverlauf
+            lv_obj_t *obj = lv_obj_create(parent_obj);
+            objects.containerverlauf = obj;
+            lv_obj_set_pos(obj, 6, 3);
+            lv_obj_set_size(obj, 468, 266);
+            lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+            lv_obj_set_style_pad_all(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_border_side(obj, 15, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, (lv_opa_t)(theme_colors[active_theme_index][THEME_COLOR_BACKGR_CONT] >> 24), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_border_color(obj, lv_color_hex(common_000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_BACKGR_CONT]), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_border_width(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    // labelverlauftitel
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelverlauftitel = obj;
+                    lv_obj_set_pos(obj, 9, 5);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_label_set_text(obj, "Temperaturverlauf 24 h");
+                }
+                {
+                    // labelverlaufminmax
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.labelverlaufminmax = obj;
+                    lv_obj_set_pos(obj, 257, 5);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_label_set_text(obj, "Min 4 °   Max 12 °");
+                }
+                {
+                    // chartverlauf
+                    lv_obj_t *obj = lv_chart_create(parent_obj);
+                    objects.chartverlauf = obj;
+                    lv_obj_set_pos(obj, 37, 33);
+                    lv_obj_set_size(obj, 418, 136);
+                    lv_chart_set_type(obj, LV_CHART_TYPE_LINE);
+                    lv_chart_set_point_count(obj, 24);
+                    lv_chart_set_range(obj, LV_CHART_AXIS_PRIMARY_Y, 0, 30);
+                    lv_chart_set_div_line_count(obj, 4, 5);
+                }
+                {
+                    // chartregen
+                    lv_obj_t *obj = lv_chart_create(parent_obj);
+                    objects.chartregen = obj;
+                    lv_obj_set_pos(obj, 37, 177);
+                    lv_obj_set_size(obj, 418, 50);
+                    lv_chart_set_type(obj, LV_CHART_TYPE_BAR);
+                    lv_chart_set_point_count(obj, 24);
+                    lv_chart_set_range(obj, LV_CHART_AXIS_PRIMARY_Y, 0, 5);
+                    lv_chart_set_div_line_count(obj, 2, 5);
+                }
+            }
+        }
+    }
+
+    tick_screen_screenverlauf();
+}
+
+void tick_screen_screenverlauf() {
+}
+
+
 void create_screen_screenforecastwetter() {
     lv_obj_t *obj = lv_obj_create(0);
     objects.screenforecastwetter = obj;
@@ -4944,6 +5088,7 @@ tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_lagerscreen,
     tick_screen_screenwarnkarte2,
     tick_screen_screenwarnkarte1,
+    tick_screen_screenverlauf,
     tick_screen_screenforecastwetter,
     tick_screen_screenforecastpollenhour,
     tick_screen_screenforecastpollen,
@@ -5235,6 +5380,25 @@ void delete_screen_screenwarnkarte1() {
     objects.labelbuttonscreenhub_1_label = 0;
 }
 
+void delete_screen_screenverlauf() {
+    if (objects.screenverlauf != NULL) {
+        pp_anim_stop_timelines_for_deleted_tree(objects.screenverlauf);
+        lv_obj_del(objects.screenverlauf);
+    }
+    objects.screenverlauf = 0;
+    objects.labelbuttonhomeverlauf = 0;
+    objects.labelbuttonhomeverlauf_label = 0;
+    objects.labelbuttonbackwardverlauf = 0;
+    objects.labelbuttonbackwardverlauf_label = 0;
+    objects.labelbuttonforwardverlauf = 0;
+    objects.labelbuttonforwardverlauf_label = 0;
+    objects.containerverlauf = 0;
+    objects.labelverlauftitel = 0;
+    objects.labelverlaufminmax = 0;
+    objects.chartverlauf = 0;
+    objects.chartregen = 0;
+}
+
 void delete_screen_screenforecastwetter() {
     if (objects.screenforecastwetter != NULL) {
         pp_anim_stop_timelines_for_deleted_tree(objects.screenforecastwetter);
@@ -5456,6 +5620,7 @@ delete_screen_func_t delete_screen_funcs[] = {
     delete_screen_lagerscreen,
     delete_screen_screenwarnkarte2,
     delete_screen_screenwarnkarte1,
+    delete_screen_screenverlauf,
     delete_screen_screenforecastwetter,
     delete_screen_screenforecastpollenhour,
     delete_screen_screenforecastpollen,
@@ -5482,6 +5647,7 @@ void create_screens() {
     create_screen_lagerscreen();
     create_screen_screenwarnkarte2();
     create_screen_screenwarnkarte1();
+    create_screen_screenverlauf();
     create_screen_screenforecastwetter();
     create_screen_screenforecastpollenhour();
     create_screen_screenforecastpollen();

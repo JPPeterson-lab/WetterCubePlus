@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-10-16 – v1.8.0
+
+### Temperaturverlauf: neuer Screen mit zwei LVGL-Diagrammen
+
+**PicoPixel (per MCP):** `ScreenVerlauf` ist ein Duplikat von `ScreenForecastWetter` (Navigation und Rahmen übernommen, die vier Slot-Container samt Inhalt gelöscht). Darin `ContainerVerlauf` über die volle Breite mit `LabelVerlaufTitel`, `LabelVerlaufMinMax` und zwei Diagrammen (`ChartVerlauf` Linie, `ChartRegen` Balken). Der Chart-Export von PicoPixel ist als „needs_verification“ markiert; er funktioniert (`lv_chart_create`, Typ, Punktzahl, Bereich, Teilungslinien), Datenreihen legt der Code an.
+
+**Daten:** `fetchWetter()` fragt zusätzlich `hourly=precipitation` ab (JSON-Puffer 14 KB) und legt 25 Punkte ab (jetzt bis +24 h): `wetter.vl_temp[]`, `vl_regen[]`, `vl_h0`.
+
+**Diagramme:** 25 Punkte, damit die Zeitmarken (7 Beschriftungen) genau auf Stunde 0, 4, 8 … 24 fallen. Werte werden mit 10 multipliziert (Zehntel), die Achsenbeschriftung teilt im `LV_EVENT_DRAW_PART_BEGIN`-Handler wieder durch 10 und schreibt bei der X-Achse die Uhrzeit (`vl_h0 + 4·Marke`). Temperaturskala in ganzen Grad, Spanne durch 4 teilbar (5 ganzzahlige Marken); Regenskala 0 bis aufgerundetes Maximum (mindestens 1 mm). Bei Balkendiagrammen richtet LVGL die Marken an den Balkenmitten aus; das Liniendiagramm bekommt links und rechts 8 px Innenabstand, damit die Punkte über den Balkenmitten liegen. Die Zeitachse hängt unter dem Balkendiagramm, ohne Regenbalken unter dem (dann höheren) Liniendiagramm. Farben nach Thema (`THEME_COLOR_TEXT`, Gitter als Mischung mit dem Hintergrund). Aktualisierung in `aktualisiereUI()`.
+
+**Navigation:** Vorhersage → Verlauf → Pollen (Rückwege entsprechend), Home-Knopf. Einstellung `verlauf_regen` (Preferences `vl_regen`, WebUI, Sicherung).
+
+---
+
 ## 2026-10-16 – v1.7.2
 
 ### Biowetter: „kein Einfluss“ ist kein „keine Daten“, Spalten passend zu den Überschriften

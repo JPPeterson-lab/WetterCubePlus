@@ -18,6 +18,7 @@ typedef struct _objects_t {
     lv_obj_t *lagerscreen;
     lv_obj_t *screenwarnkarte2;
     lv_obj_t *screenwarnkarte1;
+    lv_obj_t *screenverlauf;
     lv_obj_t *screenforecastwetter;
     lv_obj_t *screenforecastpollenhour;
     lv_obj_t *screenforecastpollen;
@@ -174,6 +175,14 @@ typedef struct _objects_t {
     lv_obj_t *labelh4temp;
     lv_obj_t *imageh4;
     lv_obj_t *labelh4winddirection;
+    lv_obj_t *labelbuttonhomeverlauf;
+    lv_obj_t *labelbuttonbackwardverlauf;
+    lv_obj_t *labelbuttonforwardverlauf;
+    lv_obj_t *containerverlauf;
+    lv_obj_t *labelverlauftitel;
+    lv_obj_t *labelverlaufminmax;
+    lv_obj_t *chartverlauf;
+    lv_obj_t *chartregen;
     lv_obj_t *labelbuttonbackward_3;
     lv_obj_t *labelbuttonforward_3;
     lv_obj_t *labelbuttonhome_2;
@@ -366,6 +375,9 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonhome_1_label;
     lv_obj_t *labelbuttonbackward_2_label;
     lv_obj_t *labelbuttonforward_2_label;
+    lv_obj_t *labelbuttonhomeverlauf_label;
+    lv_obj_t *labelbuttonbackwardverlauf_label;
+    lv_obj_t *labelbuttonforwardverlauf_label;
     lv_obj_t *labelbuttonbackward_3_label;
     lv_obj_t *labelbuttonforward_3_label;
     lv_obj_t *labelbuttonhome_2_label;
@@ -404,12 +416,13 @@ enum ScreensEnum {
     SCREEN_ID_LAGERSCREEN = 7,
     SCREEN_ID_SCREENWARNKARTE2 = 8,
     SCREEN_ID_SCREENWARNKARTE1 = 9,
-    SCREEN_ID_SCREENFORECASTWETTER = 10,
-    SCREEN_ID_SCREENFORECASTPOLLENHOUR = 11,
-    SCREEN_ID_SCREENFORECASTPOLLEN = 12,
-    SCREEN_ID_SCREENWARNUNGPOLLEN = 13,
-    SCREEN_ID_SCREEN_1 = 14,
-    SCREEN_ID_SCREENBOOT = 15,
+    SCREEN_ID_SCREENVERLAUF = 10,
+    SCREEN_ID_SCREENFORECASTWETTER = 11,
+    SCREEN_ID_SCREENFORECASTPOLLENHOUR = 12,
+    SCREEN_ID_SCREENFORECASTPOLLEN = 13,
+    SCREEN_ID_SCREENWARNUNGPOLLEN = 14,
+    SCREEN_ID_SCREEN_1 = 15,
+    SCREEN_ID_SCREENBOOT = 16,
 };
 
 void create_screen_screenhealth();
@@ -439,6 +452,9 @@ void delete_screen_screenwarnkarte2();
 void create_screen_screenwarnkarte1();
 void tick_screen_screenwarnkarte1();
 void delete_screen_screenwarnkarte1();
+void create_screen_screenverlauf();
+void tick_screen_screenverlauf();
+void delete_screen_screenverlauf();
 void create_screen_screenforecastwetter();
 void tick_screen_screenforecastwetter();
 void delete_screen_screenforecastwetter();

@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.7.2"
+#define FIRMWARE_VERSION "1.8.0"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -137,6 +137,7 @@ struct Config {
   bool   hinweis_regen = true;   // Hinweis-Kachel auf Screen 1: Regen / Frost / UV
   bool   hinweis_frost = true;
   bool   hinweis_uv    = true;
+  bool   verlauf_regen = true;   // Regenbalken im Temperaturverlauf
   int    main_box      = 0;   // rechtes Feld auf Screen 1: 0 = Pollen, 1 = Biowetter
   int    pollen_schwelle = 2;   // 0=gering 1=mittel 2=hoch 3=stark
   int    pollen_auswahl  = 0xFF; // gewaehlte Allergene, Bit i = POLLEN_ANZEIGE[i] (Standard: alle)
@@ -233,6 +234,11 @@ struct WetterDaten {
   float  frost_min   = 99.0f; // tiefste Temperatur der naechsten 12 Stunden (99 = keine Daten)
   bool   frost_jetzt = false; // schon jetzt <= 0 Grad
   String frost_ab;            // Uhrzeit der ersten Stunde mit <= 0 Grad
+  // Temperaturverlauf: jetzt bis +24 Stunden (25 Punkte), stuendlich
+  float  vl_temp[25]  = {};
+  float  vl_regen[25] = {};   // Niederschlag je Stunde in mm
+  int    vl_n         = 0;    // Anzahl gueltiger Punkte
+  int    vl_h0        = 0;    // Stunde (0-23) des ersten Punkts
   float  temp_min    = 0.0f;
   float  temp_max    = 0.0f;
   bool   is_day      = true;
@@ -616,6 +622,7 @@ void ladeCfg() {
   cfg.hinweis_frost   = prefs.getBool  ("hw_frost", true);
   cfg.hinweis_uv      = prefs.getBool  ("hw_uv", true);
   cfg.main_box        = prefs.getInt   ("main_box", 0);
+  cfg.verlauf_regen   = prefs.getBool  ("vl_regen", true);
   cfg.pollen_schwelle = prefs.getInt   ("pol_schw",    2);
   cfg.pollen_auswahl  = prefs.getInt   ("pol_ausw",    0xFF);
   cfg.dim_timeout       = prefs.getInt   ("dim_time",    3);
@@ -653,6 +660,7 @@ void speichereCfg() {
   prefs.putBool  ("hw_frost",   cfg.hinweis_frost);
   prefs.putBool  ("hw_uv",      cfg.hinweis_uv);
   prefs.putInt   ("main_box",   cfg.main_box);
+  prefs.putBool  ("vl_regen",   cfg.verlauf_regen);
   prefs.putInt   ("pol_schw",   cfg.pollen_schwelle);
   prefs.putInt   ("pol_ausw",   cfg.pollen_auswahl);
   prefs.putInt   ("dim_time",    cfg.dim_timeout);
@@ -873,6 +881,7 @@ void handleWebRoot() {
   html.replace("%HR%",          cfg.hinweis_regen ? "checked" : "");
   html.replace("%HF%",          cfg.hinweis_frost ? "checked" : "");
   html.replace("%HU%",          cfg.hinweis_uv    ? "checked" : "");
+  html.replace("%VR%",          cfg.verlauf_regen ? "checked" : "");
   html.replace("%MB0%",         cfg.main_box == 0 ? "selected" : "");
   html.replace("%MB1%",         cfg.main_box == 1 ? "selected" : "");
   html.replace("%WR%",          cfg.warn_region   ? "checked" : "");
@@ -927,6 +936,7 @@ void handleWebSave() {
   cfg.hinweis_frost   = server.hasArg("hw_frost");
   cfg.hinweis_uv      = server.hasArg("hw_uv");
   if (server.hasArg("main_box"))   cfg.main_box        = constrain(server.arg("main_box").toInt(), 0, 1);
+  cfg.verlauf_regen   = server.hasArg("vl_regen");
   cfg.warn_region     = server.hasArg("warn_region");
   cfg.night_mode      = server.hasArg("night_mode");
   if (server.hasArg("night_from"))   cfg.night_from       = server.arg("night_from").toInt();
@@ -968,6 +978,7 @@ void handleWebBackup() {
   doc["hinweis_frost"]    = cfg.hinweis_frost;
   doc["hinweis_uv"]       = cfg.hinweis_uv;
   doc["main_box"]         = cfg.main_box;
+  doc["verlauf_regen"]    = cfg.verlauf_regen;
   doc["pollen_schwelle"]  = cfg.pollen_schwelle;
   doc["pollen_auswahl"]   = cfg.pollen_auswahl;
   doc["warn_region"]      = cfg.warn_region;
@@ -1015,6 +1026,7 @@ void handleWebRestore() {
   RS_BOOL("hinweis_frost",    hinweis_frost);
   RS_BOOL("hinweis_uv",       hinweis_uv);
   RS_INT ("main_box",         main_box,         0, 1);
+  RS_BOOL("verlauf_regen",    verlauf_regen);
   RS_INT ("pollen_schwelle",  pollen_schwelle,  0, 3);
   RS_INT ("pollen_auswahl",   pollen_auswahl,   0, 255);
   RS_BOOL("warn_region",      warn_region);
@@ -1501,13 +1513,13 @@ static bool fetchWetterEinmal() {
   url += "&current=temperature_2m,relative_humidity_2m,apparent_temperature";
   url += ",wind_speed_10m,wind_direction_10m,surface_pressure,weather_code,is_day";
   url += "&daily=uv_index_max,sunrise,sunset,temperature_2m_min,temperature_2m_max";
-  url += "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index";
+  url += "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index,precipitation";
   url += "&minutely_15=precipitation&forecast_minutely_15=12";
   url += "&timezone=auto&forecast_days=2";
   http.begin(sc, url);
   int httpCode = http.GET();
   if (httpCode == 200) {
-    DynamicJsonDocument doc(12288);
+    DynamicJsonDocument doc(14336);
     DeserializationError jsonErr = deserializeJson(doc, http.getString());
     if (jsonErr == DeserializationError::Ok) {
       auto c = doc["current"];
@@ -1560,6 +1572,20 @@ static bool fetchWetterEinmal() {
         float tv = v.as<float>();
         if (tv < fMin) fMin = tv;
         if (frostIdx < 0 && tv <= 0.0f) frostIdx = i;
+      }
+      // Temperaturverlauf (jetzt bis +24 h)
+      {
+        int n = 0;
+        for (int i = 0; i <= 24 && h + i < 48; i++) {
+          JsonVariantConst vt = doc["hourly"]["temperature_2m"][h + i];
+          if (vt.isNull()) break;
+          wetter.vl_temp[n]  = vt.as<float>();
+          JsonVariantConst vr = doc["hourly"]["precipitation"][h + i];
+          wetter.vl_regen[n] = vr.isNull() ? 0.0f : vr.as<float>();
+          n++;
+        }
+        wetter.vl_n  = n;
+        wetter.vl_h0 = h;
       }
       wetter.frost_min   = fMin;
       wetter.frost_jetzt = (frostIdx == 0);
@@ -2561,6 +2587,127 @@ static void cbHinweisTap(lv_event_t*) {
   aktualisiereHinweise();
 }
 
+// ── Temperaturverlauf (screenverlauf): Liniendiagramm 24 h + optionale Regenbalken ──
+static lv_chart_series_t* vlSerT = nullptr;
+static lv_chart_series_t* vlSerR = nullptr;
+static lv_coord_t vlT[25];
+static lv_coord_t vlR[25];
+static lv_obj_t*  vlRegenInfo = nullptr;
+static bool vlInit = false;
+
+static int rundeInt(float v) { return (int)floorf(v + 0.5f); }
+
+// Beschriftung der Achsen: Temperatur und Regen sind mit 10 multipliziert (Zehntel), Zeit als Uhrzeit
+static void verlaufDrawCb(lv_event_t* e) {
+  lv_obj_draw_part_dsc_t* d = (lv_obj_draw_part_dsc_t*)lv_event_get_param(e);
+  if (!lv_obj_draw_part_check_type(d, &lv_chart_class, LV_CHART_DRAW_PART_TICK_LABEL)) return;
+  if (!d->text) return;
+  if (d->id == LV_CHART_AXIS_PRIMARY_X) {
+    lv_snprintf(d->text, d->text_length, "%02d", (wetter.vl_h0 + (int)d->value * 4) % 24);   // Marke alle 4 Stunden
+  } else if (d->id == LV_CHART_AXIS_PRIMARY_Y) {
+    int v = (int)d->value;
+    lv_snprintf(d->text, d->text_length, "%d", (v < 0 ? v - 5 : v + 5) / 10);
+  }
+}
+
+static void verlaufAchse(lv_obj_t* ch, bool mitZeit, int yMarken) {
+  lv_chart_set_axis_tick(ch, LV_CHART_AXIS_PRIMARY_Y, 4, 0, yMarken, 1, true, 30);
+  if (mitZeit) lv_chart_set_axis_tick(ch, LV_CHART_AXIS_PRIMARY_X, 4, 0, 7, 1, true, 24);
+  else         lv_chart_set_axis_tick(ch, LV_CHART_AXIS_PRIMARY_X, 0, 0, 0, 0, false, 0);
+}
+
+static void aktualisiereVerlauf() {
+  lv_obj_t* tc = objects.chartverlauf;
+  lv_obj_t* rc = objects.chartregen;
+  if (!tc || !rc) return;
+  lv_color_t txt   = lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_TEXT]);
+  lv_color_t gitter = lv_color_mix(txt, lv_color_hex(theme_colors[active_theme_index][THEME_COLOR_BACKGR_CONT]), 40);
+  bool dunkel = (active_theme_index == THEME_DARK);
+  if (!vlInit) {
+    vlInit = true;
+    for (int i = 0; i < 25; i++) { vlT[i] = LV_CHART_POINT_NONE; vlR[i] = LV_CHART_POINT_NONE; }
+    vlSerT = lv_chart_add_series(tc, lv_color_hex(0xE5572B), LV_CHART_AXIS_PRIMARY_Y);
+    vlSerR = lv_chart_add_series(rc, lv_color_hex(0x0A5CE0), LV_CHART_AXIS_PRIMARY_Y);
+    lv_chart_set_point_count(tc, 25);
+    lv_chart_set_point_count(rc, 25);
+    lv_chart_set_ext_y_array(tc, vlSerT, vlT);
+    lv_chart_set_ext_y_array(rc, vlSerR, vlR);
+    lv_obj_t* cs[2] = {tc, rc};
+    for (int k = 0; k < 2; k++) {
+      lv_obj_set_style_bg_opa(cs[k], LV_OPA_TRANSP, LV_PART_MAIN);
+      lv_obj_set_style_border_width(cs[k], 0, LV_PART_MAIN);
+      lv_obj_set_style_pad_left(cs[k], 8, LV_PART_MAIN);     // Halber Balkenabstand: Linienpunkte stehen mittig ueber den Balken
+      lv_obj_set_style_pad_right(cs[k], 8, LV_PART_MAIN);
+      lv_obj_set_style_line_width(cs[k], 1, LV_PART_MAIN);
+      lv_obj_set_style_size(cs[k], 0, LV_PART_INDICATOR);     // keine Punktmarken
+      lv_obj_add_event_cb(cs[k], verlaufDrawCb, LV_EVENT_DRAW_PART_BEGIN, nullptr);
+    }
+    lv_obj_set_style_line_width(tc, 3, LV_PART_ITEMS);
+    lv_obj_set_style_pad_column(rc, 1, LV_PART_ITEMS);
+    lv_obj_set_style_radius(rc, 2, LV_PART_ITEMS);
+    vlRegenInfo = lv_label_create(objects.containerverlauf);
+    lv_obj_set_pos(vlRegenInfo, 38, 246);
+  }
+  // Farben je Farbthema
+  lv_obj_t* cs[2] = {tc, rc};
+  for (int k = 0; k < 2; k++) {
+    lv_obj_set_style_line_color(cs[k], gitter, LV_PART_MAIN);
+    lv_obj_set_style_text_color(cs[k], txt, LV_PART_TICKS);
+    lv_obj_set_style_line_color(cs[k], txt, LV_PART_TICKS);
+  }
+  vlSerR->color = lv_color_hex(dunkel ? 0x3FA0FF : 0x0A5CE0);
+  vlSerT->color = lv_color_hex(dunkel ? 0xFF7A4D : 0xE5572B);
+  lv_obj_set_style_text_color(vlRegenInfo, txt, 0);
+
+  // Layout: mit Regenbalken ist das Temperaturdiagramm kuerzer, die Zeitachse haengt unter den Balken
+  bool mitRegen = cfg.verlauf_regen;
+  if (mitRegen) { lv_obj_clear_flag(rc, LV_OBJ_FLAG_HIDDEN); lv_obj_clear_flag(vlRegenInfo, LV_OBJ_FLAG_HIDDEN); lv_obj_set_height(tc, 136); }
+  else          { lv_obj_add_flag(rc, LV_OBJ_FLAG_HIDDEN);   lv_obj_add_flag(vlRegenInfo, LV_OBJ_FLAG_HIDDEN);   lv_obj_set_height(tc, 190); }
+  verlaufAchse(tc, !mitRegen, 5);
+  verlaufAchse(rc, mitRegen, 2);
+
+  int n = wetter.vl_n;
+  if (n < 2) {
+    for (int i = 0; i < 25; i++) { vlT[i] = LV_CHART_POINT_NONE; vlR[i] = LV_CHART_POINT_NONE; }
+    if (objects.labelverlaufminmax) lv_label_set_text(objects.labelverlaufminmax, "keine Daten");
+    lv_label_set_text(vlRegenInfo, "");
+    lv_chart_refresh(tc); lv_chart_refresh(rc);
+    return;
+  }
+  float tmin = wetter.vl_temp[0], tmax = wetter.vl_temp[0], rmax = 0, rsum = 0;
+  for (int i = 0; i < n; i++) {
+    if (wetter.vl_temp[i] < tmin) tmin = wetter.vl_temp[i];
+    if (wetter.vl_temp[i] > tmax) tmax = wetter.vl_temp[i];
+    if (wetter.vl_regen[i] > rmax) rmax = wetter.vl_regen[i];
+    rsum += wetter.vl_regen[i];
+  }
+  // Temperatur-Skala in ganzen Grad, Spanne durch 4 teilbar (5 Beschriftungen mit ganzen Zahlen)
+  int lo = (int)floorf(tmin) - 1;
+  int hi = (int)ceilf(tmax) + 1;
+  int span = hi - lo; if (span < 4) span = 4;
+  span = ((span + 3) / 4) * 4;
+  hi = lo + span;
+  lv_chart_set_range(tc, LV_CHART_AXIS_PRIMARY_Y, lo * 10, hi * 10);
+  lv_chart_set_div_line_count(tc, 3, 5);
+  int rtop = (int)ceilf(rmax); if (rtop < 1) rtop = 1;
+  lv_chart_set_range(rc, LV_CHART_AXIS_PRIMARY_Y, 0, rtop * 10);
+  lv_chart_set_div_line_count(rc, 1, 5);
+  for (int i = 0; i < 25; i++) {
+    if (i < n) { vlT[i] = (lv_coord_t)rundeInt(wetter.vl_temp[i] * 10.0f); vlR[i] = (lv_coord_t)rundeInt(wetter.vl_regen[i] * 10.0f); }
+    else       { vlT[i] = LV_CHART_POINT_NONE; vlR[i] = LV_CHART_POINT_NONE; }
+  }
+  lv_chart_refresh(tc);
+  lv_chart_refresh(rc);
+  char buf[64];
+  if (objects.labelverlaufminmax) {
+    snprintf(buf, sizeof(buf), "Min %d °C   Max %d °C", rundeInt(tmin), rundeInt(tmax));
+    lv_label_set_text(objects.labelverlaufminmax, buf);
+  }
+  if (rsum < 0.05f) snprintf(buf, sizeof(buf), "Regen: keiner erwartet");
+  else              snprintf(buf, sizeof(buf), "Regen: bis %.1f mm/h, zusammen %.1f mm", rmax, rsum);
+  lv_label_set_text(vlRegenInfo, buf);
+}
+
 // Rechtes Feld auf Screen 1: die zwei staerksten Pollen unter "Meine Allergene" oder die zwei staerksten Biowetter-Werte
 // der als Favoriten gewaehlten Kategorien (gleiche Auswahl wie auf dem Gesundheitsscreen); Umschalter: WebUI und Menue
 // Die dritte Titelzeile hat die Groesse ihres Inhalts (linke Kante fest): nach einem Textwechsel mittig im Feld ausrichten
@@ -2664,6 +2811,7 @@ void aktualisiereUI() {
   }
 
   aktualisiereMainBox();
+  aktualisiereVerlauf();
 
   // ── Forecast Wetter (screenforecastwetter) ──────────────────
   lv_obj_t* hzeit[4]  = {objects.labelh1zeit,         objects.labelh2zeit,         objects.labelh3zeit,         objects.labelh4zeit};
@@ -3803,8 +3951,10 @@ static void cbMenu(lv_event_t*) {
 }
 static void cbFwd1(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }       // screen_1 >
 static void cbBack1(lv_event_t*) { loadScreen(SCREEN_ID_SCREEN_1); }                   // forecastwetter <
-static void cbFwd2(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }       // forecastwetter >
-static void cbBack2(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }       // forecastpollen <
+static void cbFwd2(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENVERLAUF); }               // forecastwetter >
+static void cbBack2(lv_event_t*) { loadScreen(SCREEN_ID_SCREENVERLAUF); }               // forecastpollen <
+static void cbVlBack(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTWETTER); }       // verlauf <
+static void cbVlFwd(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }       // verlauf >
 static void cbFwd3(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENWARNKARTE1); }           // forecastpollen >
 static void cbBack3(lv_event_t*) { loadScreen(SCREEN_ID_SCREENFORECASTPOLLEN); }       // screenwarnkarte1 <
 static void cbFwd4(lv_event_t*)  { loadScreen(SCREEN_ID_SCREENSUNMOON); }              // screenwarnkarte1 >
@@ -4169,6 +4319,8 @@ void setup() {
   REG_CB(objects.labelbuttonbackward_2, cbBack1, LV_EVENT_CLICKED);  // forecastwetter <
   REG_CB(objects.labelbuttonforward_2,  cbFwd2,  LV_EVENT_CLICKED);  // forecastwetter >
   REG_CB(objects.labelbuttonbackward_1, cbBack2, LV_EVENT_CLICKED);  // forecastpollen <
+  REG_CB(objects.labelbuttonbackwardverlauf, cbVlBack, LV_EVENT_CLICKED);  // verlauf <
+  REG_CB(objects.labelbuttonforwardverlauf,  cbVlFwd,  LV_EVENT_CLICKED);  // verlauf >
   REG_CB(objects.labelbuttonforward_1,  cbFwd3,  LV_EVENT_CLICKED);  // forecastpollen >
   REG_CB(objects.labelbuttonbackward_3, cbBack3, LV_EVENT_CLICKED);  // screenwarnkarte1 <
   REG_CB(objects.labelbuttonforward_3,  cbFwd4,  LV_EVENT_CLICKED);  // screenwarnkarte1 >
@@ -4207,6 +4359,7 @@ void setup() {
   // Home-Buttons
   REG_CB(objects.labelbuttonhome,   cbHome, LV_EVENT_CLICKED);  // forecastpollen
   REG_CB(objects.labelbuttonhome_1, cbHome, LV_EVENT_CLICKED);  // forecastwetter
+  REG_CB(objects.labelbuttonhomeverlauf, cbHome, LV_EVENT_CLICKED);  // verlauf
   REG_CB(objects.labelbuttonhome_2, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte1
   REG_CB(objects.labelbuttonhome_3, cbHome, LV_EVENT_CLICKED);  // screenwarnkarte2
   REG_CB(objects.labelbuttonhome_4, cbHome, LV_EVENT_CLICKED);  // screensunmoon
