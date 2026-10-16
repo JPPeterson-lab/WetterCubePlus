@@ -1,5 +1,19 @@
 # Entwicklungs-Log
 
+## 2026-10-16 – v1.7.2
+
+### Biowetter: „kein Einfluss“ ist kein „keine Daten“, Spalten passend zu den Überschriften
+
+**Beobachtung (Fotos vom Gerät, 13:08):** Biowetter-Screen zeigte in der Spalte „Nachmittag“ Werte, Gesundheitsscreen und Hauptscreen-Feld nur „-“. Der DWD-Feed für Zone A: `today_afternoon` = sieben Mal „kein Einfluss“, `tomorrow_morning` = `[positiv, kein, gering, kein, gering, kein, kein]`.
+
+**Fehler 1:** `bioLeer` bzw. `allNull()` nahm „alle Kategorien 0“ als „keine Daten“. „kein Einfluss“ (0) ist aber ein echter Wert. Neu: `bio.gueltig[p]` wird beim Parsen gesetzt (`effect`-Array mit mindestens 7 Einträgen), Gesundheitsscreen, Hauptscreen-Feld und Biowetter-Screens prüfen darauf.
+
+**Fehler 2:** Die Spalten waren gegenüber den statischen Überschriften („Heute“/„Morgen“, „Vormittag“/„Nachmittag“) um eins verschoben: Screen 1 Vormittag ← Periode 0 (`today_afternoon`), Nachmittag ← Periode 1 (`tomorrow_morning`), Screen 2 Vormittag ← 2, Nachmittag ← 3. Der DWD-Feed enthält keinen `today_morning`. Neu: Screen 1 Vormittag = keine Daten (`-1`), Nachmittag = 0; Screen 2 Vormittag = 1 (`tomorrow_morning`), Nachmittag = 2 (`tomorrow_afternoon`). Periode 3 (`dayafter_to_morning`) wird nicht mehr angezeigt (die README beschrieb bereits Heute/Morgen Vm./Nm.).
+
+**Build:** Beim Kompilieren zeigten sich wieder iCloud-Duplikate („Panel_M5HDMI 2.cpp“, 248 Dateien in `libraries/LovyanGFX`, nach dem Bibliotheks-Update auf 1.2.33). Wie bei LVGL: Dateien mit „ 2“ im Namen entfernt, sauberer Build danach fehlerfrei.
+
+---
+
 ## 2026-10-16 – v1.7.1
 
 ### Biowetter-Titel in drei Zeilen

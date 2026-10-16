@@ -8,7 +8,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "1.7.1"
+#define FIRMWARE_VERSION "1.7.2"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -301,8 +301,9 @@ struct WarnDaten {
 // Werte: 0=kein 1=positiv 2=gering 3=hoch/stark
 struct BioWetterDaten {
   int wert[4][7];
+  bool gueltig[4];      // Periode hat Werte vom DWD (nur lauter "kein Einfluss" ist gueltig und etwas anderes als "keine Daten")
   bool geladen = false;
-  BioWetterDaten() { memset(wert, 0, sizeof(wert)); }
+  BioWetterDaten() { memset(wert, 0, sizeof(wert)); memset(gueltig, 0, sizeof(gueltig)); }
 };
 
 WetterDaten    wetter;
@@ -2292,6 +2293,7 @@ void fetchBioWetter() {
     if (id != cfg.bio_zone) continue;
     for (int p = 0; p < 4; p++) {
       JsonArray eff = z[perioden[p]]["effect"];
+      bio.gueltig[p] = ((int)eff.size() >= 7);
       Serial.printf("[Bio] Periode %d (%s): %d Eintraege\n", p, perioden[p], (int)eff.size());
       for (int k = 0; k < 7 && k < (int)eff.size(); k++) {
         const char* val = eff[k]["value"].as<const char*>();
@@ -2582,8 +2584,7 @@ static void aktualisiereMainBox() {
     setLabel(objects.labelmainboxtitle2, periode == 0 ? "heute" : "morgen");
     setLabel(objects.labelmainboxtitle3, periode == 0 ? "Nachmittag" : "Vormittag");
     mainBoxTitel3Zentrieren();
-    bool leer = !bio.geladen;
-    if (!leer) { leer = true; for (int k = 0; k < 7; k++) if (bio.wert[periode][k] != 0) { leer = false; break; } }
+    bool leer = !bio.geladen || !bio.gueltig[periode];
     int cats[4] = {cfg.ws_cat0, cfg.ws_cat1, cfg.ws_cat2, cfg.ws_cat3};
     struct BE { int rang; int v; int cat; };
     BE be[4];
@@ -2895,10 +2896,7 @@ void aktualisiereUI() {
       lv_label_set_text(objects.biowetter, bioPeriode == 0 ? "Heute Nachmittag" : "Morgen Vormittag");
     }
     bool bioVerfuegbar = bio.geladen;
-    bool bioLeer = true;
-    if (bioVerfuegbar) {
-      for (int k = 0; k < 7; k++) if (bio.wert[bioPeriode][k] != 0) { bioLeer = false; break; }
-    }
+    bool bioLeer = !bioVerfuegbar || !bio.gueltig[bioPeriode];   // "kein Einfluss" in allen Kategorien ist ein gueltiger Wert
     for (int i = 0; i < 4; i++) {
       int cat = wsCats[i];
       if (cat < 0 || cat > 6) cat = 0;
@@ -2934,52 +2932,49 @@ void aktualisiereUI() {
   }
 
   // ── Biowetter (screenbiowetter + screenbiowetter2) ──────────
-  // Periode 0 = heute Nmttg, 1 = morgen Vmttg → Screen 1
-  // Periode 2 = morgen Nmttg, 3 = übermorgen Vmttg → Screen 2
+  // Screen 1 (Heute):  Vormittag = keine Daten (der DWD liefert fuer heute nur den Nachmittag), Nachmittag = Periode 0
+  // Screen 2 (Morgen): Vormittag = Periode 1, Nachmittag = Periode 2
+  // Perioden: 0 = heute Nachmittag, 1 = morgen Vormittag, 2 = morgen Nachmittag, 3 = uebermorgen Vormittag (nicht angezeigt)
   // Kategorien: 0=Befinden 1=BP-niedrig 2=BP-hoch 3=Rheuma-entz 4=Rheuma-degen 5=Asthma 6=Wärme
   {
     // Label-Arrays für beide Screens: [screen][periode_in_screen][kategorie]
     lv_obj_t* vmLabels[2][7] = {
-      // Screen 1 – Periode 0 (Vmttg-Spalte = heute Nmttg)
+      // Screen 1 – Vormittag (keine Daten)
       { objects.labelbiobevindenvm,   objects.labelbiobpniedrigvm,  objects.labelbiobphochvm,
         objects.labelbioreumentzvm,   objects.labelbioreumdegenvm,  objects.labelbioapsthmvm,
         objects.labelbiow_rmevm },
-      // Screen 2 – Periode 2 (Vmttg-Spalte = morgen Vmttg)
+      // Screen 2 – Periode 1 (morgen Vormittag)
       { objects.labelbiobevindenvm2,  objects.labelbiobpniedrigvm2, objects.labelbiobphochvm2,
         objects.labelbioreumentzvm2,  objects.labelbioreumdegenvm2, objects.labelbioapsthmvm2,
         objects.labelbiow_rmevm2 }
     };
     lv_obj_t* nmLabels[2][7] = {
-      // Screen 1 – Periode 1 (Nmttg-Spalte = morgen Vmttg)
+      // Screen 1 – Periode 0 (heute Nachmittag)
       { objects.labelbiobewindennm,   objects.labelbiobpniedrignm,  objects.labelbiobphochnm,
         objects.labelbioreumentznm,   objects.labelbioreumdegenm,   objects.labelbioapsthmam,
         objects.labelbiow_rmenm },
-      // Screen 2 – Periode 3 (Nmttg-Spalte = übermorgen Vmttg)
+      // Screen 2 – Periode 2 (morgen Nachmittag)
       { objects.labelbiobewindennm2,  objects.labelbiobpniedrignm2, objects.labelbiobphochnm2,
         objects.labelbioreumentznm2,  objects.labelbioreumdegenm2,  objects.labelbioapsthmam2,
         objects.labelbiow_rmenm2 }
     };
     // Perioden-Indices im bio.wert[p][k] Array
-    const int vmPeriod[2] = {0, 2};
-    const int nmPeriod[2] = {1, 3};
+    const int vmPeriod[2] = {-1, 1};
+    const int nmPeriod[2] = {0, 2};
 
     for (int s = 0; s < 2; s++) {
-      // Prüfen ob eine Periode komplett leer ist (alle 0 = "kein Einfluss")
-      auto allNull = [&](int p) {
-        for (int k = 0; k < 7; k++) if (bio.wert[p][k] != 0) return false;
-        return true;
-      };
-      bool vmLeer = !bio.geladen || allNull(vmPeriod[s]);
-      bool nmLeer = !bio.geladen || allNull(nmPeriod[s]);
+      // Keine Daten: Periode fehlt (-1) oder der DWD hat sie nicht geliefert; "kein Einfluss" in allen Kategorien ist ein gueltiger Wert
+      bool vmLeer = !bio.geladen || vmPeriod[s] < 0 || !bio.gueltig[vmPeriod[s]];
+      bool nmLeer = !bio.geladen || nmPeriod[s] < 0 || !bio.gueltig[nmPeriod[s]];
 
       for (int k = 0; k < 7; k++) {
         if (vmLabels[s][k]) {
-          int v = bio.geladen ? bio.wert[vmPeriod[s]][k] : 0;
+          int v = (!vmLeer) ? bio.wert[vmPeriod[s]][k] : 0;
           setLabelFmt(vmLabels[s][k], vmLeer ? lv_color_hex(0x444444) : bioWertColor(v),
                       vmLeer ? "-" : bioWertKurz(v));
         }
         if (nmLabels[s][k]) {
-          int v = bio.geladen ? bio.wert[nmPeriod[s]][k] : 0;
+          int v = (!nmLeer) ? bio.wert[nmPeriod[s]][k] : 0;
           setLabelFmt(nmLabels[s][k], nmLeer ? lv_color_hex(0x444444) : bioWertColor(v),
                       nmLeer ? "-" : bioWertKurz(v));
         }

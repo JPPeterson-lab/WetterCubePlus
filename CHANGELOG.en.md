@@ -2,6 +2,14 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
+## v1.7.2 (2026-10-16)
+
+### Fixes
+- **Biowetter values on the main screen and the health screen:** If all seven categories were "kein Einfluss" (no influence) for a period (which is what the DWD actually reports for it), the cube treated that as "no data" and showed "-". Now a period counts as available as soon as the DWD delivers values for it; "kein Einfluss" is shown as "kein"
+- **Biowetter screens: columns now match their headings:** The "Nachmittag" (afternoon) column on the "Heute" (today) screen used to show the values for **tomorrow morning**, the "Vormittag" (morning) column those for this afternoon. Now: "Heute" screen: morning "-" (the DWD provides no values for this morning), afternoon = this afternoon; "Morgen" (tomorrow) screen: morning and afternoon = tomorrow. "Day after tomorrow morning" is no longer shown
+
+---
+
 ## v1.7.1 (2026-10-16)
 
 ### Fixes

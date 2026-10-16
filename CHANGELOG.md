@@ -2,6 +2,14 @@
 
 *[English version](CHANGELOG.en.md)*
 
+## v1.7.2 (2026-10-16)
+
+### Fixes
+- **Biowetter-Werte auf Hauptscreen und Gesundheitsscreen:** Waren für einen Zeitraum alle sieben Kategorien „kein Einfluss“ (was der DWD für diesen Zeitraum tatsächlich meldet), hat der Cube das als „keine Daten“ gewertet und „-“ gezeigt. Jetzt zählt ein Zeitraum als vorhanden, sobald der DWD Werte dafür liefert; „kein Einfluss“ erscheint als „kein“
+- **Biowetter-Screens: Spalten passen jetzt zu ihren Überschriften:** Die Spalte „Nachmittag“ auf dem Screen „Heute“ zeigte bisher die Werte für **morgen Vormittag**, die Spalte „Vormittag“ die für heute Nachmittag. Jetzt gilt: Screen „Heute“: Vormittag „-“ (für den heutigen Vormittag liefert der DWD keine Werte), Nachmittag = heute Nachmittag; Screen „Morgen“: Vormittag und Nachmittag = morgen. „Übermorgen Vormittag“ wird nicht mehr angezeigt
+
+---
+
 ## v1.7.1 (2026-10-16)
 
 ### Fixes

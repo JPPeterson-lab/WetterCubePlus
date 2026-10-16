@@ -5,7 +5,7 @@
 </p>
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.7.1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.7.2-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -65,7 +65,7 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 🗺️ | **Niederschlagsradar** | Bundesland-Radarkarte (DWD WMS), alle 10 Min. aktualisiert, mit Standort-Marker |
 | ☀️ | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang, Tages-Min/Max-Temperatur |
 | 🌫️ | **Luftqualität (AQI)** | Europäischer AQI (Arc-Anzeige), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten (Open-Meteo Air Quality API) |
-| 🩺 | **DWD Biowetter** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Allg. Befinden, Blutdruck niedrig/hoch, Rheuma entzündl./degenerativ, Asthma, Wärmebelastung) – 4 Perioden auf 2 Screens, alle 3 Stunden aktualisiert |
+| 🩺 | **DWD Biowetter** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Allg. Befinden, Blutdruck niedrig/hoch, Rheuma entzündl./degenerativ, Asthma, Wärmebelastung) – Heute Nachmittag sowie Morgen Vormittag und Nachmittag auf 2 Screens (für heute Vormittag liefert der DWD keine Werte), alle 3 Stunden aktualisiert |
 | 💚 | **Gesundheitsscreen** | Kompaktübersicht für wetterfühlige Personen: Top-4 Pollen nach Tagesbelastung, 4 konfigurierbare Biowetter-Kategorien, AQI + UV-Index; Kategorien per WebUI wählbar |
 | 🖥️ | **WebUI** | Alle Einstellungen unter `wettercubeplus.local` – kein Flashen nötig |
 | 📡 | **Captive Portal** | WLAN-Ersteinrichtung ohne App |
@@ -93,8 +93,8 @@ Wetterdaten kommen kostenlos von [Open-Meteo](https://open-meteo.com) und dem [D
 | 5 | **Niederschlagsradar** | Bundesland-Ausschnitt, DWD WMS, 10-Min.-Aktualisierung |
 | 6 | **Sonne & Mond** | UV-Index (Tages-Max), Sonnenaufgang & Sonnenuntergang, Min/Max-Tagestemperatur |
 | 7 | **Luftqualität** | Europäischer AQI (Arc), PM2.5, PM10, NO₂, Ozon – farbkodiert nach EU-Grenzwerten |
-| 8 | **DWD Biowetter (Heute)** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Befinden, Blutdruck, Rheuma, Asthma, Wärme) – Heute Vm./Nm. |
-| 9 | **DWD Biowetter (Morgen)** | Wie Screen 8, für Morgen Vm./Nm. und Übermorgen Vm. |
+| 8 | **DWD Biowetter (Heute)** | Gesundheitliche Wettereinflüsse für 7 Kategorien (Befinden, Blutdruck, Rheuma, Asthma, Wärme) – Heute Nm. (für heute Vm. liefert der DWD keine Werte) |
+| 9 | **DWD Biowetter (Morgen)** | Wie Screen 8, für Morgen Vm./Nm. |
 | 10 | **Gesundheitsscreen** | Top-4 Pollen (Tageswert), 4 wählbare Biowetter-Kategorien, AQI & UV-Index |
 | 11 | **Warnscreen** | Blinkendes Warn-Screen bei Pollenwarnung (Antippen für Details) |
 | 12 | **DWD Warnkarte** | Standortbezogene DWD-Warnmeldungen als farbige Karten, nach Warnstufe sortiert |
@@ -316,7 +316,7 @@ Icons, Schrift und Bibliotheken von Dritten (Wetter-Icons: [Meteocons](https://g
 # 🌦️ WetterCubePlus (English)
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v1.7.1-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v1.7.2-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey?style=flat-square)
@@ -399,8 +399,8 @@ Weather data is provided free of charge by [Open-Meteo](https://open-meteo.com) 
 | 5 | **Precipitation radar** | Federal-state map view, DWD WMS, updated every 10 min |
 | 6 | **Sun & Moon** | UV index (daily max), sunrise & sunset times, daily min/max temperature |
 | 7 | **Air Quality** | European AQI (arc), PM2.5, PM10, NO₂, ozone – color-coded by EU thresholds |
-| 8 | **DWD Health Weather (Today)** | Health impact for 7 categories (wellbeing, blood pressure, rheumatism, asthma, heat) – Today am/pm |
-| 9 | **DWD Health Weather (Tomorrow)** | Same as screen 8, for tomorrow am/pm and day-after am |
+| 8 | **DWD Health Weather (Today)** | Health impact for 7 categories (wellbeing, blood pressure, rheumatism, asthma, heat) – Today pm (the DWD provides no values for this morning) |
+| 9 | **DWD Health Weather (Tomorrow)** | Same as screen 8, for tomorrow am/pm |
 | 10 | **Warning screen** | Flashing alert for pollen warnings (tap for details) |
 | 11 | **DWD warning list** | Location-based DWD warnings as color-coded cards by severity level |
 
