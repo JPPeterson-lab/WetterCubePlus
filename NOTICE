@@ -1,0 +1,32 @@
+WetterCubePlus
+Copyright 2026 Jan Althaus (JPPeterson-lab)
+
+Licensed under the Apache License, Version 2.0 (see the file LICENSE).
+
+Name and logos: "WetterCube", "WetterCubePlus" and the WetterCube logos are not licensed under the
+Apache License; no trademark rights are granted (see section 6 of the licence).
+All rights to the name and the logos are reserved by Jan Althaus. They may be shown unchanged when reporting on
+the project; forks and derived products need their own name and logo. Rules: https://wettercube.de/logo-nutzung/
+
+Texts, images, screenshots and documentation, and the 3D-print files in gehaeuse/, are licensed under
+CC BY-NC 4.0, see LICENSE-Dokumentation.txt.
+
+The user interface code in src/ui/ is generated with PicoPixel (https://picopixel.io); the exported code
+belongs to the author and is licensed under the Apache License 2.0 as well.
+
+This product includes software, icons, fonts and data of third parties that keep their own licences
+(details in CREDITS.md):
+  - Arduino-ESP32 (Espressif), LGPL-2.1 (it contains ESP-IDF, Apache-2.0)
+  - LVGL, MIT (includes LodePNG, zlib)
+  - LovyanGFX, MIT and BSD-2-Clause
+  - ArduinoJson (Benoit Blanchon), MIT
+  - FastLED (WetterAmpel only), MIT
+  - Meteocons (Bas Milius), MIT
+  - Icons8 Flat Color Icons, used under the MIT option
+  - Montserrat (The Montserrat Project Authors), SIL Open Font License 1.1
+
+Weather data: Open-Meteo (CC BY 4.0). The free Open-Meteo interface is for NON-COMMERCIAL use only;
+anyone using this software commercially needs their own licence from Open-Meteo. Pollen and air quality
+data come from the Copernicus Atmosphere Monitoring Service (CAMS, ECMWF) via Open-Meteo: "Contains modified
+Copernicus Atmosphere Monitoring Service information". German Weather Service (DWD) open data comes with its
+own terms of use.
