@@ -1,7 +1,10 @@
 # 🌦️ WetterCubePlus
 
 <p align="center">
-  <img src="https://wettercube.de/wp-content/themes/wettercube/assets/images/wettercube-plus-logo.svg" width="520" alt="WetterCubePlus">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://wettercube.de/wp-content/themes/wettercube/assets/images/wettercube-plus-logo-hell.svg">
+    <img src="https://wettercube.de/wp-content/themes/wettercube/assets/images/wettercube-plus-logo.svg" width="520" alt="WetterCubePlus">
+  </picture>
 </p>
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
