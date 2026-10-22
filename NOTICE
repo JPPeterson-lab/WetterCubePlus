@@ -25,9 +25,9 @@ This product includes software, icons, fonts and data of third parties that keep
   - Icons8 Flat Color Icons, used under the MIT option
   - Montserrat (The Montserrat Project Authors), SIL Open Font License 1.1
 
-Weather data: Open-Meteo (CC BY 4.0). The free Open-Meteo interface is for NON-COMMERCIAL use only;
+Weather data by Open-Meteo.com (CC BY 4.0; the WetterCube partly converts the values, for example to pollen levels). The free Open-Meteo interface is for NON-COMMERCIAL use only;
 anyone using this software commercially needs their own licence from Open-Meteo. Pollen and air quality
 data come from the Copernicus Atmosphere Monitoring Service (CAMS, ECMWF) via Open-Meteo: "Contains modified
-Copernicus Atmosphere Monitoring Service information". German Weather Service (DWD) data (warnings, pollen forecast, bio-weather, radar)
+Copernicus Atmosphere Monitoring Service information". Location search: "Location data by GeoNames via Open-Meteo" (GeoNames, CC BY 4.0). German Weather Service (DWD) data (warnings, pollen forecast, bio-weather, radar)
 is re-used under CC BY 4.0 with the source note "Quelle: Deutscher Wetterdienst"
 (https://www.dwd.de/DE/service/rechtliche_hinweise/rechtliche_hinweise_node.html).
