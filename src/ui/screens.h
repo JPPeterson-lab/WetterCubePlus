@@ -27,11 +27,11 @@ typedef struct _objects_t {
     lv_obj_t *screenboot;
     lv_obj_t *labelwetter;
     lv_obj_t *labelcube;
-    lv_obj_t *labelauthor;
     lv_obj_t *labelstatus;
     lv_obj_t *barwifi;
     lv_obj_t *labelpico;
     lv_obj_t *pico_dark_logo_132;
+    lv_obj_t *labelquellestart;
     lv_obj_t *labeltime;
     lv_obj_t *imagewetter;
     lv_obj_t *labeltemp;
@@ -58,6 +58,7 @@ typedef struct _objects_t {
     lv_obj_t *labelhumidity;
     lv_obj_t *label_1;
     lv_obj_t *labelregen;
+    lv_obj_t *labelquellehaupt;
     lv_obj_t *imagealert;
     lv_obj_t *labelpollenwarntitel;
     lv_obj_t *labelpollenwarnart;
@@ -187,8 +188,10 @@ typedef struct _objects_t {
     lv_obj_t *labelbuttonforward_3;
     lv_obj_t *labelbuttonhome_2;
     lv_obj_t *labelbuttonscreenhub_1;
+    lv_obj_t *labelquellekarte1;
     lv_obj_t *labelbuttonhome_3;
     lv_obj_t *labelbuttonscreenhubback_1;
+    lv_obj_t *labelquellekarte2;
     lv_obj_t *night_full_moon_clear;
     lv_obj_t *alert;
     lv_obj_t *rain;
@@ -236,6 +239,7 @@ typedef struct _objects_t {
     lv_obj_t *bioboxswitch;
     lv_obj_t *labellightchangevalue;
     lv_obj_t *labelversion;
+    lv_obj_t *labelquellemenue;
     lv_obj_t *labelbuttonmenu_2;
     lv_obj_t *buttonbreaker;
     lv_obj_t *buttoncalc;
@@ -281,6 +285,7 @@ typedef struct _objects_t {
     lv_obj_t *bluthochdruck;
     lv_obj_t *label_2;
     lv_obj_t *label_6;
+    lv_obj_t *label_17;
     lv_obj_t *container_18;
     lv_obj_t *labelbiobphochvm;
     lv_obj_t *labelbioreumentzvm;
@@ -290,6 +295,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbioreumdegenvm;
     lv_obj_t *labelbiobevindenvm;
     lv_obj_t *labelbiobpniedrigvm;
+    lv_obj_t *label_22;
     lv_obj_t *container_19;
     lv_obj_t *labelbiobewindennm;
     lv_obj_t *labelbioreumentznm;
@@ -299,6 +305,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbiobphochnm;
     lv_obj_t *labelbionmttg;
     lv_obj_t *labelbiobpniedrignm;
+    lv_obj_t *label_26;
     lv_obj_t *labelbuttonhome_8;
     lv_obj_t *labelbuttonscreenhubback_2;
     lv_obj_t *container_20;
@@ -328,6 +335,7 @@ typedef struct _objects_t {
     lv_obj_t *label_25_5;
     lv_obj_t *label_25_6;
     lv_obj_t *label_16;
+    lv_obj_t *labelquellebio2;
     lv_obj_t *labeldatum_1;
     lv_obj_t *labelwstime;
     lv_obj_t *labelwstemp;
@@ -364,6 +372,7 @@ typedef struct _objects_t {
     lv_obj_t *labelwso3;
     lv_obj_t *uv_index;
     lv_obj_t *labelwsuv;
+    lv_obj_t *labelquellegesundheit;
     lv_obj_t *labelbuttonbackward_label;
     lv_obj_t *labelbuttonforward_label;
     lv_obj_t *labelbuttonbackward_1_label;

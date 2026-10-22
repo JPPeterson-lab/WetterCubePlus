@@ -315,7 +315,7 @@ const char WEBUI_HTML[] PROGMEM = R"rawhtml(
 
 <div class="card">
   <h2>Datenquellen</h2>
-  <p class="hint">Wetterdaten: <a href="https://open-meteo.com" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (<a href="https://open-meteo.com/en/licence" target="_blank" rel="noopener">CC BY 4.0</a>, die kostenlose Schnittstelle ist nur f&uuml;r nicht-kommerzielle Nutzung). Pollen und Luftqualit&auml;t: Copernicus Atmosphere Monitoring Service (CAMS) &uuml;ber Open-Meteo. Warnungen, Pollenflug, Biowetter und Radar: <a href="https://opendata.dwd.de" target="_blank" rel="noopener">Deutscher Wetterdienst</a> (Opendata).</p>
+  <p class="hint">Wetterdaten: <a href="https://open-meteo.com" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (<a href="https://open-meteo.com/en/licence" target="_blank" rel="noopener">CC BY 4.0</a>; die kostenlose Schnittstelle ist nur f&uuml;r nicht-kommerzielle Nutzung). Die Werte werden im WetterCube teils umgerechnet und zusammengefasst, zum Beispiel zu Pollenstufen und Tagesh&ouml;chstwerten. Pollen und Luftqualit&auml;t: Contains modified Copernicus Atmosphere Monitoring Service information, &uuml;ber Open-Meteo. Ortssuche: Location data by <a href="https://www.geonames.org" target="_blank" rel="noopener">GeoNames</a> via Open-Meteo. Warnungen, Pollenflug, Biowetter und Radar: Quelle: <a href="https://opendata.dwd.de" target="_blank" rel="noopener">Deutscher Wetterdienst</a> (<a href="https://www.dwd.de/DE/service/rechtliche_hinweise/rechtliche_hinweise_node.html" target="_blank" rel="noopener">CC BY 4.0</a>). Open-Meteo und der Deutsche Wetterdienst empfehlen dieses Ger&auml;t nicht.</p>
 </div>
 </div>
 

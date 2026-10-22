@@ -10,7 +10,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "2.1.7"
+#define FIRMWARE_VERSION "2.1.8"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -3096,13 +3096,7 @@ void aktualisiereUI() {
     setLabelFmt(objects.labeltemp, tempColor(wetter.temp), buf);
   }
   if (objects.imagewetter) setWetterIcon(objects.imagewetter, wmoZuImage(wetter.wmo_code, wetter.is_day));
-  if (objects.labelversion) {
-    // Version und Datenquelle (Namensnennung Open-Meteo/DWD) im Menue
-    lv_label_set_text(objects.labelversion, FIRMWARE_VERSION "\n" "Wetterdaten: Open-Meteo.com, DWD");
-    lv_obj_set_pos(objects.labelversion, 13, 230);
-    lv_obj_set_width(objects.labelversion, 270);
-    lv_obj_set_height(objects.labelversion, LV_SIZE_CONTENT);
-  }
+  if (objects.labelversion) lv_label_set_text(objects.labelversion, FIRMWARE_VERSION);   // die Datenquelle steht im eigenen Label labelquellemenue
 
   // screen_1: Wetter-Details (Feuchte, Wind, Druck)
   if (objects.labelhumidity) {
@@ -4529,30 +4523,11 @@ static void cbWarnTap(lv_event_t* e) {
 //  SETUP
 // ============================================================
 #if !VARIANTE_EUROPE
-// Namensnennung der Datenquellen (Open-Meteo: Link-Text neben den Daten, DWD: Quellenvermerk) in der Navigationsleiste
-static void quelleAnlegen(lv_obj_t* screen, int x, int y, int breite, const char* text, lv_text_align_t ausrichtung) {
-  if (!screen) return;
-  lv_obj_t* l = lv_label_create(screen);
-  lv_obj_set_pos(l, x, y);
-  lv_obj_set_width(l, breite);
-  lv_label_set_long_mode(l, LV_LABEL_LONG_CLIP);
-  lv_obj_set_style_text_font(l, &font_montserrat_14, 0);
-  lv_obj_set_style_text_color(l, lv_color_hex(0x7b8794), 0);
-  lv_obj_set_style_text_align(l, ausrichtung, 0);
-  lv_label_set_text(l, text);
-}
-
+// Namensnennung der Datenquellen: die Labels (labelquelle*) kommen aus PicoPixel (Text, Lage und Farbe dort); hier wird nur die Schrift gesetzt.
 static void quellenHinweiseAnlegen() {
-  quelleAnlegen(objects.screen_1,            170, 286, 140, "Open-Meteo.com",      LV_TEXT_ALIGN_CENTER);
-  quelleAnlegen(objects.screenforecastwetter, 270, 286, 105, "Open-Meteo.com",      LV_TEXT_ALIGN_LEFT);
-  quelleAnlegen(objects.screenverlauf,       270, 286, 105, "Open-Meteo.com",      LV_TEXT_ALIGN_LEFT);
-  quelleAnlegen(objects.screensunmoon,       270, 286, 105, "Open-Meteo.com",      LV_TEXT_ALIGN_LEFT);
-  quelleAnlegen(objects.screenairquality,    270, 286, 105, "Open-Meteo.com",      LV_TEXT_ALIGN_LEFT);
-  quelleAnlegen(objects.screenhealth,        165, 286, 160, "Open-Meteo.com, DWD", LV_TEXT_ALIGN_CENTER);
-  quelleAnlegen(objects.screenbiowetter,     203, 286,  85, "Quelle: DWD",         LV_TEXT_ALIGN_LEFT);
-  quelleAnlegen(objects.screenbiowetter2,    203, 286,  85, "Quelle: DWD",         LV_TEXT_ALIGN_LEFT);
-  quelleAnlegen(objects.screenwarnkarte1,    203, 286,  85, "Quelle: DWD",         LV_TEXT_ALIGN_LEFT);
-  quelleAnlegen(objects.screenwarnkarte2,    203, 286,  85, "Quelle: DWD",         LV_TEXT_ALIGN_LEFT);
+  lv_obj_t* l[] = {objects.labelquellestart, objects.labelquellehaupt, objects.labelquellegesundheit, objects.labelquellebio2,
+                   objects.labelquellekarte1, objects.labelquellekarte2, objects.labelquellemenue};
+  for (lv_obj_t* o : l) if (o) lv_obj_set_style_text_font(o, &font_montserrat_14, 0);
 }
 #endif
 
