@@ -1,4 +1,18 @@
-# Credits & Drittanbieter-Lizenzen
+# Credits & third-party licences / Credits & Drittanbieter-Lizenzen
+
+> **English summary.** This project uses third-party resources. The sections below are in German; licence texts are quoted in their original language. In short:
+>
+> - **Weather data / Wetterdaten:** "Weather data by [Open-Meteo.com](https://open-meteo.com)", licence [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) ([open-meteo.com/en/licence](https://open-meteo.com/en/licence)). Values are partly converted and summarised in the WetterCube (for example pollen levels and daily maxima). The free API is for **non-commercial use only**; commercial use needs a licence from Open-Meteo.
+> - **Location search:** Location data by [GeoNames](https://www.geonames.org) via Open-Meteo (CC BY 4.0).
+> - **Pollen and air quality:** "Contains modified Copernicus Atmosphere Monitoring Service information", provided via Open-Meteo. Neither the European Commission nor ECMWF is responsible for any use of the data.
+> - **German Weather Service (DWD):** Warnings, pollen forecast, bio-weather and warning map from [DWD Opendata](https://opendata.dwd.de), licence CC BY 4.0, credited as "Quelle: Deutscher Wetterdienst" next to the displayed data.
+> - **Weather icons:** [Meteocons](https://github.com/basmilius/weather-icons) by Bas Milius (MIT); outlines recoloured for the light theme. Versions up to 1.6.4 used [Dovora](https://www.dovora.com/resources/weather-icons/) icons (CC BY-SA 4.0), which remain licensed that way in older releases.
+> - **UI icons:** [Icons8 Flat Color Icons](https://github.com/icons8/flat-color-icons) (MIT or Good Boy License).
+> - **Font:** [Montserrat](https://github.com/JulietaUla/Montserrat) (SIL OFL 1.1).
+> - **Libraries:** LVGL incl. LodePNG (MIT / zlib), LovyanGFX (MIT / BSD-2-Clause), ArduinoJson (MIT), FastLED (MIT, WetterAmpel only), Arduino-ESP32 (LGPL 2.1), ESP-IDF (Apache 2.0).
+> - **UI design and export:** [PicoPixel](https://picopixel.io)
+>
+> **Project licence:** source code Apache License 2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)); texts, images, documentation and 3D print files CC BY-NC 4.0 ([LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt)). Third-party resources keep their own licences.
 
 Dieses Projekt verwendet Ressourcen Dritter. Die jeweiligen Lizenzbedingungen
 sind nachfolgend aufgeführt.
