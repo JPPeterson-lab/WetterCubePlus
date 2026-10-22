@@ -8,7 +8,7 @@
 </p>
 
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v2.1.8-blue?style=flat-square&cacheSeconds=1)
+![Version](https://img.shields.io/badge/Version-v2.1.9-blue?style=flat-square&cacheSeconds=1)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3%20N16R8-red?style=flat-square&logo=espressif&logoColor=white)
 ![Display](https://img.shields.io/badge/Display-ILI9488%203.5%22%20480×320-informational?style=flat-square)
 ![Lizenz](https://img.shields.io/badge/Lizenz-Apache%202.0-blue?style=flat-square)

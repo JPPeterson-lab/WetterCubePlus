@@ -10,7 +10,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "2.1.8"
+#define FIRMWARE_VERSION "2.1.9"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -1184,7 +1184,9 @@ void handleWebSave() {
   cfg.hinweis_wind    = server.hasArg("hw_wind");
   if (server.hasArg("main_box"))   cfg.main_box        = constrain(server.arg("main_box").toInt(), 0, 1);
   cfg.verlauf_regen   = server.hasArg("vl_regen");
-  cfg.warn_region     = server.hasArg("warn_region");
+  { bool warnNeu = server.hasArg("warn_region");
+    if (warnNeu != cfg.warn_region) { if (!warnNeu) anzahl_warnungen = 0; letztesWarnUpdate = millis() - 900000UL; }   // Hauptschleife frischt Warnungen und Button gleich auf
+    cfg.warn_region = warnNeu; }
   cfg.night_mode      = server.hasArg("night_mode");
   if (server.hasArg("night_from"))   cfg.night_from       = server.arg("night_from").toInt();
   if (server.hasArg("night_to"))     cfg.night_to         = server.arg("night_to").toInt();
@@ -2015,7 +2017,8 @@ static bool agsMatchesRegion(const char* ags, int region) {
 
 // -- DWD Wetterwarnungen via GeoServer WFS mit BBOX-Filter --
 void fetchDwdWarnungen() {
-  if (WiFi.status() != WL_CONNECTED || !cfg.warn_region) return;
+  if (!cfg.warn_region) { anzahl_warnungen = 0; return; }   // ausgeschaltet: keine alten Warnungen stehen lassen (sonst kommt der Button beim naechsten Auffrischen zurueck)
+  if (WiFi.status() != WL_CONNECTED) return;
   spur("DWD-Warnungen: Abruf");
   WiFiClientSecure sc; tlsSicher(sc);
   HTTPClient http;
@@ -4229,10 +4232,13 @@ static void cbMenuDwdSwitch(lv_event_t* e) {
   Preferences prefs; prefs.begin("wcp", false);
   prefs.putBool("warn_reg", cfg.warn_region);
   prefs.end();
-  // DWD-Warn-Button auf screen_1 sofort anpassen
-  if (!cfg.warn_region && dwdWarnBtn) {
-    lv_obj_add_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
+  // DWD-Warn-Button auf screen_1 sofort anpassen; beim Einschalten holt die Hauptschleife die Warnungen gleich
+  if (!cfg.warn_region) {
+    anzahl_warnungen = 0; dwdWarnBestaetigt = false;
+    if (dwdWarnBtn) lv_obj_add_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
     if (dwdBlinker) { lv_timer_del(dwdBlinker); dwdBlinker = nullptr; }
+  } else {
+    letztesWarnUpdate = millis() - 900000UL;
   }
 }
 
@@ -4323,7 +4329,7 @@ void erstelleDwdWarnBtn() {
 
 void aktualisiereDwdWarnBtn() {
   if (!dwdWarnBtn) return;
-  if (anzahl_warnungen > 0) {
+  if (cfg.warn_region && anzahl_warnungen > 0) {
     lv_obj_clear_flag(dwdWarnBtn, LV_OBJ_FLAG_HIDDEN);
     if (!dwdWarnBestaetigt && !dwdBlinker)
       dwdBlinker = lv_timer_create(cbDwdBlinker, 600, nullptr);

@@ -2,8 +2,7 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
-## v2.1.8 (2026-10-22)
+## v2.1.9 (2026-10-22)
 
-### Changed
-- **Source credits:** The notes follow Open-Meteo's guidelines and the notes of the German Weather Service. The line "Quelle: Deutscher Wetterdienst" appears on the pages with DWD data (main page, health, bio-weather, warning map). Open-Meteo, Copernicus (CAMS) and the location search via GeoNames are named on the settings page in the browser ("Datenquellen") with the licence (CC BY 4.0) and a note that values are converted. The start screen and the menu show "Weather data by Open-Meteo.com". The notes are now elements of the interface (PicoPixel) instead of being created in code.
-- **Interface:** New export from PicoPixel.
+### Fixed
+- **Switching DWD warnings off:** The red warning button came back after the DWD warnings were switched off, although the switch was off (on the device and in the web interface). The device had kept the most recently fetched warnings and showed them again at the next refresh. Now they disappear immediately when switched off, and are fetched again right away when switched on.
