@@ -83,7 +83,7 @@ Das Gehäuse auf den Fotos (Unterteil und Deckel, Version 2, Format 3MF) gibt es
 
 > 💙 **Danke an PicoPixel:** Die LVGL-UI des WetterCubePlus wird mit [PicoPixel](https://picopixel.io/de/) erstellt, einem kostenlosen, browserbasierten Drag-and-Drop-Editor für LVGL. Das ist kein Werbe- und kein Affiliate-Link, ich verdiene nichts daran.
 
-Bibliotheken, Icons und Schriften von Dritten (LVGL, LovyanGFX, ArduinoJson, Meteocons, Montserrat und weitere) behalten ihre eigenen Lizenzen, Einzelheiten in [CREDITS.md](CREDITS.md). Wetterdaten: [Open-Meteo](https://open-meteo.com) (kostenlos nur für **nicht-kommerzielle Nutzung**, wer kommerziell einsetzt, braucht dort eine eigene Lizenz) und [DWD Opendata](https://opendata.dwd.de).
+Bibliotheken, Icons und Schriften von Dritten (LVGL, LovyanGFX, ArduinoJson, Meteocons, Montserrat und weitere) behalten ihre eigenen Lizenzen, Einzelheiten in [CREDITS.md](CREDITS.md). Wetterdaten: [Open-Meteo](https://open-meteo.com) (CC BY 4.0; die kostenlose Schnittstelle ist **nur für nicht-kommerzielle Nutzung**, wer kommerziell einsetzt, braucht dort eine eigene Lizenz) und [DWD Opendata](https://opendata.dwd.de) (CC BY 4.0, „Quelle: Deutscher Wetterdienst“).
 
 | Was | Lizenz | Datei |
 |---|---|---|
@@ -168,7 +168,7 @@ The case in the photos (lower part and lid, version 2, 3MF format) is available 
 
 > 💙 **Thanks to PicoPixel:** The LVGL UI of the WetterCubePlus is created with [PicoPixel](https://picopixel.io/), a free, browser-based drag-and-drop editor for LVGL. This is not an advertisement or affiliate link, I earn nothing from it.
 
-Libraries, icons and fonts by third parties (LVGL, LovyanGFX, ArduinoJson, Meteocons, Montserrat and more) keep their own licences, details in [CREDITS.md](CREDITS.md). Weather data: [Open-Meteo](https://open-meteo.com) (free for **non-commercial use only**, anyone using the software commercially needs their own licence from them) and [DWD Opendata](https://opendata.dwd.de).
+Libraries, icons and fonts by third parties (LVGL, LovyanGFX, ArduinoJson, Meteocons, Montserrat and more) keep their own licences, details in [CREDITS.md](CREDITS.md). Weather data: [Open-Meteo](https://open-meteo.com) (CC BY 4.0; the free interface is for **non-commercial use only**, anyone using the software commercially needs their own licence from them) and [DWD Opendata](https://opendata.dwd.de) (CC BY 4.0, “Quelle: Deutscher Wetterdienst”).
 
 | What | Licence | File |
 |---|---|---|

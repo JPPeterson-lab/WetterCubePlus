@@ -87,8 +87,11 @@ Verwendete Icons (als PNG in PicoPixel eingebunden, als Arrays für LVGL eingebe
 
 **Quelle:** [Deutscher Wetterdienst (DWD) – Opendata](https://opendata.dwd.de)
 
-Wetterwarnungen, Pollenflug-Vorhersagen und Warnkarte werden vom DWD kostenfrei
-bereitgestellt. Nutzung gemäß den [DWD-Nutzungsbedingungen](https://www.dwd.de/DE/service/copyright/copyright_artikel.html).
+Wetterwarnungen, Pollenflug-Vorhersagen, Biowetter und Warnkarte stammen vom DWD (frei zugängliche Geodaten). Sie dürfen nach den
+[Rechtlichen Hinweisen des DWD](https://www.dwd.de/DE/service/rechtliche_hinweise/rechtliche_hinweise_node.html) unter der Lizenz
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) mit Quellenvermerk weiterverwendet werden. Der Vermerk lautet
+**„Quelle: Deutscher Wetterdienst“** und steht unmittelbar an den angezeigten DWD-Informationen; bei weitergehend bearbeiteten Daten
+nennt der DWD Hinweise wie „Datenbasis: Deutscher Wetterdienst, …“ in zentralen Quellenverzeichnissen.
 
 ---
 
