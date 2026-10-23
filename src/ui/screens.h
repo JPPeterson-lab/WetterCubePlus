@@ -107,6 +107,7 @@ typedef struct _objects_t {
     lv_obj_t *labelnameambrosia;
     lv_obj_t *labelnamebeifuss;
     lv_obj_t *labelbuttonscreenhub;
+    lv_obj_t *label_22;
     lv_obj_t *button_4;
     lv_obj_t *labelbuttonscreenhubback;
     lv_obj_t *container_13;
@@ -149,6 +150,7 @@ typedef struct _objects_t {
     lv_obj_t *labelnameerle_1;
     lv_obj_t *labelnamehasel_1;
     lv_obj_t *label_23;
+    lv_obj_t *label_17;
     lv_obj_t *labelbuttonhome_1;
     lv_obj_t *labelbuttonbackward_2;
     lv_obj_t *labelbuttonforward_2;
@@ -285,7 +287,6 @@ typedef struct _objects_t {
     lv_obj_t *bluthochdruck;
     lv_obj_t *label_2;
     lv_obj_t *label_6;
-    lv_obj_t *label_17;
     lv_obj_t *container_18;
     lv_obj_t *labelbiobphochvm;
     lv_obj_t *labelbioreumentzvm;
@@ -295,7 +296,6 @@ typedef struct _objects_t {
     lv_obj_t *labelbioreumdegenvm;
     lv_obj_t *labelbiobevindenvm;
     lv_obj_t *labelbiobpniedrigvm;
-    lv_obj_t *label_22;
     lv_obj_t *container_19;
     lv_obj_t *labelbiobewindennm;
     lv_obj_t *labelbioreumentznm;
@@ -305,7 +305,7 @@ typedef struct _objects_t {
     lv_obj_t *labelbiobphochnm;
     lv_obj_t *labelbionmttg;
     lv_obj_t *labelbiobpniedrignm;
-    lv_obj_t *label_26;
+    lv_obj_t *label_29;
     lv_obj_t *labelbuttonhome_8;
     lv_obj_t *labelbuttonscreenhubback_2;
     lv_obj_t *container_20;
