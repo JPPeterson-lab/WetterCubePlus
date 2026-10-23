@@ -68,7 +68,7 @@ Das Gehäuse auf den Fotos (Unterteil und Deckel, Version 2, Format 3MF) gibt es
 
 | Wo | Was |
 |---|---|
-| **[wettercube.de](https://wettercube.de/produkte/wettercubeplus/)** | Überblick, [Vergleich der Cubes](https://wettercube.de/vergleich/), [Roadmap](https://wettercube.de/roadmap/), [Bauanleitung](https://wettercube.de/bauanleitung/), [Hardware](https://wettercube.de/hardware/) |
+| **[wettercube.de](https://wettercube.de/projekte/wettercubeplus/)** | Überblick, [Vergleich der Cubes](https://wettercube.de/vergleich/), [Roadmap](https://wettercube.de/roadmap/), [Bauanleitung](https://wettercube.de/bauanleitung/), [Hardware](https://wettercube.de/hardware/) |
 | **[Wiki](https://wiki.wettercube.de/index.php/WetterCubePlus/Start)** | Hardware und Pinbelegung, Inbetriebnahme, Einstellungen, alle Screens, Updates, WetterAmpel, Fehlersuche, Entwicklung |
 | **[Änderungsverlauf](CHANGELOG.md)** | was in welcher Version neu ist |
 
