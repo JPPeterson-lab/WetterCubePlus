@@ -99,6 +99,8 @@ Bibliotheken, Icons und Schriften von Dritten (LVGL, LovyanGFX, ArduinoJson, Met
 
 > **Versprechen:** Die private Nutzung von WetterCubePlus, Fusion und Next bleibt auch in Zukunft frei.
 
+**Fehler und Wünsche:** gern als [Issue](https://github.com/JPPeterson-lab/WetterCubePlus/issues).
+
 ---
 
 <a id="english"></a>
@@ -187,4 +189,6 @@ Libraries, icons and fonts by third parties (LVGL, LovyanGFX, ArduinoJson, Meteo
 | **Third-party components** | their own licences (MIT, LGPL 2.1, Apache 2.0, SIL OFL, …) | [CREDITS.md](CREDITS.md) |
 
 > **Promise:** Private use of WetterCubePlus, Fusion and Next stays free in the future.
+
+**Bugs and wishes:** as an [issue](https://github.com/JPPeterson-lab/WetterCubePlus/issues).
 
