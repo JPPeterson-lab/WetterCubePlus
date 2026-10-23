@@ -1,5 +1,11 @@
 # WetterCubePlus – Verkabelung
 
+<p align="center"><img src="https://wettercube.de/wp-content/themes/wettercube/assets/images/plus-verkabelung.png" width="900" alt="Verkabelungsplan des WetterCubePlus: ESP32-S3, Display und Touch, jede Leitung in einer eigenen Farbe"></p>
+
+*English: wiring diagram of the WetterCubePlus (ESP32-S3, display and touch)*
+
+<p align="center"><img src="https://wettercube.de/wp-content/themes/wettercube/assets/images/plus-wiring-en.png" width="900" alt="Wiring diagram of the WetterCubePlus: ESP32-S3, display and touch, each wire in its own colour"></p>
+
 ## ESP32-S3 N16R8 ↔ ILI9488 3,5" + XPT2046 Touch
 
 ### Display (ILI9488) – SPI2
