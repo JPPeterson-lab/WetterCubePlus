@@ -2,7 +2,7 @@
 
 *[Deutsche Version](CHANGELOG.md)*
 
-## v2.1.10 (2026-10-23)
+## v2.1.11 (2026-10-23)
 
 ### Changed
-- **User interface:** Small layout adjustments (labels and source note).
+- **User interface:** The source note "Quelle: Deutscher Wetterdienst" uses a smaller font and disturbs the layout less.

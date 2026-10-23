@@ -10,7 +10,7 @@
 #include "webui_html.h"
 
 // ---- Versions-Define (muss mit docs/version.json übereinstimmen!) ----
-#define FIRMWARE_VERSION "2.1.10"
+#define FIRMWARE_VERSION "2.1.11"
 #define OTA_VERSION_URL  "https://raw.githubusercontent.com/JPPeterson-lab/WetterCubePlus/main/docs/version.json"
 #define OTA_BIN_URL      "https://jppeterson-lab.github.io/WetterCubePlus/firmware/firmware.bin"
 #define MDNS_NAME        "wettercubeplus"
@@ -4529,10 +4529,10 @@ static void cbWarnTap(lv_event_t* e) {
 //  SETUP
 // ============================================================
 #if !VARIANTE_EUROPE
-// Namensnennung der Datenquellen: die Labels (labelquelle*) kommen aus PicoPixel (Text, Lage und Farbe dort); hier wird nur die Schrift gesetzt.
+// Namensnennung der Datenquellen: die Labels kommen aus PicoPixel (Text, Lage, Farbe und bei den DWD-Hinweisen auch die kleine Schrift dort);
+// hier wird nur bei den beiden Open-Meteo-Labels (Start, Menue) die Schrift gesetzt, die PicoPixel nicht mitliefert.
 static void quellenHinweiseAnlegen() {
-  lv_obj_t* l[] = {objects.labelquellestart, objects.labelquellehaupt, objects.labelquellegesundheit, objects.labelquellebio2,
-                   objects.labelquellekarte1, objects.labelquellekarte2, objects.labelquellemenue};
+  lv_obj_t* l[] = {objects.labelquellestart, objects.labelquellemenue};
   for (lv_obj_t* o : l) if (o) lv_obj_set_style_text_font(o, &font_montserrat_14, 0);
 }
 #endif

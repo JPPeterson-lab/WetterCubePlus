@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 /* Custom font declarations (externally visible const structs, no init needed) */
+extern const lv_font_t font_montserrat_10;
 extern const lv_font_t font_montserrat_14;
 extern const lv_font_t font_montserrat_16;
 extern const lv_font_t font_montserrat_18;

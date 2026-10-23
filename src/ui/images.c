@@ -2,6 +2,7 @@
 #include "images.h"
 
 #include "src/ui/images/rain_thunder.inc"
+#include "src/ui/images/fc_plus.inc"
 #include "src/ui/images/mist.inc"
 #include "src/ui/images/day_partial_cloud.inc"
 #include "src/ui/images/fc_home.inc"
@@ -18,7 +19,6 @@
 #include "src/ui/images/rain.inc"
 #include "src/ui/images/night_full_moon_snow.inc"
 #include "src/ui/images/day_clear.inc"
-#include "src/ui/images/fc_plus_38_ffffff.inc"
 #include "src/ui/images/fc_right_60.inc"
 #include "src/ui/images/night_full_moon_rain.inc"
 #include "src/ui/images/thunder.inc"
@@ -30,6 +30,7 @@
 #include "src/ui/images/pico_dark_logo_132.inc"
 const ext_img_desc_t images[27] = {
     { "rain_thunder", &rain_thunder },
+    { "fc_plus", &fc_plus },
     { "mist", &mist },
     { "day_partial_cloud", &day_partial_cloud },
     { "fc_home", &fc_home },
@@ -46,7 +47,6 @@ const ext_img_desc_t images[27] = {
     { "rain", &rain },
     { "night_full_moon_snow", &night_full_moon_snow },
     { "day_clear", &day_clear },
-    { "fc_plus_38_ffffff", &fc_plus_38_ffffff },
     { "fc_right_60", &fc_right_60 },
     { "night_full_moon_rain", &night_full_moon_rain },
     { "thunder", &thunder },

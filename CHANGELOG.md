@@ -2,7 +2,7 @@
 
 *[English version](CHANGELOG.en.md)*
 
-## v2.1.10 (2026-10-23)
+## v2.1.11 (2026-10-23)
 
 ### Geändert
-- **Oberfläche:** Kleine Anpassungen am Layout (Beschriftungen und Quellenhinweis).
+- **Oberfläche:** Der Quellenhinweis „Quelle: Deutscher Wetterdienst“ ist in einer kleineren Schrift gesetzt und stört das Layout weniger.
