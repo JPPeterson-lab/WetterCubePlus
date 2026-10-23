@@ -22,7 +22,6 @@ Ein kompaktes WLAN-Wetterdisplay auf Basis des **ESP32-S3 N16R8** mit 3,5"-Touch
 >
 > **🇪🇺 Europa-Variante in Arbeit:** Für Europa entsteht eine eigene Variante (Wetter, Pollen und Luftqualität aus Open-Meteo, englische Oberfläche, ohne Biowetter und DWD-Warnungen). Einen festen Termin gibt es nicht, Näheres auf [wettercube.de](https://wettercube.de/projekte/wettercubeplus/).
 >
->
 > **🔓 Open Source (Apache 2.0):** Quellcode und Firmware liegen in diesem Repository. Texte, Bilder und 3D-Dateien: CC BY-NC 4.0, Bestandteile Dritter: [CREDITS.md](CREDITS.md), Name und Logos sind nicht freigegeben ([NOTICE](NOTICE)).
 >
 > **🔧 Hinweis zum Aufbau:** Beim Aufbau müssen Kabel gecrimpt und Bauteile gelötet werden. Wer das nicht möchte, ist mit dem [WetterCube Fusion](https://github.com/JPPeterson-lab/WetterCube-Fusion) besser bedient (komplettes Board mit Display).
@@ -109,7 +108,6 @@ A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touc
 > **🟢 Stable:** full release; more updates will follow, the current spearhead of the family is the [WetterCube Fusion](https://github.com/JPPeterson-lab/WetterCube-Fusion).
 >
 > **🇪🇺 European variant in progress:** A separate variant for Europe is being developed (weather, pollen and air quality from Open-Meteo, English interface, without bio-weather and DWD warnings). There is no fixed date, more on [wettercube.de](https://wettercube.de/projekte/wettercubeplus/).
->
 >
 > **🔓 Open source (Apache 2.0):** source code and firmware are in this repository. Texts, images and 3D files: CC BY-NC 4.0, third-party components: [CREDITS.md](CREDITS.md), name and logos are not licensed ([NOTICE](NOTICE)).
 >
