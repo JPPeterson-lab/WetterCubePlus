@@ -1,0 +1,81 @@
+# WetterCubePlus – Verkabelung
+
+<p align="center"><img src="https://wettercube.de/wp-content/themes/wettercube/assets/images/plus-verkabelung.png" width="900" alt="Verkabelungsplan des WetterCubePlus: ESP32-S3, Display und Touch, jede Leitung in einer eigenen Farbe"></p>
+
+*English: wiring diagram of the WetterCubePlus (ESP32-S3, display and touch)*
+
+<p align="center"><img src="https://wettercube.de/wp-content/themes/wettercube/assets/images/plus-wiring-en.png" width="900" alt="Wiring diagram of the WetterCubePlus: ESP32-S3, display and touch, each wire in its own colour"></p>
+
+## ESP32-S3 N16R8 ↔ ILI9488 3,5" + XPT2046 Touch
+
+### Display (ILI9488) – SPI2
+
+| Display-Pin | ESP32-S3 GPIO | Hinweis |
+|---|---|---|
+| VCC | 3,3 V | Nicht 5V! |
+| GND | GND | |
+| CS | GPIO 15 | Chip Select Display |
+| RST | GPIO 16 | Reset |
+| DC / RS | GPIO 2 | Data/Command |
+| MOSI / SDI | GPIO 13 | SPI Data |
+| SCK / CLK | GPIO 14 | SPI Clock |
+| LED / BL | GPIO 17 | Backlight (PWM) |
+| MISO / SDO | GPIO 12 | (optional, nur für Lesebefehle) |
+
+### Touch (XPT2046) – EIGENER SPI-Bus (SPI3)
+
+Das Modul "3.5'' TFT SPI 480x320 V1.0" hat separate Touch-Pins –
+T_CLK/T_DIN/T_DO sind NICHT mit SCK/SDI/SDO verbunden!
+
+| Touch-Pin | ESP32-S3 GPIO | Hinweis |
+|---|---|---|
+| T_CLK | **GPIO 6** | eigener SPI3-Bus |
+| T_DIN | **GPIO 7** | Touch MOSI |
+| T_DO  | **GPIO 8** | Touch MISO |
+| T_CS  | GPIO 21 | Chip Select |
+| T_IRQ | GPIO 18 | nicht genutzt (Polling-Modus) |
+
+### Spannungsversorgung
+
+| ESP32-S3 Pin | Anschluss |
+|---|---|
+| 5V / VIN | USB oder extern 5V |
+| 3,3 V | Display VCC, Touch VCC |
+| GND | gemeinsame Masse |
+
+### Hinweise
+
+- **GPIO 33–37** sind beim N16R8 intern für das OPI-PSRAM belegt → nicht verwenden!
+- **GPIO 19/20** sind USB D−/D+ → für normale I/O vermeiden
+- **GPIO 0** ist Strapping-Pin (Boot) → für Inputs nur mit Pull-Up
+- Das ILI9488-Modul hat meist einen integrierten 3,3V-Pegelwandler auf der Platine.
+  Wenn das Display-Modul mit 5V arbeitet, trotzdem nur 3,3V an VCC anlegen, sofern kein
+  separater 3,3V-Eingang vorhanden.
+- Die Hintergrundbeleuchtung (BL/LED) kann direkt an GPIO 17 angeschlossen werden.
+  Für hellere LEDs einen NPN-Transistor (z.B. BC547) als Schalter verwenden.
+
+### Schematische Übersicht
+
+```
+ESP32-S3 N16R8
+┌─────────────────────┐
+│  Display (SPI2)
+│  GPIO 2  ────────── DC   (Display)
+│  GPIO 12 ────────── MISO (Display)
+│  GPIO 13 ────────── MOSI (Display)
+│  GPIO 14 ────────── SCLK (Display)
+│  GPIO 15 ────────── CS   (Display)
+│  GPIO 16 ────────── RST  (Display)
+│  GPIO 17 ────────── BL   (Backlight, PWM)
+│
+│  Touch (eigener Bus SPI3)
+│  GPIO 6  ────────── T_CLK
+│  GPIO 7  ────────── T_DIN (MOSI)
+│  GPIO 8  ────────── T_DO  (MISO)
+│  GPIO 21 ────────── T_CS
+│  GPIO 18 ────────── T_IRQ (nicht genutzt, Polling)
+│
+│  3.3V    ────────── VCC  (Display + Touch)
+│  GND     ────────── GND  (alle)
+└─────────────────────┘
+```
