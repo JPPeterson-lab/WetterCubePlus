@@ -84,7 +84,18 @@
 
   <div class="card">
     <h2>Firmware installieren</h2>
-    <p>Verbinde den ESP32-S3 per USB-C mit dem Computer. Chrome oder Edge Browser erforderlich. Achtung: Die Installation löscht den Flash-Speicher, auch gespeicherte WLAN-Daten und Einstellungen.</p>
+    <p>Verbinde den ESP32-S3 per USB-C mit dem Computer. Chrome oder Edge Browser erforderlich. Achtung: Setzt du im Installationsfenster den Haken „Gerät löschen“, wird der gesamte Flash-Speicher gelöscht, auch gespeicherte WLAN-Daten und Einstellungen. Ohne den Haken bleiben sie erhalten.</p>
+    <div style="margin:16px 0;padding:14px 16px;background:#161b22;border:1px solid #30363d;border-radius:8px;font-size:.92em;line-height:1.55;color:#e6edf3">
+      <strong>Welchen Anschluss wählen?</strong><br>
+      Nach dem Klick auf den Installationsknopf öffnet der Browser ein Fenster „… möchte eine Verbindung zu einem seriellen Anschluss herstellen“. Wähle dort den Anschluss deines Boards und klicke auf „Verbinden“:
+      <ul style="margin:8px 0 8px 18px;padding:0">
+        <li><strong>Windows:</strong> ein Eintrag mit „COM“ und einer Zahl, zum Beispiel <em>USB-SERIAL CH340 (COM3)</em> oder <em>USB JTAG/serial debug unit (COM5)</em>.</li>
+        <li><strong>Mac:</strong> ein Eintrag mit „usbmodem“ oder „usbserial“, zum Beispiel <em>cu.usbmodem1101</em>. Nimm am besten die Variante mit „cu.“.</li>
+        <li><strong>Linux:</strong> <em>ttyACM0</em> oder <em>ttyUSB0</em>.</li>
+      </ul>
+      Unsicher? Ziehe das Kabel ab, öffne die Liste und stecke es wieder an: Der Eintrag, der neu erscheint, ist dein Board. Erscheint keiner, nimm ein anderes Datenkabel (kein reines Ladekabel) oder einen anderen USB-Anschluss.
+      <img src="usb-anschluss.png" alt="Beispiel: Fenster zur Auswahl des seriellen Anschlusses unter Windows und auf dem Mac" style="max-width:100%;height:auto;margin-top:10px;border-radius:6px">
+    </div>
     <label style="display:block;margin:14px 0 4px;color:#e6edf3;font-size:.9em;line-height:1.5;cursor:pointer"><input type="checkbox" id="haftung-ok" style="margin-right:8px">Ich habe die <a href="https://wettercube.de/nutzungshinweise/" target="_blank" style="color:#58a6ff">Nutzungshinweise</a> gelesen und nutze die Firmware auf eigene Gefahr.</label>
     <div id="installbereich">
       <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
