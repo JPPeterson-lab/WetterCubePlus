@@ -64,7 +64,7 @@ Ein kompaktes WLAN-Wetterdisplay auf Basis des **ESP32-S3 N16R8** mit 3,5"-Touch
 
 ## 🧊 Gehäuse zum Selbstdrucken
 
-Das Gehäuse auf den Fotos (Unterteil und Deckel, Version 2, Format 3MF) gibt es kostenlos im Ordner [`gehaeuse/`](gehaeuse/). Empfehlung: PLA oder PETG, 0,4-mm-Düse. Ein fertiges Druckprofil auf Bambu MakerWorld folgt in Kürze. Lizenz der Dateien: CC BY-NC 4.0.
+Das Gehäuse auf den Fotos (Unterteil und Deckel, Version 2, Format 3MF) gibt es kostenlos im Ordner [`gehaeuse/`](gehaeuse/). Empfehlung: PLA oder PETG, 0,4-mm-Düse. Ein fertiges Druckprofil gibt es auf [Bambu MakerWorld](https://makerworld.com/de/models/3511219-wettercubeplus-enclosure-for-3-5-weather-display#profileId-4012174). Lizenz der Dateien: CC BY-NC 4.0.
 
 ## 📖 Mehr erfahren
 
@@ -155,7 +155,7 @@ A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touc
 
 ## 🧊 Case to print yourself
 
-The case in the photos (lower part and lid, version 2, 3MF format) is available for free in the folder [`gehaeuse/`](gehaeuse/). Recommendation: PLA or PETG, 0.4 mm nozzle. A ready-made print profile on Bambu MakerWorld will follow shortly. Licence of the files: CC BY-NC 4.0.
+The case in the photos (lower part and lid, version 2, 3MF format) is available for free in the folder [`gehaeuse/`](gehaeuse/). Recommendation: PLA or PETG, 0.4 mm nozzle. A ready-made print profile is on [Bambu MakerWorld](https://makerworld.com/de/models/3511219-wettercubeplus-enclosure-for-3-5-weather-display#profileId-4012174). Licence of the files: CC BY-NC 4.0.
 
 ## 📖 Learn more
 
