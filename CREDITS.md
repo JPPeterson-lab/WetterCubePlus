@@ -12,7 +12,7 @@
 > - **Libraries:** LVGL incl. LodePNG (MIT / zlib), LovyanGFX (MIT / BSD-2-Clause), ArduinoJson (MIT), FastLED (MIT, WetterAmpel only), Arduino-ESP32 (LGPL 2.1), ESP-IDF (Apache 2.0).
 > - **UI design and export:** [PicoPixel](https://picopixel.io)
 >
-> **Project licence:** source code Apache License 2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)); texts, images, documentation and 3D print files CC BY-NC 4.0 ([LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt)). Third-party resources keep their own licences.
+> **Project licence:** source code Apache License 2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)); texts, images and documentation CC BY-NC 4.0 ([LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt)); 3D print files CC BY-NC-SA 4.0 ([gehaeuse/LICENSE-3D-Druck.txt](gehaeuse/LICENSE-3D-Druck.txt)). Third-party resources keep their own licences.
 
 Dieses Projekt verwendet Ressourcen Dritter. Die jeweiligen Lizenzbedingungen
 sind nachfolgend aufgeführt.
@@ -141,6 +141,6 @@ Die Quellen dieses Projekts sind vollständig öffentlich; die Firmware lässt s
 
 ## Projektlizenz
 
-Der Quellcode dieses Projekts steht unter der **Apache License 2.0** – siehe [LICENSE](LICENSE) und [NOTICE](NOTICE). Texte, Bilder, Dokumentation und die 3D-Druckdateien stehen unter **CC BY-NC 4.0** ([LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt)).
+Der Quellcode dieses Projekts steht unter der **Apache License 2.0** – siehe [LICENSE](LICENSE) und [NOTICE](NOTICE). Texte, Bilder und Dokumentation stehen unter **CC BY-NC 4.0** ([LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt)), die 3D-Druckdateien unter **CC BY-NC-SA 4.0** ([gehaeuse/LICENSE-3D-Druck.txt](gehaeuse/LICENSE-3D-Druck.txt)).
 
 Die oben genannten Drittanbieter-Ressourcen unterliegen ihren jeweiligen Lizenzen (Meteocons: MIT, Icons8: MIT oder Good Boy License, Montserrat: SIL OFL 1.1, Bibliotheken siehe oben) und sind von der Lizenz dieses Projekts nicht erfasst.

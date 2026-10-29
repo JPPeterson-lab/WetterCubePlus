@@ -22,7 +22,7 @@ Ein kompaktes WLAN-Wetterdisplay auf Basis des **ESP32-S3 N16R8** mit 3,5"-Touch
 >
 > **🇪🇺 Europa-Variante in Arbeit:** Für Europa entsteht eine eigene Variante (Wetter, Pollen und Luftqualität aus Open-Meteo, englische Oberfläche, ohne Biowetter und DWD-Warnungen). Einen festen Termin gibt es nicht, Näheres auf [wettercube.de](https://wettercube.de/projekte/wettercubeplus/).
 >
-> **🔓 Open Source (Apache 2.0):** Quellcode und Firmware liegen in diesem Repository. Texte, Bilder und 3D-Dateien: CC BY-NC 4.0, Bestandteile Dritter: [CREDITS.md](CREDITS.md), Name und Logos sind nicht freigegeben ([NOTICE](NOTICE)).
+> **🔓 Open Source (Apache 2.0):** Quellcode und Firmware liegen in diesem Repository. Texte und Bilder: CC BY-NC 4.0, 3D-Dateien: CC BY-NC-SA 4.0, Bestandteile Dritter: [CREDITS.md](CREDITS.md), Name und Logos sind nicht freigegeben ([NOTICE](NOTICE)).
 >
 > **🔧 Hinweis zum Aufbau:** Beim Aufbau müssen Kabel gecrimpt und Bauteile gelötet werden. Wer das nicht möchte, ist mit dem [WetterCube Fusion](https://github.com/JPPeterson-lab/WetterCube-Fusion) besser bedient (komplettes Board mit Display).
 >
@@ -64,7 +64,7 @@ Ein kompaktes WLAN-Wetterdisplay auf Basis des **ESP32-S3 N16R8** mit 3,5"-Touch
 
 ## 🧊 Gehäuse zum Selbstdrucken
 
-Das Gehäuse auf den Fotos (Unterteil und Deckel, Version 2, Format 3MF) gibt es kostenlos im Ordner [`gehaeuse/`](gehaeuse/). Empfehlung: PLA oder PETG, 0,4-mm-Düse. Ein fertiges Druckprofil gibt es auf [Bambu MakerWorld](https://makerworld.com/de/models/3511219-wettercubeplus-enclosure-for-3-5-weather-display#profileId-4012174). Lizenz der Dateien: CC BY-NC 4.0.
+Das Gehäuse auf den Fotos (Unterteil und Deckel, Version 2, Format 3MF) gibt es kostenlos im Ordner [`gehaeuse/`](gehaeuse/). Empfehlung: PLA oder PETG, 0,4-mm-Düse. Ein fertiges Druckprofil gibt es auf [Bambu MakerWorld](https://makerworld.com/de/models/3511219-wettercubeplus-enclosure-for-3-5-weather-display#profileId-4012174). Lizenz der Dateien: CC BY-NC-SA 4.0 (Namensnennung, nicht kommerziell, Weitergabe von Abwandlungen unter gleicher Lizenz).
 
 ## 📖 Mehr erfahren
 
@@ -94,7 +94,8 @@ Bibliotheken, Icons und Schriften von Dritten (LVGL, LovyanGFX, ArduinoJson, Met
 | Was | Lizenz | Datei |
 |---|---|---|
 | **Quellcode, Firmware** | Apache 2.0 | [LICENSE](LICENSE), [NOTICE](NOTICE) |
-| **Texte, Bilder, Dokumentation, 3D-Druckdateien** | CC BY-NC 4.0 | [LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt) |
+| **Texte, Bilder, Dokumentation** | CC BY-NC 4.0 | [LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt) |
+| **3D-Druckdateien (Gehäuse)** | CC BY-NC-SA 4.0 | [gehaeuse/LICENSE-3D-Druck.txt](gehaeuse/LICENSE-3D-Druck.txt) |
 | **Bestandteile Dritter** | eigene Lizenzen (MIT, LGPL 2.1, Apache 2.0, SIL OFL, …) | [CREDITS.md](CREDITS.md) |
 
 > **Versprechen:** Die private Nutzung von WetterCubePlus, Fusion und Next bleibt auch in Zukunft frei.
@@ -113,7 +114,7 @@ A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touc
 >
 > **🇪🇺 European variant in progress:** A separate variant for Europe is being developed (weather, pollen and air quality from Open-Meteo, English interface, without bio-weather and DWD warnings). There is no fixed date, more on [wettercube.de](https://wettercube.de/projekte/wettercubeplus/).
 >
-> **🔓 Open source (Apache 2.0):** source code and firmware are in this repository. Texts, images and 3D files: CC BY-NC 4.0, third-party components: [CREDITS.md](CREDITS.md), name and logos are not licensed ([NOTICE](NOTICE)).
+> **🔓 Open source (Apache 2.0):** source code and firmware are in this repository. Texts and images: CC BY-NC 4.0, 3D files: CC BY-NC-SA 4.0, third-party components: [CREDITS.md](CREDITS.md), name and logos are not licensed ([NOTICE](NOTICE)).
 >
 > **🔧 Note on assembly:** During assembly, cables have to be crimped and parts soldered. If you do not want that, the [WetterCube Fusion](https://github.com/JPPeterson-lab/WetterCube-Fusion) is the better choice (complete board with display).
 >
@@ -155,7 +156,7 @@ A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touc
 
 ## 🧊 Case to print yourself
 
-The case in the photos (lower part and lid, version 2, 3MF format) is available for free in the folder [`gehaeuse/`](gehaeuse/). Recommendation: PLA or PETG, 0.4 mm nozzle. A ready-made print profile is on [Bambu MakerWorld](https://makerworld.com/de/models/3511219-wettercubeplus-enclosure-for-3-5-weather-display#profileId-4012174). Licence of the files: CC BY-NC 4.0.
+The case in the photos (lower part and lid, version 2, 3MF format) is available for free in the folder [`gehaeuse/`](gehaeuse/). Recommendation: PLA or PETG, 0.4 mm nozzle. A ready-made print profile is on [Bambu MakerWorld](https://makerworld.com/de/models/3511219-wettercubeplus-enclosure-for-3-5-weather-display#profileId-4012174). Licence of the files: CC BY-NC-SA 4.0 (attribution, non-commercial, adaptations under the same licence).
 
 ## 📖 Learn more
 
@@ -185,7 +186,8 @@ Libraries, icons and fonts by third parties (LVGL, LovyanGFX, ArduinoJson, Meteo
 | What | Licence | File |
 |---|---|---|
 | **Source code, firmware** | Apache 2.0 | [LICENSE](LICENSE), [NOTICE](NOTICE) |
-| **Texts, images, documentation, 3D-print files** | CC BY-NC 4.0 | [LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt) |
+| **Texts, images, documentation** | CC BY-NC 4.0 | [LICENSE-Dokumentation.txt](LICENSE-Dokumentation.txt) |
+| **3D-print files (case)** | CC BY-NC-SA 4.0 | [gehaeuse/LICENSE-3D-Druck.txt](gehaeuse/LICENSE-3D-Druck.txt) |
 | **Third-party components** | their own licences (MIT, LGPL 2.1, Apache 2.0, SIL OFL, …) | [CREDITS.md](CREDITS.md) |
 
 > **Promise:** Private use of WetterCubePlus, Fusion and Next stays free in the future.

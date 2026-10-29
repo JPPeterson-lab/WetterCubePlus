@@ -8,8 +8,8 @@ Apache License; no trademark rights are granted (see section 6 of the licence).
 All rights to the name and the logos are reserved by Jan Althaus. They may be shown unchanged when reporting on
 the project; forks and derived products need their own name and logo. Rules: https://wettercube.de/logo-nutzung/
 
-Texts, images, screenshots and documentation, and the 3D-print files in gehaeuse/, are licensed under
-CC BY-NC 4.0, see LICENSE-Dokumentation.txt.
+Texts, images, screenshots and documentation are licensed under CC BY-NC 4.0, see LICENSE-Dokumentation.txt.
+The 3D-print files in gehaeuse/ are licensed under CC BY-NC-SA 4.0, see gehaeuse/LICENSE-3D-Druck.txt.
 
 The user interface code in src/ui/ is generated with PicoPixel (https://picopixel.io); the exported code
 belongs to the author and is licensed under the Apache License 2.0 as well.

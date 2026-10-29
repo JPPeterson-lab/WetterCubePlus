@@ -1,0 +1,27 @@
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
+
+Copyright (c) 2026 JPPeterson-lab
+
+The 3D-print files in this folder (case and lid of the WetterCubePlus) are licensed under the Creative
+Commons Attribution-NonCommercial-ShareAlike 4.0 International License. The same licence applies to the
+model on Bambu MakerWorld.
+
+You are free to:
+  - Share: copy and redistribute the material in any medium or format
+  - Adapt: remix, transform, and build upon the material
+
+Under the following terms:
+  - Attribution: You must give appropriate credit, provide a link to the license,
+    and indicate if changes were made.
+  - NonCommercial: You may not use the material for commercial purposes.
+  - ShareAlike: If you remix, transform, or build upon the material, you must distribute your
+    contributions under the same license as the original.
+
+The licensor (JPPeterson-lab) reserves the right to use this project for
+commercial purposes at their own discretion.
+
+Full license text: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+This licence covers only the 3D-print files. Texts, images and documentation of the project are licensed
+under CC BY-NC 4.0 (see ../LICENSE-Dokumentation.txt), the source code under the Apache License 2.0 (see
+../LICENSE). The name "WetterCube" and the WetterCube logos are excluded, see ../NOTICE.
