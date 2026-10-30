@@ -20,7 +20,7 @@ Ein kompaktes WLAN-Wetterdisplay auf Basis des **ESP32-S3 N16R8** mit 3,5"-Touch
 
 > **🟢 Stabil:** Vollversion; weitere Updates folgen, die aktuelle Speerspitze der Familie ist der [WetterCube Fusion](https://github.com/JPPeterson-lab/WetterCube-Fusion).
 >
-> **🇪🇺 Europa-Variante in Arbeit:** Für Europa entsteht eine eigene Variante (Wetter, Pollen und Luftqualität aus Open-Meteo, englische Oberfläche, ohne Biowetter und DWD-Warnungen). Einen festen Termin gibt es nicht, Näheres auf [wettercube.de](https://wettercube.de/projekte/wettercubeplus/).
+> **🇪🇺 Europa-Variante (Beta):** Für Europa gibt es eine eigene Fassung mit englischer Oberfläche (Wetter, Pollen und Luftqualität aus Open-Meteo, ohne Biowetter und DWD-Warnungen): [WetterCubePlus Europe](https://github.com/JPPeterson-lab/WetterCubePlus-Europe).
 >
 > **🔓 Open Source (Apache 2.0):** Quellcode und Firmware liegen in diesem Repository. Texte und Bilder: CC BY-NC 4.0, 3D-Dateien: CC BY-NC-SA 4.0, Bestandteile Dritter: [CREDITS.md](CREDITS.md), Name und Logos sind nicht freigegeben ([NOTICE](NOTICE)).
 >
@@ -72,6 +72,7 @@ Das Gehäuse auf den Fotos (Unterteil und Deckel, Version 2, Format 3MF) gibt es
 |---|---|
 | **[wettercube.de](https://wettercube.de/projekte/wettercubeplus/)** | Überblick, [Vergleich der Cubes](https://wettercube.de/vergleich/), [Roadmap](https://wettercube.de/roadmap/), [Bauanleitung](https://wettercube.de/bauanleitung/), [Hardware](https://wettercube.de/hardware/) |
 | **[Wiki](https://wiki.wettercube.de/index.php/WetterCubePlus/Start)** | Hardware und Pinbelegung, Inbetriebnahme, Einstellungen, alle Screens, Updates, WetterAmpel, Fehlersuche, Entwicklung |
+| **[draussenwetter.de](https://draussenwetter.de/)** | Pollenflug und Biowetter für deinen Ort als Webseite, ohne Display |
 | **[Änderungsverlauf](CHANGELOG.md)** | was in welcher Version neu ist |
 
 ## 📡 Datenquellen
@@ -112,7 +113,7 @@ A compact Wi-Fi weather display based on the **ESP32-S3 N16R8** with a 3.5" touc
 
 > **🟢 Stable:** full release; more updates will follow, the current spearhead of the family is the [WetterCube Fusion](https://github.com/JPPeterson-lab/WetterCube-Fusion).
 >
-> **🇪🇺 European variant in progress:** A separate variant for Europe is being developed (weather, pollen and air quality from Open-Meteo, English interface, without bio-weather and DWD warnings). There is no fixed date, more on [wettercube.de](https://wettercube.de/projekte/wettercubeplus/).
+> **🇪🇺 European variant (beta):** There is a separate version for Europe with an English interface (weather, pollen and air quality from Open-Meteo, without bio-weather and DWD warnings): [WetterCubePlus Europe](https://github.com/JPPeterson-lab/WetterCubePlus-Europe).
 >
 > **🔓 Open source (Apache 2.0):** source code and firmware are in this repository. Texts and images: CC BY-NC 4.0, 3D files: CC BY-NC-SA 4.0, third-party components: [CREDITS.md](CREDITS.md), name and logos are not licensed ([NOTICE](NOTICE)).
 >
@@ -164,6 +165,7 @@ The case in the photos (lower part and lid, version 2, 3MF format) is available 
 |---|---|
 | **[wettercube.de](https://wettercube.de/en/products/wettercubeplus/)** | overview, [comparison of the cubes](https://wettercube.de/en/comparison/), [roadmap](https://wettercube.de/en/roadmap/), [build guide](https://wettercube.de/en/build-guide/), [hardware](https://wettercube.de/en/hardware/) |
 | **[Wiki](https://wiki.wettercube.de/index.php/WetterCubePlus/Start)** | hardware and pin assignment, getting started, settings, all screens, updates, WetterAmpel, troubleshooting, development |
+| **[draussenwetter.de](https://draussenwetter.de/)** | pollen and bio-weather for your location as a website, no display needed (German) |
 | **[Changelog](CHANGELOG.en.md)** | what is new in which version |
 
 ## 📡 Data sources
