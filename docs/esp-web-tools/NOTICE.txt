@@ -1,0 +1,13 @@
+esp-web-tools (Installer-Skript fuer den Web-Installer)
+=====================================================
+Dieser Ordner enthaelt eine unveraenderte Kopie von esp-web-tools 10.4.0 (dist/web) von https://github.com/esphome/esp-web-tools
+(Lizenz Apache-2.0, Text in der Datei LICENSE). Die Dateien liegen hier, damit die Installer-Seite beim Aufruf keine Dateien von einem
+Drittanbieter (CDN) laden muss.
+
+Im Skript gebuendelte Bibliotheken (Lizenzen der npm-Pakete):
+  - lit 3.2.1 (Google LLC), BSD-3-Clause
+  - @material/web (Google LLC), Apache-2.0
+  - esptool-js 0.6.0 (Espressif Systems), Apache-2.0
+  - improv-wifi-serial-sdk 2.8.0 (Improv Wi-Fi maintainers), Apache-2.0
+  - tslib (Microsoft Corp.), 0BSD
+Die Namen und Urheberrechtshinweise der Bibliotheken stehen in den jeweiligen Paketen auf https://www.npmjs.com .
