@@ -1,0 +1,41 @@
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+
+Copyright (c) 2026 JPPeterson-lab
+
+This work is licensed under the Creative Commons Attribution-NonCommercial 4.0
+International License.
+
+You are free to:
+  - Share: copy and redistribute the material in any medium or format
+  - Adapt: remix, transform, and build upon the material
+
+Under the following terms:
+  - Attribution: You must give appropriate credit, provide a link to the license,
+    and indicate if changes were made.
+  - NonCommercial: You may not use the material for commercial purposes.
+
+The licensor (JPPeterson-lab) reserves the right to use this project for
+commercial purposes at their own discretion.
+
+Full license text: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
+Excluded from this licence: the name "WetterCube" (including product names) and the WetterCube logos.
+All rights to them are reserved, see NOTICE and https://wettercube.de/logo-nutzung/
+
+---
+
+THIRD-PARTY COMPONENTS
+
+The license above covers the original work of this project. The following
+third-party components keep their own licenses (details and license texts in
+CREDITS.md):
+
+- Weather icons: Meteocons by Bas Milius, MIT License
+  https://github.com/basmilius/weather-icons
+- UI control icons: Icons8 Flat Color Icons, MIT License or Good Boy License
+  https://github.com/icons8/flat-color-icons
+- Font: Montserrat, SIL Open Font License 1.1
+  https://github.com/JulietaUla/Montserrat
+- Libraries used when building (LVGL, LovyanGFX, ArduinoJson, FastLED,
+  Arduino-ESP32, ESP-IDF) are licensed under their respective open-source
+  licenses (MIT, BSD-2-Clause, zlib, LGPL 2.1, Apache 2.0).
