@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WetterCubePlus – Web-Installer</title>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 { color: #58a6ff; font-size: 1.8em; margin-bottom: 4px; }
+    .subtitle { color: #8b949e; margin-bottom: 30px; }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    h2 { color: #e6edf3; font-size: 1.1em; margin: 0 0 12px; }
+    p { color: #8b949e; font-size: .9em; line-height: 1.5; }
+    esp-web-install-button {
+      display: block;
+      margin-top: 16px;
+    }
+    esp-web-install-button::part(button) {
+      background: #238636;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    esp-web-install-button::part(button):hover { background: #2ea043; }
+    .badge {
+      display: inline-block;
+      background: #30363d;
+      color: #8b949e;
+      font-size: .75em;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+    }
+    .steps { list-style: none; padding: 0; counter-reset: step; }
+    .steps li {
+      counter-increment: step;
+      padding: 8px 0 8px 36px;
+      position: relative;
+      color: #8b949e;
+      font-size: .9em;
+      border-bottom: 1px solid #21262d;
+    }
+    .steps li:last-child { border-bottom: none; }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: 0; top: 8px;
+      background: #1f6feb;
+      color: #fff;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      font-size: .75em;
+      display: flex; align-items: center; justify-content: center;
+    }
+    footer { color: #30363d; font-size: .8em; text-align: center; margin-top: 30px; }
+    a { color: #58a6ff; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>WetterCubePlus <span class="badge">v2.1.11</span></h1>
+  <p class="subtitle">ESP32-S3 Wetterdisplay mit Touch, DWD-Warnungen, Pollenflug &amp; Warnkarte</p>
+
+  <div class="card">
+    <h2>Firmware installieren</h2>
+    <p>Verbinde den ESP32-S3 per USB-C mit dem Computer. Chrome oder Edge Browser erforderlich. Achtung: Die Installation löscht den Flash-Speicher, auch gespeicherte WLAN-Daten und Einstellungen.</p>
+    <label style="display:block;margin:14px 0 4px;color:#e6edf3;font-size:.9em;line-height:1.5;cursor:pointer"><input type="checkbox" id="haftung-ok" style="margin-right:8px">Ich habe die <a href="https://wettercube.de/nutzungshinweise/" target="_blank" style="color:#58a6ff">Nutzungshinweise</a> gelesen und nutze die Firmware auf eigene Gefahr.</label>
+    <div id="installbereich">
+      <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
+    </div>
+    <script>
+  (function () {
+    var cb = document.getElementById('haftung-ok'), bereich = document.getElementById('installbereich');
+    function pruefen() { bereich.style.display = cb.checked ? '' : 'none'; }
+    cb.addEventListener('change', pruefen); pruefen();
+  })();
+</script>
+  </div>
+
+  <div class="card">
+    <h2>Erstkonfiguration</h2>
+    <ol class="steps">
+      <li>Gerät startet – Touch-Kalibrierung: nacheinander die <strong>4 Kreuzmarkierungen</strong> antippen</li>
+      <li>WLAN-Hotspot <strong>„WetterCubePlus-Setup"</strong> mit Smartphone oder PC verbinden. Das <strong>Passwort (8 Ziffern) steht auf dem Display</strong> des Geräts und ist bei jedem Start ein anderes</li>
+      <li>Einrichtungsportal öffnet sich automatisch (alternativ: <strong>192.168.4.1</strong> im Browser)</li>
+      <li>WLAN-Zugangsdaten eingeben</li>
+      <li>Standort eingeben – <strong>ohne Umlaute</strong>: z.B. <code>Munchen</code>, <code>Koeln</code>, <code>Dusseldorf</code></li>
+      <li>DWD-Pollenregion für dein Bundesland wählen</li>
+      <li>„Speichern &amp; Neustart" – Gerät verbindet sich mit dem WLAN</li>
+      <li>Alle weiteren Einstellungen (Helligkeit, Dimm-Timeout, Warnungen) unter <a href="http://wettercubeplus.local">wettercubeplus.local</a></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Touch neu kalibrieren</h2>
+    <p>Finger beim Booten auf das Display halten bis „Neukalibrierung" erscheint, dann loslassen.</p>
+  </div>
+
+  <div class="card">
+    <h2>Features</h2>
+    <p>
+      Wetter · 4-Stunden-Vorhersage · Pollenflug (8 Allergene) · Regenwarnung · Pollenwarnung ·
+      DWD Wetterwarnungen · Niederschlagsradar · Sonne &amp; Mond · UV-Index · WebUI · OTA-Update · Captive Portal
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Informationen</h2>
+    <p>
+      <strong>Hardware:</strong> ESP32-S3 N16R8 · ILI9488 3,5&quot; 480×320 Touch-Display<br>
+      <strong>Datenquellen:</strong> <a href="https://open-meteo.com" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (<a href="https://open-meteo.com/en/licence" target="_blank" rel="noopener">CC BY 4.0</a>; Werte teils umgerechnet) · Pollen/Luftqualität: Contains modified Copernicus Atmosphere Monitoring Service information, über Open-Meteo · Ortssuche: Location data by <a href="https://www.geonames.org" target="_blank" rel="noopener">GeoNames</a> via Open-Meteo · Warnungen, Pollenflug, Biowetter und Radar: Quelle: <a href="https://opendata.dwd.de" target="_blank" rel="noopener">Deutscher Wetterdienst</a> (<a href="https://www.dwd.de/DE/service/rechtliche_hinweise/rechtliche_hinweise_node.html" target="_blank" rel="noopener">CC BY 4.0</a>)<br>
+      <strong>Quellcode:</strong> <a href="https://github.com/JPPeterson-lab/WetterCubePlus" target="_blank">JPPeterson-lab/WetterCubePlus</a> (Apache-Lizenz 2.0)<br>
+      <strong>Anleitung:</strong> <a href="https://wiki.wettercube.de/index.php/WetterCubePlus/Start" target="_blank">Wiki</a>
+    </p>
+  </div>
+
+  <footer>WetterCubePlus – Open Source (Apache 2.0) · <a href="https://github.com/JPPeterson-lab/WetterCubePlus">GitHub</a></footer>
+</div>
+</body>
+</html>
